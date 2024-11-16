@@ -19,7 +19,7 @@ whitespace = {' ', '\t', '\n'}
 #-----------------lexical analyzer---------------------
 def lexical_click(event):
     event.pos = 0
-    code = textFrame.get("1.0", "end")
+    code = textCode.get("1.0", "end")
     print(code)
 
     def get_char():  
@@ -131,7 +131,18 @@ def lexical_click(event):
             key = char
             while (next := next_char()) and (next.isalnum() or next == '_'):
                 key += get_char()
+            #--------parser-------
             if key in keywords:
+                skip_whitespace()
+                nextchr = next_char()
+                if key == 'main':
+                    if nextchr == '(':
+                        lexeme.append(key)
+                        token.append(key)
+                        continue
+                    else:
+                        console.insert(tk.END, "wrong delimiter\n")
+            #-------parser-------
                 lexeme.append(key)
                 token.append(key)
             else:
@@ -161,7 +172,7 @@ def on_leave_new(event):
 def clear_click(event):
     for item in table.get_children():
         table.delete(item)
-    textFrame.delete("1.0", tk.END)
+    textCode.delete("1.0", tk.END)
     console.delete("1.0", tk.END)
     lexeme.clear()
     token.clear()
@@ -222,18 +233,28 @@ syntaxBtn.bind("<Enter>", on_enter_syntax)
 syntaxBtn.bind("<Leave>", on_leave_syntax)
 
 #lexical button
-lexicalBtn = tk.Label(navFrame, text="Lexical", font=("Helvetica", 11, "bold"), bg="#a6b3f1", borderwidth=1, relief="solid", width=10)
+lexicalBtn = tk.Label(navFrame, text="Lexical", font=("Helvetica", 11, "bold"), bg="#a6b3f1", bd=1, relief="solid", width=10)
 lexicalBtn.pack(side="right", pady=5, padx=(0, 15))
 lexicalBtn.bind("<Button-1>", lexical_click)
 lexicalBtn.bind("<Enter>", on_enter_lexical)
 lexicalBtn.bind("<Leave>", on_leave_lexical)
 
-#textbox for code
-textFrame = tk.Text(environFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white")
+#frame for code
+textFrame = tk.Frame(environFrame, height=25, bg="#272727")
 textFrame.pack(side="top", fill="both", expand=True)
 
+#code line number
+codeLine = tk.Text(textFrame, height=25, width=3, bg="#272727", fg="#797979", font=("Courier New", 12), padx=5, relief="solid", bd=0.5)
+codeLine.pack(side="left", fill="y")
+codeLine.tag_configure("right", justify="right")
+#codeLine.insert("1.0", "1", "right")
+
+#textbox for code
+textCode = tk.Text(textFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", relief="flat")
+textCode.pack(side="right", fill="both", expand="true")
+
 #console
-console = tk.Text(environFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12))
+console = tk.Text(environFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12), state=tk.DISABLED)
 console.pack(side="bottom", fill="both")
 
 # Create a frame for the Treeview on the right
@@ -241,17 +262,13 @@ tableFrame = tk.Frame(window, width=500, bg="#e5e2ed")
 tableFrame.pack(side="right", fill="both")
 
 # Create a Treeview for the table
-table = ttk.Treeview(tableFrame, columns=("Lexeme", "Token"))
+table = ttk.Treeview(tableFrame, columns=("Ln", "Lexeme", "Token"))
 table["show"] = "headings"
 
 # Define column headings
-table.heading("#1", text="Lexeme")
-table.heading("#2", text="Token")
-
-# Insert data from the arrays
-#for i in range(len(lexeme)):
-#    table.insert("", "end", values=(lexeme[i], token[i]))
-
+table.heading("#1", text="Ln")
+table.heading("#2", text="Lexeme")
+table.heading("#3", text="Token")
 table.pack(fill="both", expand=True)
 
 window.mainloop()
