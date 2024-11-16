@@ -63,14 +63,19 @@ def lexical_click(event):
 
     def get_character():
         character = "'"
-        char = get_char()
-        character += char
-        if (next := get_char()) == '\'':
-            character += next
-            lexeme.append(character)
-        else:
-            console.insert(tk.END, "Character literals must only contain one character\n")
-    
+        while True:
+            char = get_char()
+            if char == '\'':
+                character += char
+                if (len(character) == 3):
+                    lexeme.append(character)
+                else:
+                    console.insert(tk.END, "Character literals must only contain one character\n")
+                break
+            else:
+                character += char
+                continue
+                
     def get_num():
         if re.match(r'^\d{1,10}$', num):
             lexeme.append(num)
