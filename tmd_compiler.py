@@ -28,7 +28,7 @@ ascii_def = alphanumeric + punc_symbols + quote_symbols
 
 # Regular expression
 keywords = ['strc', 'segm', 'main', 'bln', 'chr', 'int', 'dec', 'str', 'var', 'const', 'true', 'false', 'disp', 'insp', 'if', 
-            'elif', 'else', 'switch', 'key', 'def', 'for', 'foreach', 'in', 'do', 'while', 'brk', 'rsm', 'exit', 'ret']
+            'elif', 'else', 'switch', 'key', 'def', 'for', 'foreach', 'in', 'do', 'while', 'brk', 'rsm', 'exit', 'ret', 'none']
 reg_symbols =  number_operator + assignment_operator + symbols
 
 whitespace = {' ', '\t', '\n'}
@@ -58,6 +58,7 @@ keyword1_delims = {
     'val_delim' : [';', ',', ')', '}'],
     'colon_delim' : alphanumeric + unary_operator + ['('],
     'jmp_delim' : [';'],
+    'key_delim' : alphanumeric + ['\'', '"']
 }
 
 keyword2_delims = {
@@ -71,7 +72,7 @@ keyword3_delims = {
     'asn_delim' : keyword2_delims['relate_delim'] + ['(', '{']
 }
 
-keyword_delims = keyword1_delims + keyword2_delims + keyword3_delims
+keyword_delims = keyword1_delims | keyword2_delims | keyword3_delims
 
 #--------------------Analyzers-------------------------
 
@@ -114,6 +115,7 @@ def lexical_click(event):
             if char == '"':
                 string += char
                 lexeme.append(string)
+                token.append('str_lit')
                 break
             else:
                 string += char
@@ -127,6 +129,7 @@ def lexical_click(event):
                 character += char
                 if (len(character) == 3):
                     lexeme.append(character)
+                    token.append('chr_lit')
                 else:
                     console.insert(tk.END, "Error: ", "error")
                     console.insert(tk.END, "Character literals must only contain one character\n")
@@ -175,8 +178,36 @@ def lexical_click(event):
         skip_whitespace()
         nextchr = next_char()
         match key:
-            case 'main':
-                check[nextchr in keyword_delims['state_delim']]()
+            case 'bln': check[nextchr in keyword_delims['data_delim']]()
+            case 'brk': check[nextchr in keyword_delims['jmp_delim']]()
+            case 'chr': check[nextchr in keyword_delims['data_delim']]()
+            case 'const': check[nextchr in alpha]()
+            case 'dec': check[nextchr in keyword_delims['data_delim']]()
+            case 'def': check[nextchr in keyword_delims['def_delim']]()
+            case 'disp': check[nextchr in keyword_delims['state_delim']]()
+            case 'do': check[nextchr in keyword_delims['block_delim']]()
+            case 'elif': check[nextchr in keyword_delims['state_delim']]()
+            case 'else': check[nextchr in keyword_delims['block_delim']]()
+            case 'exit': check[nextchr in keyword_delims['jmp_delim']]()
+            case 'false': check[nextchr in keyword_delims['val_delim']]()
+            case 'for': check[nextchr in keyword_delims['state_delim']]()
+            case 'foreach': check[nextchr in keyword_delims['state_delim']]()
+            case 'if': check[nextchr in keyword_delims['state_delim']]()
+            case 'in': check[nextchr in alpha]()
+            case 'insp': check[nextchr in keyword_delims['state_delim']]()
+            case 'int': check[nextchr in keyword_delims['data_delim']]()
+            case 'bln': check[nextchr in keyword_delims['key_delim']]()
+            case 'main': check[nextchr in keyword_delims['state_delim']]()
+            case 'none': check[nextchr in keyword_delims['val_delim']]()
+            case 'ret': check[nextchr in keyword_delims['key_delim']]()
+            case 'rsm': check[nextchr in keyword_delims['jmp_delim']]()
+            case 'segm': check[nextchr in alpha]()
+            case 'str': check[nextchr in keyword_delims['data_delim']]()
+            case 'strc': check[nextchr in alpha]()
+            case 'switch': check[nextchr in keyword_delims['state_delim']]()
+            case 'true': check[nextchr in keyword_delims['val_delim']]()
+            case 'var': check[nextchr in alpha]()
+            case 'while': check[nextchr in keyword_delims['state_delim']]()
 
 
     while (char := get_char()) is not None:
@@ -192,15 +223,13 @@ def lexical_click(event):
         
         elif char == '"':
             get_string()
-            token.append('str_lit')
 
         elif char == '\'':
             get_character()
-            token.append('chr_lit')
 
         elif char.isdigit():
             num = char
-            while next_char() not in whitespace:
+            while not next_char().isdigit:
                 num += get_char()
             get_num()
 
@@ -210,8 +239,6 @@ def lexical_click(event):
                 key += get_char()
             if key in keywords:
                 check_delim()
-                #lexeme.append(key)
-                #token.append(key)
             else:
                 get_id()
 
@@ -230,7 +257,7 @@ def lexical_click(event):
         table.insert("", "end", values=(lexeme[i], token[i]))   
 
 
-#------------------------Other------------------------
+#----------------------Other Functions------------------------
 
 #clear button
 def on_enter_new(event):
@@ -258,7 +285,7 @@ def on_leave_syntax(event):
     syntaxBtn.config(fg="black")
 
 
-#-------------------------GUI-------------------------
+#----------------------------GUI-----------------------------
 
 #title bar 
 def dark_title_bar(window):
