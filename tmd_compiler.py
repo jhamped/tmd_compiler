@@ -70,6 +70,7 @@ def lexical_click(event):
                 if (len(character) == 3):
                     lexeme.append(character)
                 else:
+                    console.insert(tk.END, "Error: ", "error")
                     console.insert(tk.END, "Character literals must only contain one character\n")
                 break
             else:
@@ -84,12 +85,16 @@ def lexical_click(event):
             lexeme.append(num)
             token.append('dec_lit')
         elif re.match(r'^\d{11,}$', num):
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"{num} exceeds maximum length of 10 digits\n")
         elif re.match(r'^\d+\.\d{8,}+$', num):
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"{num} exceeds maximum length of 7 decimal places\n")
         elif num.isalnum():
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Invalid identifier: {num}\n")
         else:
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Invalid: {num}\n")
 
     def get_id():
@@ -97,8 +102,10 @@ def lexical_click(event):
             lexeme.append(key)
             token.append('id')
         elif len(key) > 30:
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Identifier {key} exceeds maximum length of 30 characters\n")
         else:
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Invalid identifier: {key}\n")
 
 
@@ -154,6 +161,7 @@ def lexical_click(event):
             invalid = "_"
             while next_char() not in whitespace:
                 invalid += get_char()
+            console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Invalid identifier: {invalid}\n")
 
     for i in range(len(lexeme)):
@@ -238,12 +246,13 @@ lexicalBtn.bind("<Enter>", on_enter_lexical)
 lexicalBtn.bind("<Leave>", on_leave_lexical)
 
 #textbox for code
-textFrame = tk.Text(environFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white")
+textFrame = tk.Text(environFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", padx=5)
 textFrame.pack(side="top", fill="both", expand=True)
 
 #console
 console = tk.Text(environFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12))
 console.pack(side="bottom", fill="both")
+console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
 
 # Create a frame for the Treeview on the right
 tableFrame = tk.Frame(window, width=500, bg="#e5e2ed")
@@ -256,11 +265,6 @@ table["show"] = "headings"
 # Define column headings
 table.heading("#1", text="Lexeme")
 table.heading("#2", text="Token")
-
-# Insert data from the arrays
-#for i in range(len(lexeme)):
-#    table.insert("", "end", values=(lexeme[i], token[i]))
-
 table.pack(fill="both", expand=True)
 
 window.mainloop()
