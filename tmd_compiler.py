@@ -59,7 +59,8 @@ keyword1_delims = {
     'val_delim' : [';', ',', ')', '}'],
     'colon_delim' : alphanumeric + unary_operator + ['('],
     'jmp_delim' : [';'],
-    'key_delim' : alphanumeric + ['\'', '"']
+    'key_delim' : alphanumeric + ['\'', '"'],
+    'empty_delim' : ['']
 }
 
 keyword2_delims = {
@@ -218,19 +219,60 @@ def lexical_click(event):
 
         symbol = char 
         nextchr = next_char()
+
+        def check_double(next, a, b):
+            nonlocal symbol, nextchr
+            if nextchr == next:
+                symbol += nextchr
+                get_char()
+                skip_whitespace()
+                nextchr = next_char()
+                check[nextchr in keyword_delims[a]]()
+            else:
+                check[nextchr in keyword_delims[b]]()
+        
+        def check_triple(next, a, next1, b, c):
+            nonlocal symbol, nextchr
+            if nextchr == next:
+                symbol += nextchr
+                get_char()
+                skip_whitespace()
+                nextchr = next_char()
+                check[nextchr in keyword_delims[a]]()
+            elif nextchr == next1:
+                symbol += nextchr
+                get_char()
+                skip_whitespace()
+                nextchr = next_char()
+                check[nextchr in keyword_delims[b]]()
+            else:
+                check[nextchr in keyword_delims[c]]()
+
         match char:
-            case '=':
-                if nextchr == '=':
-                    symbol += nextchr
-                    get_char()
-                    skip_whitespace()
-                    nextchr = next_char()
-                    #print(nextchr)
-                    check[nextchr in keyword_delims['relate_delim']]()
-                else:
-                    check[nextchr in keyword_delims['asn_delim']]() 
+            case '=': check_double('=', 'relate_delim', 'asn_delim') 
+            case '+': check_triple('+', 'unary_delim', '=', 'relate2_delim', 'op_delim')
+            case '-': check_triple('-', 'unary_delim', '=', 'relate2_delim', 'op_delim')
+            case '*': check_double('=', 'relate2_delim', 'op_delim') 
+            case '/': check_double('=', 'relate2_delim', 'op_delim') 
+            case '%': check_double('=', 'relate2_delim', 'op_delim') 
+            case '&': check_double('&', 'relate_delim', 'concat_delim') 
+            case '|': check_double('|', 'relate_delim', 'empty_delim') 
+            case '!': check_double('=', 'relate_delim', 'relate_delim')
+            case '<': check_triple('<', 'var_delim', '=', 'relate1_delim', 'relate2_delim')
+            case '>': check_triple('>', 'var1_delim', '=', 'relate1_delim', 'relate2_delim')
+            case '[': check[nextchr in keyword_delims['bracket_delim']]()
+            case ']': check[nextchr in keyword_delims['bracket1_delim']]()
+            case '{': check[nextchr in keyword_delims['brace_delim']]()
+            case '}': check[nextchr in keyword_delims['brace1_delim']]()
+            case '[': check[nextchr in keyword_delims['bracket_delim']]()
+            case '(': check[nextchr in keyword_delims['paren_delim']]()
+            case ')': check[nextchr in keyword_delims['paren1_delim']]()
+            case ',': check[nextchr in keyword_delims['comma_delim']]()
+            case ';': check[nextchr in keyword_delims['semicolon_delim']]()
+            case ':': check[nextchr in keyword_delims['colon_delim']]()
+            case '#': check[nextchr in keyword_delims['interpol_delim']]()
 
-
+        
     while (char := get_char()) is not None:
         skip_whitespace()  
 
@@ -265,8 +307,6 @@ def lexical_click(event):
 
         elif char in reg_symbols:
             check_symbol_delim()
-            #lexeme.append(char)
-            #token.append(char)
 
         elif char == '_':
             invalid = "_"
@@ -324,7 +364,7 @@ def dark_title_bar(window):
 # Create the main window
 window = tk.Tk()
 window.title("TMD Compiler")
-icon = PhotoImage(file="LexicalAnalyzer\TMD_logo.png")
+icon = PhotoImage(file="LexicalAnalyzer\TMD_Logo.png")
 window.iconphoto(False, icon)
 window.wm_state('zoomed')
 dark_title_bar(window)
