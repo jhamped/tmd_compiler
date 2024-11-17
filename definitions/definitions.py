@@ -1,0 +1,67 @@
+import string
+
+arithmetic_operator = ['+', '-', '*', '/', '%']
+relational_operator = ['==', '!=', '<', '<=', '>', '>=']
+logical_operator = ['&&', '||', '!']
+unary_operator = ['++', '--']
+assignment_operator = ['=', '+=', '-=', '*=', '/=', '%=']
+number_operator = arithmetic_operator + relational_operator + logical_operator + unary_operator
+all_operators = number_operator + assignment_operator
+
+symbols = ['!', '#', '%', '&', '*', '(', ')', '-', '=', '+', '[', ']', '{', '}', ':', ';', ',', '<', '>', '.', '/', '~', '|']
+more_symbols = ['@', '$', '^', '_', '?']
+punc_symbols = more_symbols + symbols
+quote_symbols = ['\'', '"']
+
+alpha = list(string.ascii_letters)
+alphanumeric = list(string.ascii_letters + string.digits)
+ascii_def = alphanumeric + punc_symbols + quote_symbols
+
+# Regular expression
+keywords = ['strc', 'segm', 'main', 'bln', 'chr', 'int', 'dec', 'str', 'var', 'const', 'true', 'false', 'disp', 'insp', 'if', 
+            'elif', 'else', 'switch', 'key', 'def', 'for', 'foreach', 'in', 'do', 'while', 'brk', 'rsm', 'exit', 'ret', 'none']
+reg_symbols =  number_operator + assignment_operator + symbols
+
+whitespace = [' ', '\t', '\n']
+
+# Delimiters
+key1_delims = {
+    'state_delim' : ['('], 
+    'block_delim' : ['{'],
+    'def_delim' : [':'],
+    'comma_delim' : [']', '(', '{', '"', '\''] + alphanumeric + unary_operator,
+    'iden_delim' : all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '.', ','],
+    'lit_delim' : [';', ',', '&'],
+    'op_delim' : alphanumeric + ['(', '~'],
+    'unary_delim' : alphanumeric + ['(', ')', ';', ',', '~'],
+    'relate2_delim' : alphanumeric + ['(', '~'],
+    'paren_delim' : alphanumeric + unary_operator + [';', '!', '#', '\'', '"', '(', ')'],
+    'paren1_delim' : arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';'],
+    'brace_delim' : alphanumeric + unary_operator + [';', '(', '\'', '"', '{', '}'],
+    'semicolon_delim' : alphanumeric + unary_operator + whitespace + ['(', '}', None],
+    'bracket_delim' : alphanumeric + unary_operator + [']', ','],
+    'bracket1_delim' : number_operator + [')', '=', ';', '&', '>'],
+    'var_delim' : alpha + unary_operator + ['('],
+    'var1_delim' : ascii_def,
+    'concat_delim' : alpha + ['(', '"', '\'', '#'],
+    'interpol_delim' : ['"'],
+    'data_delim' : alpha + ['[', '('],
+    'val_delim' : [';', ',', ')', '}'],
+    'colon_delim' : alphanumeric + unary_operator + ['('],
+    'jmp_delim' : [';'],
+    'key_delim' : alphanumeric + ['\'', '"'],
+    'empty_delim' : ['']
+}
+
+key2_delims = {
+    'num_delim' : number_operator + key1_delims['comma_delim'],
+    'relate_delim' : key1_delims['op_delim'] + ['!', '\'', '"', '~'],
+    'relate1_delim' : key1_delims['relate2_delim'] + ['!'],
+    'brace1_delim' : key1_delims['semicolon_delim'] + unary_operator + ['(', '}', ';', ','],
+}
+
+key3_delims = {
+    'asn_delim' : key2_delims['relate_delim'] + ['(', '{']
+}
+
+key_delims = key1_delims | key2_delims | key3_delims
