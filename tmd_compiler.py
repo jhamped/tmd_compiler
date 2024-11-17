@@ -35,7 +35,7 @@ reg_symbols =  number_operator + assignment_operator + symbols
 whitespace = {' ', '\t', '\n'}
 
 # Delimiters
-keyword1_delims = {
+key1_delims = {
     'state_delim' : ['('], 
     'block_delim' : ['{'],
     'def_delim' : [':'],
@@ -63,18 +63,18 @@ keyword1_delims = {
     'empty_delim' : ['']
 }
 
-keyword2_delims = {
-    'num_delim' : number_operator + keyword1_delims['comma_delim'],
-    'relate_delim' : keyword1_delims['op_delim'] + ['!', '\'', '"', '~'],
-    'relate1_delim' : keyword1_delims['relate2_delim'] + ['!'],
-    'brace1_delim' : keyword1_delims['semicolon_delim'] + unary_operator + ['(', '}', ';', ','],
+key2_delims = {
+    'num_delim' : number_operator + key1_delims['comma_delim'],
+    'relate_delim' : key1_delims['op_delim'] + ['!', '\'', '"', '~'],
+    'relate1_delim' : key1_delims['relate2_delim'] + ['!'],
+    'brace1_delim' : key1_delims['semicolon_delim'] + unary_operator + ['(', '}', ';', ','],
 }
 
-keyword3_delims = {
-    'asn_delim' : keyword2_delims['relate_delim'] + ['(', '{']
+key3_delims = {
+    'asn_delim' : key2_delims['relate_delim'] + ['(', '{']
 }
 
-keyword_delims = keyword1_delims | keyword2_delims | keyword3_delims
+key_delims = key1_delims | key2_delims | key3_delims
 
 #--------------------Analyzers-------------------------
 
@@ -180,36 +180,36 @@ def lexical_click(event):
         skip_whitespace()
         nextchr = next_char()
         match key:
-            case 'bln': check[nextchr in keyword_delims['data_delim']]()
-            case 'brk': check[nextchr in keyword_delims['jmp_delim']]()
-            case 'chr': check[nextchr in keyword_delims['data_delim']]()
+            case 'bln': check[nextchr in key_delims['data_delim']]()
+            case 'brk': check[nextchr in key_delims['jmp_delim']]()
+            case 'chr': check[nextchr in key_delims['data_delim']]()
             case 'const': check[nextchr in alpha]()
-            case 'dec': check[nextchr in keyword_delims['data_delim']]()
-            case 'def': check[nextchr in keyword_delims['def_delim']]()
-            case 'disp': check[nextchr in keyword_delims['state_delim']]()
-            case 'do': check[nextchr in keyword_delims['block_delim']]()
-            case 'elif': check[nextchr in keyword_delims['state_delim']]()
-            case 'else': check[nextchr in keyword_delims['block_delim']]()
-            case 'exit': check[nextchr in keyword_delims['jmp_delim']]()
-            case 'false': check[nextchr in keyword_delims['val_delim']]()
-            case 'for': check[nextchr in keyword_delims['state_delim']]()
-            case 'foreach': check[nextchr in keyword_delims['state_delim']]()
-            case 'if': check[nextchr in keyword_delims['state_delim']]()
+            case 'dec': check[nextchr in key_delims['data_delim']]()
+            case 'def': check[nextchr in key_delims['def_delim']]()
+            case 'disp': check[nextchr in key_delims['state_delim']]()
+            case 'do': check[nextchr in key_delims['block_delim']]()
+            case 'elif': check[nextchr in key_delims['state_delim']]()
+            case 'else': check[nextchr in key_delims['block_delim']]()
+            case 'exit': check[nextchr in key_delims['jmp_delim']]()
+            case 'false': check[nextchr in key_delims['val_delim']]()
+            case 'for': check[nextchr in key_delims['state_delim']]()
+            case 'foreach': check[nextchr in key_delims['state_delim']]()
+            case 'if': check[nextchr in key_delims['state_delim']]()
             case 'in': check[nextchr in alpha]()
-            case 'insp': check[nextchr in keyword_delims['state_delim']]()
-            case 'int': check[nextchr in keyword_delims['data_delim']]()
-            case 'bln': check[nextchr in keyword_delims['key_delim']]()
-            case 'main': check[nextchr in keyword_delims['state_delim']]()
-            case 'none': check[nextchr in keyword_delims['val_delim']]()
-            case 'ret': check[nextchr in keyword_delims['key_delim']]()
-            case 'rsm': check[nextchr in keyword_delims['jmp_delim']]()
+            case 'insp': check[nextchr in key_delims['state_delim']]()
+            case 'int': check[nextchr in key_delims['data_delim']]()
+            case 'bln': check[nextchr in key_delims['key_delim']]()
+            case 'main': check[nextchr in key_delims['state_delim']]()
+            case 'none': check[nextchr in key_delims['val_delim']]()
+            case 'ret': check[nextchr in key_delims['key_delim']]()
+            case 'rsm': check[nextchr in key_delims['jmp_delim']]()
             case 'segm': check[nextchr in alpha]()
-            case 'str': check[nextchr in keyword_delims['data_delim']]()
+            case 'str': check[nextchr in key_delims['data_delim']]()
             case 'strc': check[nextchr in alpha]()
-            case 'switch': check[nextchr in keyword_delims['state_delim']]()
-            case 'true': check[nextchr in keyword_delims['val_delim']]()
+            case 'switch': check[nextchr in key_delims['state_delim']]()
+            case 'true': check[nextchr in key_delims['val_delim']]()
             case 'var': check[nextchr in alpha]()
-            case 'while': check[nextchr in keyword_delims['state_delim']]()
+            case 'while': check[nextchr in key_delims['state_delim']]()
 
     def check_symbol_delim():
         check = {
@@ -232,20 +232,20 @@ def lexical_click(event):
             nonlocal symbol, nextchr
             if nextchr == next:
                 get_next()
-                check[nextchr in keyword_delims[a]]()
+                check[nextchr in key_delims[a]]()
             else:
-                check[nextchr in keyword_delims[b]]()
+                check[nextchr in key_delims[b]]()
         
         def check_triple(next, a, next1, b, c):
             nonlocal symbol, nextchr
             if nextchr == next:
                 get_next()
-                check[nextchr in keyword_delims[a]]()
+                check[nextchr in key_delims[a]]()
             elif nextchr == next1:
                 get_next()
-                check[nextchr in keyword_delims[b]]()
+                check[nextchr in key_delims[b]]()
             else:
-                check[nextchr in keyword_delims[c]]()
+                check[nextchr in key_delims[c]]()
 
         match char:
             case '=': check_double('=', 'relate_delim', 'asn_delim') 
@@ -258,21 +258,21 @@ def lexical_click(event):
             case '!': check_double('=', 'relate_delim', 'relate_delim')
             case '<': check_triple('<', 'var_delim', '=', 'relate1_delim', 'relate2_delim')
             case '>': check_triple('>', 'var1_delim', '=', 'relate1_delim', 'relate2_delim')
-            case '[': check[nextchr in keyword_delims['bracket_delim']]()
-            case ']': check[nextchr in keyword_delims['bracket1_delim']]()
-            case '{': check[nextchr in keyword_delims['brace_delim']]()
-            case '}': check[nextchr in keyword_delims['brace1_delim']]()
-            case '[': check[nextchr in keyword_delims['bracket_delim']]()
-            case '(': check[nextchr in keyword_delims['paren_delim']]()
-            case ')': check[nextchr in keyword_delims['paren1_delim']]()
-            case ',': check[nextchr in keyword_delims['comma_delim']]()
-            case ';': check[nextchr in keyword_delims['semicolon_delim']]()
-            case ':': check[nextchr in keyword_delims['colon_delim']]()
-            case '#': check[nextchr in keyword_delims['interpol_delim']]()
+            case '[': check[nextchr in key_delims['bracket_delim']]()
+            case ']': check[nextchr in key_delims['bracket1_delim']]()
+            case '{': check[nextchr in key_delims['brace_delim']]()
+            case '}': check[nextchr in key_delims['brace1_delim']]()
+            case '[': check[nextchr in key_delims['bracket_delim']]()
+            case '(': check[nextchr in key_delims['paren_delim']]()
+            case ')': check[nextchr in key_delims['paren1_delim']]()
+            case ',': check[nextchr in key_delims['comma_delim']]()
+            case ';': check[nextchr in key_delims['semicolon_delim']]()
+            case ':': check[nextchr in key_delims['colon_delim']]()
+            case '#': check[nextchr in key_delims['interpol_delim']]()
             case '|': 
                 if nextchr == '|':
                     get_next
-                    check[nextchr in keyword_delims['relate_delim']]()
+                    check[nextchr in key_delims['relate_delim']]()
                 else:
                     console.insert(tk.END, "Error: ", "error")
                     console.insert(tk.END, f"{symbol} => wrong symbol\n")
@@ -366,7 +366,7 @@ def dark_title_bar(window):
     value = ct.c_int(value)
     set_window_attribute(hwnd, rendering_policy, ct.byref(value), ct.sizeof(value))
 
-# Create the main window
+#main window
 window = tk.Tk()
 window.title("TMD Compiler")
 icon = PhotoImage(file="LexicalAnalyzer/TMD_Logo.png")
@@ -412,22 +412,15 @@ console = tk.Text(environFrame, bg="#202020", height=15, fg="white", font=("Cons
 console.pack(side="bottom", fill="both")
 console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
 
-# Create a frame for the Treeview on the right
+#right panel
 tableFrame = tk.Frame(window, width=500, bg="#e5e2ed")
 tableFrame.pack(side="right", fill="both")
 
-# Create a Treeview for the table
+#table
 table = ttk.Treeview(tableFrame, columns=("Lexeme", "Token"))
 table["show"] = "headings"
-
-# Define column headings
 table.heading("#1", text="Lexeme")
 table.heading("#2", text="Token")
 table.pack(fill="both", expand=True)
 
 window.mainloop()
-
-
-
-
-
