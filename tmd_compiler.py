@@ -9,27 +9,27 @@ lexeme = []
 token = []
 
 #------------------------Definitions-------------------------
-arithmetic_operator = {'+', '-', '*', '/', '%'}
-relational_operator = {'==', '!=', '<', '<=', '>', '>='}
-logical_operator = {'&&', '||', '!'}
-unary_operator = {'++', '--'}
-assignment_operator = {'=', '+=', '-=', '*=', '/=', '%='}
-number_operator = arithmetic_operator | relational_operator | logical_operator | unary_operator
-all_operators = number_operator | assignment_operator
+arithmetic_operator = ['+', '-', '*', '/', '%']
+relational_operator = ['==', '!=', '<', '<=', '>', '>=']
+logical_operator = ['&&', '||', '!']
+unary_operator = ['++', '--']
+assignment_operator = ['=', '+=', '-=', '*=', '/=', '%=']
+number_operator = arithmetic_operator + relational_operator + logical_operator + unary_operator
+all_operators = number_operator + assignment_operator
 
-symbols = {'!', '#', '%', '&', '*', '(', ')', '-', '=', '+', '[', ']', '{', '}', ':', ';', ',', '<', '>', '.', '/', '~'}
-more_symbols = {'@', '$', '^', '_', '|', '?'}
-punc_symbols = more_symbols | symbols
-quote_symbols = {'\'', '"'}
+symbols = ['!', '#', '%', '&', '*', '(', ')', '-', '=', '+', '[', ']', '{', '}', ':', ';', ',', '<', '>', '.', '/', '~']
+more_symbols = ['@', '$', '^', '_', '|', '?']
+punc_symbols = more_symbols + symbols
+quote_symbols = ['\'', '"']
 
-alpha = set(string.ascii_letters)
-alphanumeric = set(string.ascii_letters + string.digits)
-ascii_def = alphanumeric | punc_symbols | quote_symbols
+alpha = list(string.ascii_letters)
+alphanumeric = list(string.ascii_letters + string.digits)
+ascii_def = alphanumeric + punc_symbols + quote_symbols
 
 # Regular expression
-keywords = {'strc', 'segm', 'main', 'bln', 'chr', 'int', 'dec', 'str', 'var', 'const', 'true', 'false', 'disp', 'insp', 'if', 
-            'elif', 'else', 'switch', 'key', 'def', 'for', 'foreach', 'in', 'do', 'while', 'brk', 'rsm', 'exit', 'ret'}
-reg_symbols =  number_operator | assignment_operator | symbols
+keywords = ['strc', 'segm', 'main', 'bln', 'chr', 'int', 'dec', 'str', 'var', 'const', 'true', 'false', 'disp', 'insp', 'if', 
+            'elif', 'else', 'switch', 'key', 'def', 'for', 'foreach', 'in', 'do', 'while', 'brk', 'rsm', 'exit', 'ret']
+reg_symbols =  number_operator + assignment_operator + symbols
 
 whitespace = {' ', '\t', '\n'}
 
@@ -38,40 +38,40 @@ keyword1_delims = {
     'state_delim' : ['('], 
     'block_delim' : ['{'],
     'def_delim' : [':'],
-    'comma_delim' : [']', '(', '{', '"', '\'', alphanumeric, unary_operator],
-    'iden_delim' : [all_operators, ';', '&', '>', '(', ')', '[', ']', '{', '.', ','],
+    'comma_delim' : [']', '(', '{', '"', '\''] + alphanumeric + unary_operator,
+    'iden_delim' : all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '.', ','],
     'lit_delim' : [';', ',', '&'],
-    'op_delim' : [alphanumeric, '(', '~'],
-    'unary_delim' : [alphanumeric, '(', ')', ';', ',', '~'],
-    'relate2_delim' : [alphanumeric, '(', '~'],
-    'paren_delim' : [alphanumeric, unary_operator, ';', '!', '#', '\'', '"', '(', ')'],
-    'paren1_delim' : [arithmetic_operator, relational_operator, '&', '|', '{', ')', ';'],
-    'brace_delim' : [alphanumeric, unary_operator, ';', '(', '\'', '"', '{', '}'],
-    'semicolon_delim' : [alphanumeric, unary_operator, '(', '}'],
-    'bracket_delim' : [alphanumeric, unary_operator, ']', ','],
-    'bracket1_delim' : [number_operator, ')', '=', ';', '&', '>'],
-    'var_delim' : [alpha, unary_operator, '('],
-    'var1_delim' : [ascii_def],
-    'concat_delim' : [alpha, '(', '"', '\'', '#'],
+    'op_delim' : alphanumeric + ['(', '~'],
+    'unary_delim' : alphanumeric + ['(', ')', ';', ',', '~'],
+    'relate2_delim' : alphanumeric + ['(', '~'],
+    'paren_delim' : alphanumeric + unary_operator + [';', '!', '#', '\'', '"', '(', ')'],
+    'paren1_delim' : arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';'],
+    'brace_delim' : alphanumeric + unary_operator + [';', '(', '\'', '"', '{', '}'],
+    'semicolon_delim' : alphanumeric + unary_operator + ['(', '}'],
+    'bracket_delim' : alphanumeric + unary_operator + [']', ','],
+    'bracket1_delim' : number_operator + [')', '=', ';', '&', '>'],
+    'var_delim' : alpha + unary_operator + ['('],
+    'var1_delim' : ascii_def,
+    'concat_delim' : alpha + ['(', '"', '\'', '#'],
     'interpol_delim' : ['"'],
-    'data_delim' : list(alpha) + ['[', '('],
+    'data_delim' : alpha + ['[', '('],
     'val_delim' : [';', ',', ')', '}'],
-    'colon_delim' : [alphanumeric, unary_operator, '('],
+    'colon_delim' : alphanumeric + unary_operator + ['('],
     'jmp_delim' : [';'],
 }
 
 keyword2_delims = {
-    'num_delim' : [number_operator, keyword1_delims['comma_delim']],
-    'relate_delim' : [keyword1_delims['op_delim'], '!', '\'', '"', '~'],
-    'relate1_delim' : [keyword1_delims['relate2_delim'], '!'],
-    'brace1_delim' : [keyword1_delims['semicolon_delim'], unary_operator, '(', '}', ';', ','],
+    'num_delim' : number_operator + keyword1_delims['comma_delim'],
+    'relate_delim' : keyword1_delims['op_delim'] + ['!', '\'', '"', '~'],
+    'relate1_delim' : keyword1_delims['relate2_delim'] + ['!'],
+    'brace1_delim' : keyword1_delims['semicolon_delim'] + unary_operator + ['(', '}', ';', ','],
 }
 
 keyword3_delims = {
-    'asn_delim' : [keyword2_delims['relate_delim'], '(', '{']
+    'asn_delim' : keyword2_delims['relate_delim'] + ['(', '{']
 }
 
-keyword_delims = keyword1_delims | keyword2_delims | keyword3_delims
+keyword_delims = keyword1_delims + keyword2_delims + keyword3_delims
 
 #--------------------Analyzers-------------------------
 
@@ -165,6 +165,18 @@ def lexical_click(event):
         else:
             console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Invalid identifier: {key}\n")
+    
+    def check_delim():
+        check = {
+            True: lambda: (lexeme.append(key), token.append(key)),
+            False: lambda: (console.insert(tk.END, "Error: ", "error"), console.insert(tk.END, f"{key} => wrong delimiter\n"))
+        }
+        
+        skip_whitespace()
+        nextchr = next_char()
+        match key:
+            case 'main':
+                check[nextchr in keyword_delims['state_delim']]()
 
 
     while (char := get_char()) is not None:
@@ -197,24 +209,9 @@ def lexical_click(event):
             while (next := next_char()) and (next.isalnum() or next == '_'):
                 key += get_char()
             if key in keywords:
-                skip_whitespace()
-                nextchr = next_char()
-                if key == 'main':
-                    if nextchr in keyword_delims['state_delim']:
-                        lexeme.append(key)
-                        token.append(key)
-                        continue
-                    else:
-                        console.insert(tk.END, "wrong delimiter\n")
-                elif key == 'bln':
-                    if nextchr in keyword_delims['data_delim']:
-                        lexeme.append(key)
-                        token.append(key)
-                        continue
-                    else:
-                        console.insert(tk.END, "wrong delimiter\n")
-                lexeme.append(key)
-                token.append(key)
+                check_delim()
+                #lexeme.append(key)
+                #token.append(key)
             else:
                 get_id()
 
