@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import PhotoImage
 import ctypes as ct
 import re
 import string
@@ -17,8 +18,8 @@ assignment_operator = ['=', '+=', '-=', '*=', '/=', '%=']
 number_operator = arithmetic_operator + relational_operator + logical_operator + unary_operator
 all_operators = number_operator + assignment_operator
 
-symbols = ['!', '#', '%', '&', '*', '(', ')', '-', '=', '+', '[', ']', '{', '}', ':', ';', ',', '<', '>', '.', '/', '~']
-more_symbols = ['@', '$', '^', '_', '|', '?']
+symbols = ['!', '#', '%', '&', '*', '(', ')', '-', '=', '+', '[', ']', '{', '}', ':', ';', ',', '<', '>', '.', '/', '~', '|']
+more_symbols = ['@', '$', '^', '_', '?']
 punc_symbols = more_symbols + symbols
 quote_symbols = ['\'', '"']
 
@@ -169,7 +170,7 @@ def lexical_click(event):
             console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Invalid identifier: {key}\n")
     
-    def check_delim():
+    def check_keyword_delim():
         check = {
             True: lambda: (lexeme.append(key), token.append(key)),
             False: lambda: (console.insert(tk.END, "Error: ", "error"), console.insert(tk.END, f"{key} => wrong delimiter\n"))
@@ -209,6 +210,26 @@ def lexical_click(event):
             case 'var': check[nextchr in alpha]()
             case 'while': check[nextchr in keyword_delims['state_delim']]()
 
+    def check_symbol_delim():
+        check = {
+            True: lambda: (lexeme.append(symbol), token.append(symbol)),
+            False: lambda: (console.insert(tk.END, "Error: ", "error"), console.insert(tk.END, f"{symbol} => wrong delimiter\n"))
+        }
+
+        symbol = char 
+        nextchr = next_char()
+        match char:
+            case '=':
+                if nextchr == '=':
+                    symbol += nextchr
+                    get_char()
+                    skip_whitespace()
+                    nextchr = next_char()
+                    #print(nextchr)
+                    check[nextchr in keyword_delims['relate_delim']]()
+                else:
+                    check[nextchr in keyword_delims['asn_delim']]() 
+
 
     while (char := get_char()) is not None:
         skip_whitespace()  
@@ -238,13 +259,14 @@ def lexical_click(event):
             while (next := next_char()) and (next.isalnum() or next == '_'):
                 key += get_char()
             if key in keywords:
-                check_delim()
+                check_keyword_delim()
             else:
                 get_id()
 
         elif char in reg_symbols:
-            lexeme.append(char)
-            token.append(char)
+            check_symbol_delim()
+            #lexeme.append(char)
+            #token.append(char)
 
         elif char == '_':
             invalid = "_"
@@ -302,6 +324,8 @@ def dark_title_bar(window):
 # Create the main window
 window = tk.Tk()
 window.title("TMD Compiler")
+icon = PhotoImage(file="LexicalAnalyzer\TMD_logo.png")
+window.iconphoto(False, icon)
 window.wm_state('zoomed')
 dark_title_bar(window)
 
