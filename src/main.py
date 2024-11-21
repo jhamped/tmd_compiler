@@ -39,16 +39,10 @@ def on_enter_lexical(event):
 def on_leave_lexical(event):
     lexicalBtn.config(fg="black")
 
-#syntax button
-def on_enter_syntax(event):
-    syntaxBtn.config(fg="white")
-def on_leave_syntax(event):
-    syntaxBtn.config(fg="black")
-
 #main window
 window = tk.Tk()
 window.title("TMD Compiler")
-icon = PhotoImage(file="LexicalAnalyzer/TMD_Logo.png")
+icon = PhotoImage(file="TMD_Compiler/TMD_Logo.png")
 window.iconphoto(False, icon)
 window.wm_state('zoomed')
 dark_title_bar(window)
@@ -67,13 +61,6 @@ clrBtn.pack(side="left", pady=5, padx=(15, 0))
 clrBtn.bind("<Button-1>", clear_click)
 clrBtn.bind("<Enter>", on_enter_new)
 clrBtn.bind("<Leave>", on_leave_new)
-
-#syntax button
-syntaxBtn = tk.Label(navFrame, text="Syntax", font=("Helvetica", 11, "bold"), bg="#a6b3f1", borderwidth=1, relief="solid", width=10)
-syntaxBtn.pack(side="right", pady=5, padx=(0, 10))
-syntaxBtn.bind("<Button-1>", lexical_click)
-syntaxBtn.bind("<Enter>", on_enter_syntax)
-syntaxBtn.bind("<Leave>", on_leave_syntax)
 
 #lexical button
 lexicalBtn = tk.Label(navFrame, text="Lexical", font=("Helvetica", 11, "bold"), bg="#a6b3f1", borderwidth=1, relief="solid", width=10)
