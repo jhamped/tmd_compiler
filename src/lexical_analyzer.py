@@ -7,13 +7,15 @@ token = []
 
 def lexer(code, console, table):
     pos = 0
-    #code = textFrame.get("1.0", "end")
+    col = 0
+    line = 1
 
     def get_char():  
-        nonlocal pos
+        nonlocal pos, col
         if pos < len(code):
             curr = code[pos]
             pos += 1
+            col += 1
             return curr
         return None 
     
@@ -26,6 +28,10 @@ def lexer(code, console, table):
         while(char := next_char()) in whitespace:
             get_char()
 
+    def skip_space():  
+        while(char := next_char()) in ['\t', '_']:
+            get_char()
+
     def skip_single_comment():  
         while(char := get_char()) not in ['\n', None]:
             pass
@@ -36,6 +42,11 @@ def lexer(code, console, table):
             if char == '*' and next_char() == '/':
                 get_char() 
                 break
+
+    def new_line():
+        nonlocal col, line
+        col = 0
+        line += 1
 
     def get_string():
         string = "\""
@@ -91,6 +102,8 @@ def lexer(code, console, table):
         if re.match(r'[a-zA-Z0-9_]{1,30}$', key):
             lexeme.append(key)
             token.append('id')
+            console.insert(tk.END, f"{line}\n")
+            console.insert(tk.END, (col-(len(key)-1)))
         elif len(key) > 30:
             console.insert(tk.END, "Error: ", "error")
             console.insert(tk.END, f"Identifier {key} exceeds maximum length of 30 characters\n")
@@ -101,7 +114,8 @@ def lexer(code, console, table):
     def check_keyword_delim():
         check = {
             True: lambda: (lexeme.append(key), token.append(key)),
-            False: lambda: (console.insert(tk.END, "Error: ", "error"), console.insert(tk.END, f"{key} => wrong delimiter\n"))
+            False: lambda: (lexeme.append(key), token.append(key), console.insert(tk.END, "Error: ", "error"), 
+                            console.insert(tk.END, f"{key} => wrong delimiter\n"))
         }
         
         skip_whitespace()
@@ -141,7 +155,8 @@ def lexer(code, console, table):
     def check_symbol_delim():
         check = {
             True: lambda: (lexeme.append(symbol), token.append(symbol)),
-            False: lambda: (console.insert(tk.END, "Error: ", "error"), console.insert(tk.END, f"{symbol} => wrong delimiter\n"))
+            False: lambda: (lexeme.append(symbol), token.append(symbol), console.insert(tk.END, "Error: ", "error"), 
+                            console.insert(tk.END, f"{symbol} => wrong delimiter\n"))
         }
 
         symbol = char 
@@ -206,7 +221,7 @@ def lexer(code, console, table):
 
             
     while (char := get_char()) is not None:
-        skip_whitespace()  
+        skip_space()  
 
         if char == '/' and next_char() == '/':
             get_char() 
@@ -215,6 +230,9 @@ def lexer(code, console, table):
         elif char == '/' and next_char() == '*':
             get_char() 
             skip_multi_comment()
+
+        elif char == '\n':
+            new_line()
         
         elif char == '"':
             get_string()
@@ -249,3 +267,5 @@ def lexer(code, console, table):
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
+
+    
