@@ -48,6 +48,11 @@ def lexer(code, console, table):
         col = 0
         line += 1
 
+    def error_message(error):
+        console.insert(tk.END, "Error: ", "error")
+        console.insert(tk.END, f"{error}\n")
+        console.insert(tk.END, f"       line {line}, column {col-(len(key)-1)}\n", "ln_col")
+
     def get_string():
         string = "\""
         while True:
@@ -71,8 +76,7 @@ def lexer(code, console, table):
                     lexeme.append(character)
                     token.append('chr_lit')
                 else:
-                    console.insert(tk.END, "Error: ", "error")
-                    console.insert(tk.END, "Character literals must only contain one character\n")
+                    error_message("Character literals must only contain one character")
                 break
             else:
                 character += char
@@ -86,36 +90,25 @@ def lexer(code, console, table):
             lexeme.append(num)
             token.append('dec_lit')
         elif re.match(r'^\d{11,}$', num):
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"{num} exceeds maximum length of 10 digits\n")
+            error_message(f"{num} exceeds maximum length of 10 digits")
         elif re.match(r'^\d+\.\d{8,}+$', num):
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"{num} exceeds maximum length of 7 decimal places\n")
-        elif num.isalnum():
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"Invalid identifier: {num}\n")
+            error_message(f"{num} exceeds maximum length of 7 decimal places")
         else:
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"Invalid: {num}\n")
+            error_message(f"Invalid: {num}")
 
     def get_id():
         if re.match(r'[a-zA-Z0-9_]{1,30}$', key):
             lexeme.append(key)
             token.append('id')
-            console.insert(tk.END, f"{line}\n")
-            console.insert(tk.END, (col-(len(key)-1)))
         elif len(key) > 30:
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"Identifier {key} exceeds maximum length of 30 characters\n")
+            error_message(f"Identifier {key} exceeds maximum length of 30 characters")
         else:
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"Invalid identifier: {key}\n")
+            error_message(f"Invalid identifier: {key}")
     
     def check_keyword_delim():
         check = {
             True: lambda: (lexeme.append(key), token.append(key)),
-            False: lambda: (lexeme.append(key), token.append(key), console.insert(tk.END, "Error: ", "error"), 
-                            console.insert(tk.END, f"{key} => wrong delimiter\n"))
+            False: lambda: (lexeme.append(key), token.append(key), error_message(f"{key} => wrong delimiter"))
         }
         
         skip_whitespace()
@@ -155,8 +148,7 @@ def lexer(code, console, table):
     def check_symbol_delim():
         check = {
             True: lambda: (lexeme.append(symbol), token.append(symbol)),
-            False: lambda: (lexeme.append(symbol), token.append(symbol), console.insert(tk.END, "Error: ", "error"), 
-                            console.insert(tk.END, f"{symbol} => wrong delimiter\n"))
+            False: lambda: (lexeme.append(symbol), token.append(symbol), error_message(f"{symbol} => wrong delimiter"))
         }
 
         symbol = char 
@@ -216,8 +208,7 @@ def lexer(code, console, table):
                     get_next
                     check[nextchr in key_delims['relate_delim']]()
                 else:
-                    console.insert(tk.END, "Error: ", "error")
-                    console.insert(tk.END, f"{symbol} => wrong symbol\n")
+                    error_message(f"{symbol} => wrong symbol")
 
             
     while (char := get_char()) is not None:
@@ -242,13 +233,16 @@ def lexer(code, console, table):
 
         elif char.isdigit():
             num = char
-            while not next_char().isdigit:
+            while next_char() not in whitespace:
                 num += get_char()
-            get_num()
+            if num.isdigit() or '.' in num:
+                get_num()
+            else:
+                error_message(f"Invalid identifier: {num}")
 
         elif char.isalpha():
             key = char
-            while (next := next_char()) and (next.isalnum() or next == '_'):
+            while (next := next_char()) and next not in whitespace:
                 key += get_char()
             if key in keywords:
                 check_keyword_delim()
@@ -262,8 +256,7 @@ def lexer(code, console, table):
             invalid = "_"
             while next_char() not in whitespace:
                 invalid += get_char()
-            console.insert(tk.END, "Error: ", "error")
-            console.insert(tk.END, f"Invalid identifier: {invalid}\n")
+            error_message(f"Invalid identifier: {invalid}")
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
