@@ -26,10 +26,8 @@ def lexer(code, console, table):
     
     def skip_whitespace():  
         while(char := next_char()) in whitespace:
-            get_char()
-
-    def skip_space():  
-        while(char := next_char()) in ['\t', '_']:
+            if char == "\n":
+                new_line()
             get_char()
 
     def skip_single_comment():  
@@ -48,10 +46,12 @@ def lexer(code, console, table):
         col = 0
         line += 1
 
-    def error_message(error):
+    def error_message(error, error_key):
+        nonlocal line, col
         console.insert(tk.END, "Error: ", "error")
         console.insert(tk.END, f"{error}\n")
-        console.insert(tk.END, f"       line {line}, column {col-(len(key)-1)}\n", "ln_col")
+        print(col)
+        console.insert(tk.END, f"       line {line}, column {col-(len(error_key)-1)}\n", "ln_col")
 
     def get_string():
         string = "\""
@@ -67,48 +67,48 @@ def lexer(code, console, table):
                 continue
 
     def get_character():
-        character = "'"
+        key = "'"
         while True:
             char = get_char()
             if char == '\'':
-                character += char
-                if (len(character) == 3):
-                    lexeme.append(character)
+                key += char
+                if (len(key) == 3):
+                    lexeme.append(key)
                     token.append('chr_lit')
                 else:
-                    error_message("Character literals must only contain one character")
+                    error_message("Character literals must only contain one character", key)
                 break
             else:
-                character += char
+                key += char
                 continue
                 
     def get_num():
-        if re.match(r'^\d{1,10}$', num):
-            lexeme.append(num)
+        if re.match(r'^\d{1,10}$', key):
+            lexeme.append(key)
             token.append('int_lit')
-        elif re.match(r'^\d{1,10}+\.\d{1,7}+$', num):
-            lexeme.append(num)
+        elif re.match(r'^\d{1,10}+\.\d{1,7}+$', key):
+            lexeme.append(key)
             token.append('dec_lit')
-        elif re.match(r'^\d{11,}$', num):
-            error_message(f"{num} exceeds maximum length of 10 digits")
-        elif re.match(r'^\d+\.\d{8,}+$', num):
-            error_message(f"{num} exceeds maximum length of 7 decimal places")
+        elif re.match(r'^\d{11,}$', key):
+            error_message(f"{key} exceeds maximum length of 10 digits", key)
+        elif re.match(r'^\d+\.\d{8,}+$', key):
+            error_message(f"{key} exceeds maximum length of 7 decimal places", key)
         else:
-            error_message(f"Invalid: {num}")
+            error_message(f"Invalid: {key}", key)
 
     def get_id():
         if re.match(r'[a-zA-Z0-9_]{1,30}$', key):
             lexeme.append(key)
             token.append('id')
         elif len(key) > 30:
-            error_message(f"Identifier {key} exceeds maximum length of 30 characters")
+            error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
         else:
-            error_message(f"Invalid identifier: {key}")
+            error_message(f"Invalid identifier: {key}", key)
     
     def check_keyword_delim():
         check = {
             True: lambda: (lexeme.append(key), token.append(key)),
-            False: lambda: (lexeme.append(key), token.append(key), error_message(f"{key} => wrong delimiter"))
+            False: lambda: (lexeme.append(key), token.append(key), error_message(f"{key} => wrong delimiter", key))
         }
         
         skip_whitespace()
@@ -147,23 +147,23 @@ def lexer(code, console, table):
 
     def check_symbol_delim():
         check = {
-            True: lambda: (lexeme.append(symbol), token.append(symbol)),
-            False: lambda: (lexeme.append(symbol), token.append(symbol), error_message(f"{symbol} => wrong delimiter"))
+            True: lambda: (lexeme.append(key), token.append(key)),
+            False: lambda: (lexeme.append(key), token.append(key), error_message(f"{key} => wrong delimiter", key))
         }
 
-        symbol = char 
+        key = char 
         nextchr = next_char()
 
         def get_next():
-            nonlocal symbol, nextchr
-            symbol += nextchr
+            nonlocal key, nextchr
+            key += nextchr
             get_char()
             skip_whitespace()
             nextchr = next_char()
             return nextchr
 
         def check_double(next, a, b):
-            nonlocal symbol, nextchr
+            nonlocal key, nextchr
             if nextchr == next:
                 get_next()
                 check[nextchr in key_delims[a]]()
@@ -171,7 +171,7 @@ def lexer(code, console, table):
                 check[nextchr in key_delims[b]]()
         
         def check_triple(next, a, next1, b, c):
-            nonlocal symbol, nextchr
+            nonlocal key, nextchr
             if nextchr == next:
                 get_next()
                 check[nextchr in key_delims[a]]()
@@ -208,11 +208,11 @@ def lexer(code, console, table):
                     get_next
                     check[nextchr in key_delims['relate_delim']]()
                 else:
-                    error_message(f"{symbol} => wrong symbol")
+                    error_message(f"{key} => wrong symbol", key)
 
             
     while (char := get_char()) is not None:
-        skip_space()  
+        skip_whitespace()  
 
         if char == '/' and next_char() == '/':
             get_char() 
@@ -232,13 +232,13 @@ def lexer(code, console, table):
             get_character()
 
         elif char.isdigit():
-            num = char
+            key = char
             while next_char() not in whitespace:
-                num += get_char()
-            if num.isdigit() or '.' in num:
+                key += get_char()
+            if key.isdigit() or '.' in key:
                 get_num()
             else:
-                error_message(f"Invalid identifier: {num}")
+                error_message(f"Invalid identifier: {key}", key)
 
         elif char.isalpha():
             key = char
@@ -253,10 +253,10 @@ def lexer(code, console, table):
             check_symbol_delim()
 
         elif char == '_':
-            invalid = "_"
+            key = "_"
             while next_char() not in whitespace:
-                invalid += get_char()
-            error_message(f"Invalid identifier: {invalid}")
+                key += get_char()
+            error_message(f"Invalid identifier: {key}", key)
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
