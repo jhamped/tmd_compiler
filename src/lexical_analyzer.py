@@ -25,9 +25,12 @@ def lexer(code, console, table):
         return None
     
     def skip_whitespace():  
+        nonlocal col
         while(char := next_char()) in whitespace:
-            if char == "\n":
+            if char == '\n':
                 new_line()
+            elif char == '\t':
+                col += 3
             get_char()
 
     def skip_single_comment():  
