@@ -83,19 +83,27 @@ def lexer(code, console, table):
                 continue
                 
     def get_num():
-        if re.match(r'^\d{1,10}$', key):
-            lexeme.append(key)
-            token.append('int_lit')
-        elif re.match(r'^\d{1,10}+\.\d{1,7}+$', key):
-            lexeme.append(key)
-            token.append('dec_lit')
-        elif re.match(r'^\d{11,}$', key):
-            error_message(f"{key} exceeds maximum length of 10 digits", key)
-        elif re.match(r'^\d+\.\d{8,}+$', key):
-            error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+        if key.isdigit() or '.' in key or '~' in key:
+            if re.match(r'^\d{1,10}$', key):
+                lexeme.append(key)
+                token.append('int_lit')
+            elif re.match(r'^~\d{1,10}$', key):
+                lexeme.append(key)
+                token.append('int_lit')
+            elif re.match(r'^\d{1,10}+\.\d{1,7}+$', key):
+                lexeme.append(key)
+                token.append('dec_lit')
+            elif re.match(r'^\d{11,}$', key):
+                error_message(f"{key} exceeds maximum length of 10 digits", key)
+            elif re.match(r'^~\d{11,}$', key):
+                error_message(f"{key} exceeds maximum length of 10 digits", key)
+            elif re.match(r'^\d+\.\d{8,}+$', key):
+                error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+            else:
+                error_message(f"Invalid: {key}", key)     
         else:
-            error_message(f"Invalid: {key}", key)
-
+            error_message(f"Invalid identifier: {key}", key)
+        
     def get_id():
         if re.match(r'[a-zA-Z0-9_]{1,30}$', key):
             lexeme.append(key)
@@ -104,6 +112,12 @@ def lexer(code, console, table):
             error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
         else:
             error_message(f"Invalid identifier: {key}", key)
+
+    def get_key(char):
+        key = char
+        while next_char() not in whitespace:
+            key += get_char()
+        return key
     
     def check_keyword_delim():
         check = {
@@ -208,7 +222,9 @@ def lexer(code, console, table):
                     get_next
                     check[nextchr in key_delims['relate_delim']]()
                 else:
-                    error_message(f"{key} => wrong symbol", key)
+                    error_message(f"{key} => invalid symbol", key)
+            case _:
+                error_message(f"{key} => invalid symbol", key)
 
             
     while (char := get_char()) is not None:
@@ -230,20 +246,13 @@ def lexer(code, console, table):
 
         elif char == '\'':
             get_character()
-
-        elif char.isdigit():
-            key = char
-            while next_char() not in whitespace:
-                key += get_char()
-            if key.isdigit() or '.' in key:
-                get_num()
-            else:
-                error_message(f"Invalid identifier: {key}", key)
+        
+        elif char.isdigit() or char == '~':
+            key = get_key(char)
+            get_num()
 
         elif char.isalpha():
-            key = char
-            while (next := next_char()) and next not in whitespace:
-                key += get_char()
+            key = get_key(char)
             if key in keywords:
                 check_keyword_delim()
             else:
