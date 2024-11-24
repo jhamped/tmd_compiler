@@ -20,6 +20,10 @@ def lexical_click(event):
     code = textFrame.get("1.0", "end")
     lexer(code, console, table)
 
+def insert_tab(event):
+    textFrame.insert(tk.INSERT, ' ' * 3)
+    return "break"
+
 #clear button
 def on_enter_new(event):
     clrBtn.config(fg="white")
@@ -48,7 +52,7 @@ window.wm_state('zoomed')
 dark_title_bar(window)
 
 #left panel
-environFrame = tk.Frame(window, bg="#202020")  # Adjust the width as needed
+environFrame = tk.Frame(window, bg="#202020") 
 environFrame.pack(side="left", fill="both", expand=True)
 
 #navigation bar
@@ -63,7 +67,7 @@ clrBtn.bind("<Enter>", on_enter_new)
 clrBtn.bind("<Leave>", on_leave_new)
 
 #lexical button
-lexicalBtn = tk.Label(navFrame, text="Lexical", font=("Helvetica", 11, "bold"), bg="#a6b3f1", borderwidth=1, relief="solid", width=10)
+lexicalBtn = tk.Label(navFrame, text="Lexical", font=("Helvetica", 11, "bold"), bg="#a6b3f1", borderwidth=1, relief="solid", width=8)
 lexicalBtn.pack(side="right", pady=5, padx=(0, 15))
 lexicalBtn.bind("<Button-1>", lexical_click)
 lexicalBtn.bind("<Enter>", on_enter_lexical)
@@ -72,11 +76,13 @@ lexicalBtn.bind("<Leave>", on_leave_lexical)
 #textbox for code
 textFrame = tk.Text(environFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", padx=5)
 textFrame.pack(side="top", fill="both", expand=True)
+textFrame.bind("<Tab>", insert_tab)
 
 #console
 console = tk.Text(environFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12))
 console.pack(side="bottom", fill="both")
 console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
+console.tag_configure("ln_col", foreground="#a8a8a8", font=("Consolas", 12))
 
 #right panel
 tableFrame = tk.Frame(window, width=500, bg="#e5e2ed")
