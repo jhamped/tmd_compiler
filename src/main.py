@@ -4,7 +4,6 @@ from tkinter import ttk
 from tkinter import PhotoImage
 import ctypes as ct
 
-
 def dark_title_bar(window):
     window.update()
     DWMWA_USE_IMMERSIVE_DARK_MODE = 20
@@ -16,6 +15,11 @@ def dark_title_bar(window):
     value = ct.c_int(value)
     set_window_attribute(hwnd, rendering_policy, ct.byref(value), ct.sizeof(value))
 
+#lexical button event
+def on_enter_lexical(event):
+    lexicalBtn.config(fg="white")
+def on_leave_lexical(event):
+    lexicalBtn.config(fg="black")
 def lexical_click(event):
     code = textFrame.get("1.0", "end")
     lexer(code, console, table)
@@ -24,7 +28,7 @@ def insert_tab(event):
     textFrame.insert(tk.INSERT, ' ' * 3)
     return "break"
 
-#clear button
+#clear button event
 def on_enter_new(event):
     clrBtn.config(fg="white")
 def on_leave_new(event):
@@ -37,11 +41,20 @@ def clear_click(event):
     lexeme.clear()
     token.clear()
 
-#lexical button
-def on_enter_lexical(event):
-    lexicalBtn.config(fg="white")
-def on_leave_lexical(event):
-    lexicalBtn.config(fg="black")
+#console close button event
+def on_enter_consoleClose(event):
+    consoleClose.config(fg="#a8a8a8")
+def on_leave_consoleClose(event):
+    consoleClose.config(fg="white")
+def consoleClose_click(event):
+    if open.get():
+        console.pack_forget()
+        consoleClose.config(text="˄")
+    else:
+        console.pack(side="bottom", fill="both")
+        consoleClose.config(text="˅")
+    open.set(not open.get())
+
 
 #main window
 window = tk.Tk()
@@ -50,6 +63,8 @@ icon = PhotoImage(file="TMD_Compiler/TMD_Logo.png")
 window.iconphoto(False, icon)
 window.wm_state('zoomed')
 dark_title_bar(window)
+
+open = tk.BooleanVar(value=True)
 
 #left panel
 environFrame = tk.Frame(window, bg="#202020") 
@@ -74,12 +89,27 @@ lexicalBtn.bind("<Enter>", on_enter_lexical)
 lexicalBtn.bind("<Leave>", on_leave_lexical)
 
 #textbox for code
-textFrame = tk.Text(environFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", padx=5)
+textFrame = tk.Text(environFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", padx=5, relief="flat")
 textFrame.pack(side="top", fill="both", expand=True)
 textFrame.bind("<Tab>", insert_tab)
 
+#console frame
+consoleFrame = tk.Frame(environFrame, bg="#202020")
+consoleFrame.pack(side="bottom", fill="both")
+
+#console panel
+consolePanel = tk.Frame(consoleFrame, bg="#202020", height=3)
+consolePanel.pack(side="top", fill="both")
+
+#console close button
+consoleClose = tk.Label(consolePanel, text="˅", font=("Consolas", 13), fg="#ffffff", bg="#202020")
+consoleClose.pack(side="right", pady=(7, 0), padx=(0, 15))
+consoleClose.bind("<Button-1>", consoleClose_click)
+consoleClose.bind("<Enter>", on_enter_consoleClose)
+consoleClose.bind("<Leave>", on_leave_consoleClose)
+
 #console
-console = tk.Text(environFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12))
+console = tk.Text(consoleFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12), padx=10, pady=10, borderwidth=1, relief="solid")
 console.pack(side="bottom", fill="both")
 console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
 console.tag_configure("ln_col", foreground="#a8a8a8", font=("Consolas", 12))
