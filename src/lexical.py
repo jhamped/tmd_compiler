@@ -53,566 +53,215 @@ def lexer(code, console, table):
         nonlocal line, col
         console.insert(tk.END, "Error: ", "error")
         console.insert(tk.END, f"{error}\n")
-        print(col)
         console.insert(tk.END, f"       line {line}, column {col-(len(error_key)-1)}\n", "ln_col")
 
     def get_string():
         string = '"'
         while True:
             char = get_char()
-            if char == '"':
+            if char is None:  
+                error_message("Expected: \"", string)
+                break
+
+            if char == '"': 
                 string += char
                 lexeme.append(string)
                 token.append('str_lit')
                 break
+            elif char == '\\': 
+                esc = get_char()
+                if esc in ['\\', '"', 'n', 't']: 
+                    string += '\\' + esc
+                else:
+                    error_message(f"Invalid escape sequence: \\{esc}", string)
             else:
                 string += char
-                continue
+
 
     def get_character():
-        key = "'"
+        character = "'"
         while True:
             char = get_char()
+            if char is None:  
+                error_message("Expected: '", character)
+                break
+
             if char == "'":
-                key += char
+                character += char
                 if (len(key) == 3):
-                    lexeme.append(key)
+                    lexeme.append(character)
                     token.append('chr_lit')
                 else:
-                    error_message("Character literals must only contain one character", key)
+                    error_message("Character literals must only contain one character", character)
                 break
             else:
-                key += char
+                character += char
                 continue
                 
     def get_num():
-        if key.isdigit() or '.' in key or '~' in key:
-            if re.match(r'^\d{1,10}$', key):
-                lexeme.append(key)
-                token.append('int_lit')
-            elif re.match(r'^~\d{1,10}$', key):
-                lexeme.append(key)
-                token.append('int_lit')
-            elif re.match(r'^\d{1,10}+\.\d{1,7}+$', key):
-                lexeme.append(key)
-                token.append('dec_lit')
-            elif re.match(r'^\d{11,}$', key):
-                error_message(f"{key} exceeds maximum length of 10 digits", key)
-            elif re.match(r'^~\d{11,}$', key):
-                error_message(f"{key} exceeds maximum length of 10 digits", key)
-            elif re.match(r'^\d+\.\d{8,}+$', key):
-                error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+        nonlocal key
+        def check_num(num):
+            if num.isdigit():
+                if len(num) <= 10:
+                    lexeme.append(key)
+                    token.append('int_lit')
+                else:
+                    error_message(f"{key} exceeds maximum length of 10 digits", key)
+            elif '.' in num:
+                literal = num.split('.')
+                if len(literal) == 2 and literal[0].isdigit() and literal[1].isdigit():
+                    if len(literal[0]) > 10:
+                        error_message(f"{key} exceeds maximum length of 10 integers", key)
+                    if len(literal[1]) > 7:
+                        error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+                    if len(literal[0]) <= 10 and len(literal[1]) <= 7:
+                        lexeme.append(key)
+                        token.append('dec_lit')
             else:
-                error_message(f"Invalid: {key}", key)     
+                error_message(f"Invalid: {key}", key)
+            return
+
+        if key.startswith('~'):
+            check_num(key[1:])
         else:
-            error_message(f"Invalid identifier: {key}", key)
+            check_num(key)
         
     def get_id():
-        if re.match(r'[a-zA-Z0-9_]{1,30}$', key):
+        if len(key) > 30:
+            error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
+        elif key.isalnum() or '_' in key:
             lexeme.append(key)
             token.append('id')
-        elif len(key) > 30:
-            error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
         else:
             error_message(f"Invalid identifier: {key}", key)
-
-    def get_key(char):
-        key = char
-        while next_char() not in whitespace:
-            key += get_char()
-        return key
     
     def append_key():
         lexeme.append(key) 
         token.append(key)
 
-    def add_key():
-        nonlocal key
-        key += next_char()
-        get_char()
-
-    def get_lexeme():
+    def get_key():
         nonlocal key
         while next_char() not in whitespace:
             key += get_char()
-        get_id()
-    
-    def check_keyword_delim():
-        check = {
-            True: lambda: (lexeme.append(key), token.append(key)),
-            False: lambda: (lexeme.append(key), token.append(key), error_message(f"{key} => wrong delimiter", key))
-        }
-        
+
+    def check_delim(delim, expected):
+        nonlocal key
         skip_whitespace()
-        nextchr = next_char()
-        match key:
-            case 'bln': check[nextchr in key_delims['data_delim']]()
-            case 'brk': check[nextchr in key_delims['jmp_delim']]()
-            case 'chr': check[nextchr in key_delims['data_delim']]()
-            case 'const': check[nextchr in alpha]()
-            case 'dec': check[nextchr in key_delims['data_delim']]()
-            case 'def': check[nextchr in key_delims['def_delim']]()
-            case 'disp': check[nextchr in key_delims['state_delim']]()
-            case 'do': check[nextchr in key_delims['block_delim']]()
-            case 'elif': check[nextchr in key_delims['state_delim']]()
-            case 'else': check[nextchr in key_delims['block_delim']]()
-            case 'exit': check[nextchr in key_delims['jmp_delim']]()
-            case 'false': check[nextchr in key_delims['val_delim']]()
-            case 'for': check[nextchr in key_delims['state_delim']]()
-            case 'foreach': check[nextchr in key_delims['state_delim']]()
-            case 'if': check[nextchr in key_delims['state_delim']]()
-            case 'in': check[nextchr in alpha]()
-            case 'insp': check[nextchr in key_delims['state_delim']]()
-            case 'int': check[nextchr in key_delims['data_delim']]()
-            case 'bln': check[nextchr in key_delims['key_delim']]()
-            case 'main': check[nextchr in key_delims['state_delim']]()
-            case 'none': check[nextchr in key_delims['val_delim']]()
-            case 'ret': check[nextchr in key_delims['key_delim']]()
-            case 'rsm': check[nextchr in key_delims['jmp_delim']]()
-            case 'segm': check[nextchr in alpha]()
-            case 'str': check[nextchr in key_delims['data_delim']]()
-            case 'strc': check[nextchr in alpha]()
-            case 'switch': check[nextchr in key_delims['state_delim']]()
-            case 'true': check[nextchr in key_delims['val_delim']]()
-            case 'var': check[nextchr in alpha]()
-            case 'while': check[nextchr in key_delims['state_delim']]()
-
-    def check_symbol_delim():
-        check = {
-            True: lambda: (lexeme.append(key), token.append(key)),
-            False: lambda: (lexeme.append(key), token.append(key), error_message(f"{key} => wrong delimiter", key))
-        }
-
-        key = char 
-        nextchr = next_char()
-
-        def get_next():
-            nonlocal key, nextchr
-            key += nextchr
-            get_char()
-            skip_whitespace()
-            nextchr = next_char()
-            return nextchr
-
-        def check_double(next, a, b):
-            nonlocal key, nextchr
-            if nextchr == next:
-                get_next()
-                check[nextchr in key_delims[a]]()
+        append_key()
+        if next_char() not in delim:
+            #change color of expected
+            error_message(f"Expected: {expected} after {key}", key)
+        return
+    
+    def check_sequence(sequence):
+        nonlocal key, matched
+        key += sequence[0]
+        get_char()
+        matched = True
+        for seq_char in sequence[1:]:
+            if next_char() == seq_char:
+                key += seq_char
+                get_char()
             else:
-                check[nextchr in key_delims[b]]()
-        
-        def check_triple(next, a, next1, b, c):
-            nonlocal key, nextchr
-            if nextchr == next:
-                get_next()
-                check[nextchr in key_delims[a]]()
-            elif nextchr == next1:
-                get_next()
-                check[nextchr in key_delims[b]]()
-            else:
-                check[nextchr in key_delims[c]]()
+                matched = False
+                break
 
-        match char:
-            case '=': check_double('=', 'relate_delim', 'asn_delim') 
-            case '+': check_triple('+', 'unary_delim', '=', 'relate2_delim', 'op_delim')
-            case '-': check_triple('-', 'unary_delim', '=', 'relate2_delim', 'op_delim')
-            case '*': check_double('=', 'relate2_delim', 'op_delim') 
-            case '/': check_double('=', 'relate2_delim', 'op_delim') 
-            case '%': check_double('=', 'relate2_delim', 'op_delim') 
-            case '&': check_double('&', 'relate_delim', 'concat_delim')  
-            case '!': check_double('=', 'relate_delim', 'relate_delim')
-            case '<': check_triple('<', 'var_delim', '=', 'relate1_delim', 'relate2_delim')
-            case '>': check_triple('>', 'var1_delim', '=', 'relate1_delim', 'relate2_delim')
-            case '[': check[nextchr in key_delims['bracket_delim']]()
-            case ']': check[nextchr in key_delims['bracket1_delim']]()
-            case '{': check[nextchr in key_delims['brace_delim']]()
-            case '}': check[nextchr in key_delims['brace1_delim']]()
-            case '[': check[nextchr in key_delims['bracket_delim']]()
-            case '(': check[nextchr in key_delims['paren_delim']]()
-            case ')': check[nextchr in key_delims['paren1_delim']]()
-            case ',': check[nextchr in key_delims['comma_delim']]()
-            case ';': check[nextchr in key_delims['semicolon_delim']]()
-            case ':': check[nextchr in key_delims['colon_delim']]()
-            case '#': check[nextchr in key_delims['interpol_delim']]()
-            case '|': 
-                if nextchr == '|':
-                    get_next
-                    check[nextchr in key_delims['relate_delim']]()
+    def check_transition_words(transition):
+        nonlocal key, matched
+        ctr = len(transition)
+
+        for sequence, delim in transition.items():
+            if isinstance(delim, dict):
+                if next_char() == sequence[0]:
+                    check_sequence(sequence)
+                    check_transition_words(delim)
                 else:
-                    error_message(f"{key} => invalid symbol", key)
-            case _:
-                error_message(f"{key} => invalid symbol", key)
+                    continue
+            else:   
+                if len(sequence) > 0:
+                    if next_char() == sequence[0]:
+                        check_sequence(sequence)
+                    elif ctr == 1:
+                        matched = False
+                    else:
+                        ctr -= 1
+                        continue
+                else:
+                    if next_char() not in whitespace and (next_char().isalnum() or next_char() == '_'):
+                        continue
+                
+                if next_char() not in whitespace and (next_char().isalnum() or next_char() == '_'):
+                    matched = False
+                    get_key()
+                    get_id()
+                if matched:
+                    check_delim(delim[0], delim[1])
+                    break
 
-            
+    def check_transition_symbols(transition):
+        nonlocal key, matched
+        ctr = len(transition)
+
+        for sequence, delim in transition.items():
+            if len(sequence) > 0:
+                if next_char() == sequence[0]:
+                    key += sequence[0]
+                    get_char()
+                    matched = True
+                elif ctr == 1:
+                    matched = False
+                else:
+                    ctr -= 1
+                    continue
+            else:
+                matched = True
+
+            if next_char() not in whitespace and next_char() in punc_symbols:
+                matched = False
+                get_key()
+                error_message(f"{key} => invalid operator", key)
+            if matched:
+                check_delim(delim)
+
+#---------------------------------------------------------------------------------------
+        
     while (char := get_char()) is not None:
-        skip_whitespace()  
-
-        if char == '/' and next_char() == '/':
+        if char == '/' and next_char() == '/': #single-line comments
             get_char() 
             skip_single_comment()
 
-        elif char == '/' and next_char() == '*':
+        elif char == '/' and next_char() == '*': #multi-line comments
             get_char() 
             skip_multi_comment()
 
-        elif char == '\n':
+        elif char == '\n': #get new line
             new_line()
         
-        elif char == '"':
+        elif char == '"': #string literal
             get_string()
 
-        elif char == "'":
+        elif char == "'": #char literal
             get_character()
+
+        elif char == '_': #invalid iden (remove)
+            key = char
+            get_key()
+            error_message(f"Invalid identifier: {key}", key)
         
-        elif char.isdigit() or char == '~':
-            key = get_key(char)
+        elif char.isdigit() or char == '~': #int and dec literals
+            key = char
+            get_key()
             get_num()
 
-        elif char == 'b':
+        elif char in transition_map_words: #reserved words
             key = char
-            if next_char() == 'l':
-                add_key()
-                if next_char() == 'n':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['data_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'r':
-                add_key()
-                if next_char() == 'k':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['jmp_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
+            matched = False
+            check_transition_words(transition_map_words[char])
 
-        elif char == 'c':
+        elif char in transition_map_symbols: #reserved symbols
             key = char
-            if next_char() == 'h':
-                add_key()
-                if next_char() == 'r':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['data_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'o':
-                add_key()
-                if next_char() == 'n':
-                    add_key()
-                    if next_char() == 's':
-                        add_key()
-                        if next_char() == 't':
-                            add_key()
-                            skip_whitespace()
-                            append_key()
-                            if next_char() not in alpha:
-                                error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char == 'd':
-            key = char
-            if next_char() == 'e':
-                add_key()
-                if next_char() == 'c':
-                    add_key()
-                    skip_whitespace()
-                    if next_char() not in key_delims['data_delim']:
-                        append_key()
-                elif next_char() == 'f':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['def_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'i':
-                add_key()
-                if next_char() == 's':
-                    add_key()
-                    if next_char() == 'p':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['state_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'o':
-                add_key()
-                skip_whitespace()
-                append_key()
-                if next_char() not in key_delims['block_delim']:
-                    error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char == 'e':
-            key = char
-            if next_char() == 'l':
-                add_key()
-                if next_char() == 'i':
-                    add_key()
-                    if next_char() == 'f':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['state_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-                elif next_char() == 's':
-                    add_key()
-                    if next_char() == 'e':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['block_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'x':
-                add_key()
-                if next_char() == 'i':
-                    add_key()
-                    if next_char() == 't':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['jmp_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char == 'f':
-            key = char
-            if next_char() == 'a':
-                add_key()
-                if next_char() == 'l':
-                    add_key()
-                    if next_char() == 's':
-                        add_key()
-                        if next_char() == 'e':
-                            add_key()
-                            skip_whitespace()
-                            append_key()
-                            if next_char() not in key_delims['val_delim']:
-                                error_message(f"{key} => wrong delimiter", key)
-            elif char == 'o':
-                add_key()
-                if next_char() == 'r':
-                    add_key()
-                    skip_whitespace()
-                    if next_char() != 'e':
-                        append_key()
-                        if next_char() not in key_delims['state_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-                    else:
-                        add_key()
-                        if next_char() == 'a':
-                            add_key()
-                            if next_char() == 'c':
-                                add_key()
-                                if next_char() == 'h':
-                                    add_key()
-                                    skip_whitespace()
-                                    append_key()
-                                    if next_char() not in key_delims['state_delim']:
-                                        error_message(f"{key} => wrong delimiter", key)    
-            else:
-                get_lexeme()
-
-        elif char == 'i':
-            key = char
-            if next_char() == 'f':
-                add_key()
-                skip_whitespace()
-                append_key()
-                if next_char() not in key_delims['state_delim']:
-                    error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'n':
-                add_key()
-                skip_whitespace()
-                if next_char() != 's' or next_char() != 't':
-                    append_key()
-                    if next_char() not in alpha:
-                        error_message(f"{key} => wrong delimiter", key)
-                elif next_char() == 's':
-                    add_key()
-                    if next_char() == 'p':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['state_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-                elif next_char() == 't':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['data_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char() == 'k':
-            key = char
-            if next_char() == 'e':
-                add_key()
-                if next_char() == 'y':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['key_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char() == 'm':
-            key = char
-            if next_char() == 'a':
-                add_key()
-                if next_char() == 'i':
-                    add_key()
-                    if next_char() == 'n':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['state_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char() == 'n':
-            key = char
-            if next_char() == 'o':
-                add_key()
-                if next_char() == 'n':
-                    add_key()
-                    if next_char() == 'e':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['val_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char() == 'r':
-            key = char
-            if next_char() == 'e':
-                add_key()
-                if next_char() == 't':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['key_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 's':
-                add_key()
-                if next_char() == 'm':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in key_delims['jmp_delim']:
-                        error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char() == 's':
-            key = char
-            if next_char() == 'e':
-                add_key()
-                if next_char() == 'g':
-                    add_key()
-                    if next_char() == 'm':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in alpha:
-                            error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 't':
-                add_key()
-                if next_char() == 'r':
-                    add_key()
-                    skip_whitespace()
-                    if next_char() != 'c':
-                        append_key()
-                        if next_char() not in key_delims['data_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-                    else:
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in alpha:
-                            error_message(f"{key} => wrong delimiter", key)
-            elif next_char() == 'w':
-                add_key()
-                if next_char() == 'i':
-                    add_key()
-                    if next_char() == 't':
-                        add_key()
-                        if next_char() == 'c':
-                            add_key()
-                            if next_char() == 'h':
-                                add_key()
-                                skip_whitespace()
-                                append_key()
-                                if next_char() not in key_delims['state_delim']:
-                                    error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char() == 't':
-            key = char
-            if next_char() == 'r':
-                add_key()
-                if next_char() == 'u':
-                    add_key()
-                    if next_char() == 'e':
-                        add_key()
-                        skip_whitespace()
-                        append_key()
-                        if next_char() not in key_delims['val_delim']:
-                            error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif next_char() == 'v':
-            key = char
-            if next_char() == 'a':
-                add_key()
-                if next_char() == 'r':
-                    add_key()
-                    skip_whitespace()
-                    append_key()
-                    if next_char() not in alpha:
-                        error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif next_char() == 'w':
-            key = char
-            if next_char() == 'h':
-                add_key()
-                if next_char() == 'i':
-                    add_key()
-                    if next_char() == 'l':
-                        add_key()
-                        if next_char() == 'e':
-                            add_key()
-                            skip_whitespace()
-                            append_key()
-                            if next_char() not in key_delims['state_delim']:
-                                error_message(f"{key} => wrong delimiter", key)
-            else:
-                get_lexeme()
-
-        elif char in reg_symbols:
-            check_symbol_delim()
-
-        elif char == '_':
-            key = "_"
-            while next_char() not in whitespace:
-                key += get_char()
-            error_message(f"Invalid identifier: {key}", key)
+            matched = False
+            check_transition_symbols(transition_map_symbols[char])        
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
