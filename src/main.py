@@ -1,4 +1,4 @@
-from lexical_analyzer import *
+from lexical import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import PhotoImage
