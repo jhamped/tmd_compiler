@@ -16,6 +16,7 @@ quote_symbols = ["'", '"']
 alpha = list(string.ascii_letters)
 alphanumeric = list(string.ascii_letters + string.digits)
 ascii_def = alphanumeric + punc_symbols + quote_symbols
+identifier = alphanumeric + ['_']
 
 # Regular expression
 keywords = ['strc', 'segm', 'main', 'bln', 'chr', 'int', 'dec', 'str', 'var', 'const', 'true', 'false', 'disp', 'insp', 'if', 
@@ -26,30 +27,30 @@ whitespace = [' ', '\t', '\n']
 
 # Delimiters
 key1_delims = {
-    'state_delim' : ['('], 
-    'block_delim' : ['{'],
-    'def_delim' : [':'],
-    'comma_delim' : [']', '(', '{', '"', '\''] + alphanumeric + unary_operator,
-    'iden_delim' : all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '.', ','],
-    'lit_delim' : [';', ',', '&'],
-    'op_delim' : alphanumeric + ['(', '~'],
-    'unary_delim' : alphanumeric + ['(', ')', ';', ',', '~'],
-    'paren_delim' : alphanumeric + unary_operator + [';', '!', '#', "'", '"', '(', ')'],
-    'paren1_delim' : arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';'],
-    'brace_delim' : alphanumeric + unary_operator + [';', '(', "'", '"', '{', '}'],
-    'semicolon_delim' : alphanumeric + unary_operator + whitespace + ['(', '}', None],
-    'bracket_delim' : alphanumeric + unary_operator + [']', ','],
-    'bracket1_delim' : number_operator + [')', '=', ';', '&'],
-    'var_delim' : alpha + unary_operator + ['('],
-    'var1_delim' : ascii_def,
-    'concat_delim' : alpha + ['(', '"', "'", '#'],
-    'interpol_delim' : ['"'],
-    'data_delim' : alpha + ['[', '('],
-    'val_delim' : [';', ',', ')', '}'],
-    'colon_delim' : alphanumeric + unary_operator + ['('],
-    'jmp_delim' : [';'],
-    'key_delim' : alphanumeric + ["'", '"', '~'],
-    'empty_delim' : ['']
+    'state_delim' : whitespace + ['(', '/'], 
+    'block_delim' : whitespace + ['{', '/'],
+    'def_delim' : whitespace + [':', '/'],
+    'comma_delim' : [']', '(', '{', '"', '\'', '/'] + whitespace + alphanumeric + unary_operator,
+    'iden_delim' : whitespace + all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '.', ',', '/'],
+    'lit_delim' : whitespace + [';', ',', '&', '/'],
+    'op_delim' : whitespace + alphanumeric + ['(', '~', '/'],
+    'unary_delim' : whitespace + alphanumeric + ['(', ')', ';', ',', '~', '/'],
+    'paren_delim' : whitespace + alphanumeric + unary_operator + [';', '!', '#', "'", '"', '(', ')', '/'],
+    'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', '/'],
+    'brace_delim' : whitespace + alphanumeric + unary_operator + [';', '(', "'", '"', '{', '}', '/'],
+    'semicolon_delim' : whitespace + alphanumeric + unary_operator + whitespace + ['(', '}', '/', None],
+    'bracket_delim' : whitespace + alphanumeric + unary_operator + [']', ',', '/'],
+    'bracket1_delim' : whitespace + number_operator + alpha + [')', '=', ';', '&', '/'],
+    'var_delim' : whitespace + alpha + unary_operator + ['(', '/'],
+    'var1_delim' : whitespace + ascii_def,
+    'concat_delim' : whitespace + alpha + ['(', '"', "'", '#', '/'],
+    'interpol_delim' : whitespace + ['"', '/'],
+    'data_delim' : whitespace + alpha + ['[', '(', '/'],
+    'val_delim' : whitespace + [';', ',', ')', '}', '/'],
+    'colon_delim' : whitespace + alphanumeric + unary_operator + ['(', '/'],
+    'jmp_delim' : whitespace + [';', '/'],
+    'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '/', '('],
+    'empty_delim' : whitespace + ['']
 }
 
 key2_delims = {
@@ -60,7 +61,7 @@ key2_delims = {
 }
 
 key3_delims = {
-    'asn_delim' : key2_delims['relate_delim'] + ['{']
+    'asn_delim' : key2_delims['relate_delim'] + ['{', '#']
 }
 
 key_delims = key1_delims | key2_delims | key3_delims
@@ -148,7 +149,7 @@ transition_map_symbols = {
     '<': {
         '': [key_delims['op_delim'], "[letter, number, '(', '~', '!', "'", '"'. '{']"], 
         '<': [key_delims['var_delim'], "[letter, '+', '-', ']', ',']"], 
-        '=': [key_delims['relate_delim'], "[letter, number, '(', '~', '!', "'", '"']"]},
+        '=': [key_delims['relate1_delim'], "[letter, number, '(', '~', '!']"]},
     '>': {
         '': [key_delims['op_delim'], "[letter, number, '(', '~', '!', "'", '"'. '{']"], 
         '>': [key_delims['var1_delim'], "[ASCII Character]"], 
