@@ -112,7 +112,6 @@ def lexer(code, console, table):
         if not terminated:
             error_message("Expected: '", key)
             
-                
     def get_num():
         nonlocal key
         def check_num(num):
@@ -130,6 +129,7 @@ def lexer(code, console, table):
                         error_message(f"{key} exceeds maximum length of 7 decimal places", key)
                     if len(literal[0]) <= 10 and len(literal[1]) <= 7:
                         append_key('dec_lit')
+                        check_delim(key_delims['num_delim'], "expected")
             else:
                 error_message(f"Invalid: {key}", key)
             return
@@ -140,6 +140,7 @@ def lexer(code, console, table):
             check_num(key)
         
     def check_id(s1, s2, s3):
+        nonlocal matched
         add_key(s1, s2)
         check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", s2, s3, "word")
 
@@ -149,7 +150,6 @@ def lexer(code, console, table):
         isIden = True
         matched = False
         curr = get_char()
-        print(f"curr: {curr}")
 
         key = curr
         append_state(curr, 0, 188)
@@ -213,22 +213,13 @@ def lexer(code, console, table):
                                                                                                                         if next_char() in identifier: 
                                                                                                                             check_id(244, 246, 247)
 
+        isIden = False
         if not matched:
             if next_char() not in whitespace:
                 get_key()
                 error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
             else:
                 error_message(f"Invalid identifier: {key}", key)
-
-        '''
-        if len(key) > 30:
-            error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
-        elif key.isalnum() or '_' in key:
-            lexeme.append(key)
-            token.append('id')
-        else:
-            error_message(f"Invalid identifier: {key}", key)
-        '''
 
     def append_key(lit):
         lexeme.append(key) 
@@ -246,12 +237,8 @@ def lexer(code, console, table):
 
     def get_lexeme():  
         nonlocal key, pos
-        print(f"keyid: {key}")
         indexNum = len(key)
-        print(f"index: {indexNum}")
-        print(state)
         del state[-indexNum:]
-        print(state)
         pos -= indexNum
         get_id()
 
@@ -281,7 +268,7 @@ def lexer(code, console, table):
                 matched = False
                 return
         elif reserved == "symbol":
-            if next_char() not in whitespace and next_char() in punc_symbols:
+            if next_char() not in whitespace and next_char() not in delim:
                 matched = False
                 return
 
@@ -444,7 +431,7 @@ def lexer(code, console, table):
                 check_if_id(key_delims['state_delim'], "(", 56, 57, "word")
             elif next_char() == 'n':
                 add_key(55, 58)
-                if next_char() != 's' or next_char() != 't':
+                if next_char() != 's' and next_char() != 't':
                     matched = True
                     check_if_id(alpha, "identifier", 58, 59, "word")
                 elif next_char() == 's':
@@ -504,7 +491,6 @@ def lexer(code, console, table):
                         matched = True
                         check_if_id(key_delims['val_delim'], ";, ,, ), }", 77, 78, "word")
             if not matched:
-                print(f"key none: {key}")
                 get_lexeme()
 
         elif char == 'r':
@@ -564,7 +550,6 @@ def lexer(code, console, table):
                                 matched = True
                                 check_if_id(key_delims['state_delim'], "(", 100, 101, "word")
             if not matched:
-                print(f"key: {key}")
                 get_lexeme()
 
         elif char == 't':
@@ -639,6 +624,7 @@ def lexer(code, console, table):
         elif char == "'":
             isChar = True
             get_character()
+            isChar = False
 
         elif char == '_':
             key = char
@@ -648,7 +634,7 @@ def lexer(code, console, table):
         
         elif char.isdigit() or char == '~':
             key = char
-            while next_char() not in whitespace:
+            while next_char().isdigit():
                 key += get_char()
             get_num()
 
@@ -938,3 +924,7 @@ def lexer(code, console, table):
         table.insert("", "end", values=(lexeme[i], token[i])) 
 
     print(state)
+
+    lexeme.clear()
+    token.clear()
+    state.clear()
