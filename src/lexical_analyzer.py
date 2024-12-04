@@ -142,18 +142,17 @@ def lexer(code, console, table):
     def check_id(s1, s2, s3):
         nonlocal matched
         add_key(s1, s2)
-        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", s2, s3, "word")
+        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", s2, s3, "iden")
 
     def get_id():
         nonlocal pos, key, matched, isIden
 
         isIden = True
-        matched = False
         curr = get_char()
 
         key = curr
         append_state(curr, 0, 188)
-        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 188, 189, "word")
+        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 188, 189, "iden")
         if next_char() in identifier: 
             check_id(188, 190, 191)
             if next_char() in identifier: 
@@ -217,7 +216,8 @@ def lexer(code, console, table):
         if not matched:
             if next_char() not in whitespace:
                 get_key()
-                error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
+                if len(key) > 30:
+                    error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
             else:
                 error_message(f"Invalid identifier: {key}", key)
 
@@ -251,7 +251,6 @@ def lexer(code, console, table):
 
     def check_delim(delim, expected):
         nonlocal key
-        skip_whitespace()
         if isIden:
             append_key('id')
         elif isChar:
@@ -267,7 +266,7 @@ def lexer(code, console, table):
             if next_char() not in whitespace and (next_char().isalnum() or next_char() == '_'):
                 matched = False
                 return
-        elif reserved == "symbol":
+        elif reserved == "symbol" or reserved == "iden":
             if next_char() not in whitespace and next_char() not in delim:
                 matched = False
                 return
@@ -321,7 +320,7 @@ def lexer(code, console, table):
                         if next_char() == 't':
                             add_key(14, 15)
                             matched = True
-                            check_if_id(alpha, "data type keyword", 15, 16, "word")
+                            check_if_id(whitespace, "space", 15, 16, "word")
             if not matched:
                 get_lexeme()
 
