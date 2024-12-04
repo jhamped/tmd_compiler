@@ -1,6 +1,5 @@
 from definitions import *
 import tkinter as tk
-import re
 
 state = []
 lexeme = []
@@ -10,6 +9,8 @@ def lexer(code, console, table):
     pos = 0
     col = 0
     line = 1
+    isIden = False
+    isChar = False
 
     def get_char():  
         nonlocal pos, col
@@ -54,45 +55,70 @@ def lexer(code, console, table):
         nonlocal line, col
         console.insert(tk.END, "Error: ", "error")
         console.insert(tk.END, f"{error}\n")
-        print(col)
         console.insert(tk.END, f"       line {line}, column {col-(len(error_key)-1)}\n", "ln_col")
 
     def get_string():
-        string = '"'
+        nonlocal key
+        key = '"'
+        append_state(key, 0, 419)
+        ctr = 0
         while True:
-            char = get_char()
-            if char == '"':
-                string += char
-                lexeme.append(string)
-                token.append('str_lit')
+            if next_char() is None:  
+                error_message("Expected: \"", string)
                 break
+            if next_char() == '"': 
+                add_key(420, 421)
+                append_key('str_lit')
+                break
+            elif next_char() == '\\': 
+                esc = get_char()
+                if next_char() in ['\\', '"', 'n', 't']: 
+                    esc += get_char()
+                    key += esc
+                    ctr += 1
+                    if ctr == 1:
+                        append_state(esc, 419, 420)
+                    else:
+                        append_state(esc, 420, 420)
+                else:
+                    error_message(f"Invalid escape sequence: \\{esc}", key)
             else:
-                string += char
-                continue
+                ctr += 1
+                if ctr == 1:
+                    add_key(419, 420)
+                else:
+                    add_key(420, 420)
 
     def get_character():
+        nonlocal key
+        terminated = False
         key = "'"
-        while True:
-            char = get_char()
-            if char == "'":
-                key += char
-                if (len(key) == 3):
-                    lexeme.append(key)
-                    token.append('chr_lit')
-                else:
-                    error_message("Character literals must only contain one character", key)
-                break
+        append_state(key, 0, 423)
+
+        if next_char() is not None:
+            if next_char() == "'":
+                add_key(424, 425)
+                check_delim(key_delims['lit_delim'], ";, ,, &")
             else:
-                key += char
-                continue
+                add_key(423, 424)
+                if next_char() == "'":
+                    add_key(424, 425)
+                    check_delim(key_delims['lit_delim'], ";, ,, &")
+                else:
+                    get_key()
+                    error_message("Character literals must only contain one character", key)
+        if key.count("'") == 2:
+            terminated = True
+        if not terminated:
+            error_message("Expected: '", key)
+            
                 
     def get_num():
         nonlocal key
         def check_num(num):
             if num.isdigit():
                 if len(num) <= 10:
-                    lexeme.append(key)
-                    token.append('int_lit')
+                    append_key('int_lit')
                 else:
                     error_message(f"{key} exceeds maximum length of 10 digits", key)
             elif '.' in num:
@@ -103,8 +129,7 @@ def lexer(code, console, table):
                     if len(literal[1]) > 7:
                         error_message(f"{key} exceeds maximum length of 7 decimal places", key)
                     if len(literal[0]) <= 10 and len(literal[1]) <= 7:
-                        lexeme.append(key)
-                        token.append('dec_lit')
+                        append_key('dec_lit')
             else:
                 error_message(f"Invalid: {key}", key)
             return
@@ -114,7 +139,88 @@ def lexer(code, console, table):
         else:
             check_num(key)
         
+    def check_id(s1, s2, s3):
+        add_key(s1, s2)
+        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", s2, s3, "word")
+
     def get_id():
+        nonlocal pos, key, matched, isIden
+
+        isIden = True
+        matched = False
+        curr = get_char()
+        print(f"curr: {curr}")
+
+        key = curr
+        append_state(curr, 0, 188)
+        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 188, 189, "word")
+        if next_char() in identifier: 
+            check_id(188, 190, 191)
+            if next_char() in identifier: 
+                check_id(190, 192, 193)
+                if next_char() in identifier: 
+                    check_id(192, 194, 195)
+                    if next_char() in identifier: 
+                        check_id(194, 196, 197)
+                        if next_char() in identifier: 
+                            check_id(196, 198, 199)
+                            if next_char() in identifier: 
+                                check_id(198, 200, 201)
+                                if next_char() in identifier: 
+                                    check_id(200, 202, 203)
+                                    if next_char() in identifier: 
+                                        check_id(202, 204, 205)
+                                        if next_char() in identifier: 
+                                            check_id(204, 206, 207)
+                                            if next_char() in identifier: 
+                                                check_id(206, 208, 209)
+                                                if next_char() in identifier: 
+                                                    check_id(208, 210, 211)
+                                                    if next_char() in identifier: 
+                                                        check_id(210, 212, 213)
+                                                        if next_char() in identifier: 
+                                                            check_id(212, 214, 215)
+                                                            if next_char() in identifier: 
+                                                                check_id(214, 216, 217)
+                                                                if next_char() in identifier: 
+                                                                    check_id(216, 218, 219)
+                                                                    if next_char() in identifier: 
+                                                                        check_id(218, 220, 221)
+                                                                        if next_char() in identifier: 
+                                                                            check_id(220, 222, 223)
+                                                                            if next_char() in identifier: 
+                                                                                check_id(222, 224, 225)
+                                                                                if next_char() in identifier: 
+                                                                                    check_id(224, 226, 227)
+                                                                                    if next_char() in identifier: 
+                                                                                        check_id(226, 228, 229)
+                                                                                        if next_char() in identifier: 
+                                                                                            check_id(228, 230, 231)
+                                                                                            if next_char() in identifier: 
+                                                                                                check_id(230, 232, 233)
+                                                                                                if next_char() in identifier: 
+                                                                                                    check_id(232, 234, 233)
+                                                                                                    if next_char() in identifier: 
+                                                                                                        check_id(234, 236, 237)
+                                                                                                        if next_char() in identifier: 
+                                                                                                            check_id(236, 238, 239)
+                                                                                                            if next_char() in identifier: 
+                                                                                                                check_id(238, 240, 241)
+                                                                                                                if next_char() in identifier: 
+                                                                                                                    check_id(240, 242, 243)
+                                                                                                                    if next_char() in identifier: 
+                                                                                                                        check_id(242, 244, 245)
+                                                                                                                        if next_char() in identifier: 
+                                                                                                                            check_id(244, 246, 247)
+
+        if not matched:
+            if next_char() not in whitespace:
+                get_key()
+                error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
+            else:
+                error_message(f"Invalid identifier: {key}", key)
+
+        '''
         if len(key) > 30:
             error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
         elif key.isalnum() or '_' in key:
@@ -122,14 +228,15 @@ def lexer(code, console, table):
             token.append('id')
         else:
             error_message(f"Invalid identifier: {key}", key)
-    
-    def append_key():
-        lexeme.append(key) 
-        token.append(key)
+        '''
 
-    def add_key(stateNum, stateNum1):
+    def append_key(lit):
+        lexeme.append(key) 
+        token.append(lit)
+
+    def add_key(stateNum1, stateNum2):
         nonlocal key
-        state.append(f"{next_char()} : {stateNum}-{stateNum1}")
+        state.append(f"{next_char()} : {stateNum1}-{stateNum2}")
         key += get_char()
 
     def get_key():
@@ -137,10 +244,15 @@ def lexer(code, console, table):
         while next_char() not in whitespace:
             key += get_char()
 
-    def get_lexeme():
-        nonlocal key
-        while next_char() not in whitespace:
-            key += get_char()
+    def get_lexeme():  
+        nonlocal key, pos
+        print(f"keyid: {key}")
+        indexNum = len(key)
+        print(f"index: {indexNum}")
+        print(state)
+        del state[-indexNum:]
+        print(state)
+        pos -= indexNum
         get_id()
 
     def get_symbol(delim, expected, stateNum1, stateNum2):
@@ -153,60 +265,36 @@ def lexer(code, console, table):
     def check_delim(delim, expected):
         nonlocal key
         skip_whitespace()
-        append_key()
+        if isIden:
+            append_key('id')
+        elif isChar:
+            append_key('chr_lit')
+        else:   
+            append_key(key)
         if next_char() not in delim:
             error_message(f"Expected: {expected} after {key}", key)
 
-    def check_if_id(delim, expected, stateNum, stateNum1, reserved):
+    def check_if_id(delim, expected, stateNum1, stateNum2, reserved):
         nonlocal matched
         if reserved == "word":
             if next_char() not in whitespace and (next_char().isalnum() or next_char() == '_'):
                 matched = False
                 return
-        else:
+        elif reserved == "symbol":
             if next_char() not in whitespace and next_char() in punc_symbols:
                 matched = False
                 return
-  
-        state.append(f"end : {stateNum}-{stateNum1}")
+
+        matched = True
+        state.append(f"end : {stateNum1}-{stateNum2}")
         check_delim(delim, expected)
 
-    def append_state(stateChar, stateNum, stateNum1):
-        state.append(f"{stateChar} : {stateNum}-{stateNum1}")
-    
-#---------------------------------------------------------------------------------------
-            
-    while (char := get_char()) is not None:
-        if char == '/' and next_char() == '/':
-            get_char() 
-            skip_single_comment()
+    def append_state(stateChar, stateNum1, stateNum2):
+        state.append(f"{stateChar} : {stateNum1}-{stateNum2}")
 
-        elif char == '/' and next_char() == '*':
-            get_char() 
-            skip_multi_comment()
-
-        elif char == '\n':
-            new_line()
-        
-        elif char == '"':
-            get_string()
-
-        elif char == "'":
-            get_character()
-
-        elif char == '_':
-            key = char
-            while next_char() not in whitespace:
-                key += get_char()
-            error_message(f"Invalid identifier: {key}", key)
-        
-        elif char.isdigit() or char == '~':
-            key = char
-            while next_char() not in whitespace:
-                key += get_char()
-            get_num()
-
-        elif char == 'b':
+    def check_keyword():
+        nonlocal matched, key
+        if char == 'b':
             key = char
             matched = False
             append_state(char, 0, 1)
@@ -416,6 +504,7 @@ def lexer(code, console, table):
                         matched = True
                         check_if_id(key_delims['val_delim'], ";, ,, ), }", 77, 78, "word")
             if not matched:
+                print(f"key none: {key}")
                 get_lexeme()
 
         elif char == 'r':
@@ -475,6 +564,7 @@ def lexer(code, console, table):
                                 matched = True
                                 check_if_id(key_delims['state_delim'], "(", 100, 101, "word")
             if not matched:
+                print(f"key: {key}")
                 get_lexeme()
 
         elif char == 't':
@@ -524,6 +614,46 @@ def lexer(code, console, table):
                             check_if_id(key_delims['state_delim'], "(", 115, 116, "word")
             if not matched:
                 get_lexeme()
+
+        else:
+            key = char
+            get_lexeme()
+    
+#---------------------------------------------------------------------------------------
+            
+    while (char := get_char()) is not None:
+        if char == '/' and next_char() == '/':
+            get_char() 
+            skip_single_comment()
+
+        elif char == '/' and next_char() == '*':
+            get_char() 
+            skip_multi_comment()
+
+        elif char == '\n':
+            new_line()
+        
+        elif char == '"':
+            get_string()
+
+        elif char == "'":
+            isChar = True
+            get_character()
+
+        elif char == '_':
+            key = char
+            while next_char() not in whitespace:
+                key += get_char()
+            error_message(f"Invalid identifier: {key}", key)
+        
+        elif char.isdigit() or char == '~':
+            key = char
+            while next_char() not in whitespace:
+                key += get_char()
+            get_num()
+
+        elif char in alpha:
+            check_keyword()
 
         elif char == '=':
             key = char 
