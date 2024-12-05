@@ -12,7 +12,8 @@ def lexer(code, console, table):
     isIden = False
     isChar = False
     isString = False
-    isNum = False
+    isInt = False
+    isDec = False
 
     def get_char():  
         nonlocal pos, col
@@ -105,39 +106,38 @@ def lexer(code, console, table):
             terminated = True
         if not terminated:
             error_message("Expected: '", key)
-        
-    '''
-    def get_num():
-        nonlocal key
-        def check_num(num):
-            if num.isdigit():
-                if len(num) <= 10:
-                    append_key('int_lit')
-                else:
-                    error_message(f"{key} exceeds maximum length of 10 digits", key)
-            elif '.' in num:
-                literal = num.split('.')
-                if len(literal) == 2 and literal[0].isdigit() and literal[1].isdigit():
-                    if len(literal[0]) > 10:
-                        error_message(f"{key} exceeds maximum length of 10 integers", key)
-                    if len(literal[1]) > 7:
-                        error_message(f"{key} exceeds maximum length of 7 decimal places", key)
-                    if len(literal[0]) <= 10 and len(literal[1]) <= 7:
-                        append_key('dec_lit')
-                        check_delim(key_delims['num_delim'], "expected")
-            else:
-                error_message(f"Invalid: {key}", key)
-            return
 
-        if key.startswith('~'):
-            check_num(key[1:])
-        else:
-            check_num(key)
-    '''
+    def get_dec():
+        nonlocal key, matched, isInt, isDec
+        isInt = False
+        isDec = True
+        curr = get_char()
+
+        key += curr
+        append_state(curr, 269, 270)
+        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 270, 271, "num")
+        if next_char().isdigit():
+            check_num(269, 270, 271)
+            if next_char().isdigit():
+                check_num(269, 270, 271)
+                if next_char().isdigit():
+                    check_num(269, 270, 271)
+                    if next_char().isdigit():
+                        check_num(269, 270, 271)
+                        if next_char().isdigit():
+                            check_num(269, 270, 271)
+                            if next_char().isdigit():
+                                check_num(269, 270, 271)
+
+        if not matched:
+            if next_char() not in whitespace:
+                get_key()
+                print(f"key decimal: {key}")
+                error_message(f"{key} exceeds maximum length of 7 decimal places", key)
 
     def get_num():
-        nonlocal key, isNum, matched
-        isNum = True
+        nonlocal key, isInt, matched, isDec
+        isInt = True
         curr = char
         key = ''
 
@@ -154,40 +154,76 @@ def lexer(code, console, table):
             append_state(curr, 248, 249)
             key += curr
             check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 249, 250, "num")
-            if next_char().isdigit():
-                check_num(249, 251, 252)
-                if next_char().isdigit():
+            if next_char() == '.':
+                check_dec(249, 269)
+            elif next_char().isdigit():
+                check_num(249, 251, 252) 
+                if next_char() == '.':
+                    check_dec(249, 269)   
+                elif next_char().isdigit():
                     check_num(251, 253, 254)
-                    if next_char().isdigit():
+                    if next_char() == '.':
+                        check_dec(249, 269)
+                    elif next_char().isdigit():
                         check_num(253, 255, 256)
-                        if next_char().isdigit():
+                        if next_char() == '.':
+                            check_dec(249, 269)
+                        elif next_char().isdigit():
                             check_num(255, 257, 258)
-                            if next_char().isdigit():
+                            if next_char() == '.':
+                                check_dec(249, 269)
+                            elif next_char().isdigit():
                                 check_num(257, 259, 260)
-                                if next_char().isdigit():
+                                if next_char() == '.':
+                                    check_dec(249, 269)
+                                elif next_char().isdigit():
                                     check_num(259, 261, 262)
-                                    if next_char().isdigit():
+                                    if next_char() == '.':
+                                        check_dec(249, 269)
+                                    elif next_char().isdigit():
                                         check_num(261, 263, 264)
-                                        if next_char().isdigit():
+                                        if next_char() == '.':
+                                            check_dec(249, 269)
+                                        elif next_char().isdigit():
                                             check_num(263, 265, 266)
-                                            if next_char().isdigit():
+                                            print(f"next: {next_char()}")
+                                            if next_char() == '.':
+                                                check_dec(249, 269)
+                                            elif next_char().isdigit():
                                                 check_num(265, 267, 268)
+                                                if next_char() == '.':
+                                                    check_dec(249, 269)
 
-        isNum = False
+        isInt = False
         if not matched:
             if next_char() not in whitespace:
                 get_key()
-                if key.startswith("~"):
-                    index = len(key[1:])
+                if key.startswith('~'):
+                    max = 11
                 else:
-                    index = len(key)
-                if index > 10:
-                    error_message(f"{key} exceeds maximum length of 10 digits", key)
+                    max = 10
+                if '.' in key:
+                    literal = key.split('.')
+                    if len(literal[0]) > max:
+                        error_message(f"{key} exceeds maximum length of 10 digits", key)
+                    if len(literal[1]) > 7:
+                        error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+                else:
+                    if len(key) > max:
+                        error_message(f"{key} exceeds maximum length of 10 digits", key)
 
     def check_num(s1, s2, s3):
         nonlocal matched
         add_key(s1, s2)
         check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", s2, s3, "num")
+
+    def check_dec(s1, s2):
+        nonlocal matched, key, isDec
+        add_key(s1, s2)
+        if next_char() in whitespace:
+            error_message(f"Invalid decimal: {key}", key)
+        else:
+            get_dec()
 
     def check_id(s1, s2, s3):
         nonlocal matched
@@ -307,8 +343,10 @@ def lexer(code, console, table):
             append_key('chr_lit')
         elif isString:
             append_key('str_lit')
-        elif isNum:
+        elif isInt:
             append_key('int_lit')
+        elif isDec:
+            append_key('dec_lit')
         else:   
             append_key(key)
         if next_char() not in delim:
@@ -688,7 +726,7 @@ def lexer(code, console, table):
             error_message(f"Invalid identifier: {key}", key)
         
         elif char.isdigit() or char == '~':
-            isNum = True
+            isInt = True
             get_num()
 
         elif char in alpha:
