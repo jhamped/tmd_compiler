@@ -63,7 +63,6 @@ def lexer(code, console, table):
             if next_char() == '"': 
                 add_key(420, 421)
                 check_delim(key_delims['lit_delim'], ";, ,, &, )")
-                #append_key('str_lit')
                 break
             elif next_char() == '\\': 
                 esc = get_char()
@@ -109,25 +108,53 @@ def lexer(code, console, table):
 
     def get_dec():
         nonlocal key, matched, isInt, isDec
+
         isInt = False
         isDec = True
+        trailingZero = ""
         curr = get_char()
+
+        def get_zero():
+            nonlocal trailingZero
+            while next_char() == '0':
+                trailingZero += get_char()
+            check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 270, 271, "num")
 
         key += curr
         append_state(curr, 269, 270)
         check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 270, 271, "num")
+        if next_char() == '0':
+            get_zero()
         if next_char().isdigit():
+            key += trailingZero
             check_num(269, 270, 271)
+            if next_char() == '0':
+                get_zero()
             if next_char().isdigit():
+                key += trailingZero
                 check_num(269, 270, 271)
+                if next_char() == '0':
+                    get_zero()
                 if next_char().isdigit():
+                    key += trailingZero
                     check_num(269, 270, 271)
+                    if next_char() == '0':
+                        get_zero()
                     if next_char().isdigit():
+                        key += trailingZero
                         check_num(269, 270, 271)
+                        if next_char() == '0':
+                            get_zero()
                         if next_char().isdigit():
+                            key += trailingZero
                             check_num(269, 270, 271)
+                            if next_char() == '0':
+                                get_zero()
                             if next_char().isdigit():
+                                key += trailingZero
                                 check_num(269, 270, 271)
+                                if next_char() == '0':
+                                    get_zero()
 
         if not matched:
             if next_char() not in whitespace:
