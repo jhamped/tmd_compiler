@@ -11,6 +11,7 @@ def lexer(code, console, table):
     line = 1
     isIden = False
     isChar = False
+    isString = False
     isNum = False
 
     def get_char():  
@@ -26,15 +27,6 @@ def lexer(code, console, table):
         if pos < len(code):
             return code[pos]
         return None
-    
-    def skip_whitespace():  
-        nonlocal col
-        while(char := next_char()) in whitespace:
-            if char == '\n':
-                new_line()
-            elif char == '\t':
-                col += 3
-            get_char()
 
     def skip_single_comment():  
         while get_char() not in ['\n', None]:
@@ -69,7 +61,8 @@ def lexer(code, console, table):
                 break
             if next_char() == '"': 
                 add_key(420, 421)
-                append_key('str_lit')
+                check_delim(key_delims['lit_delim'], ";, ,, &, )")
+                #append_key('str_lit')
                 break
             elif next_char() == '\\': 
                 esc = get_char()
@@ -141,10 +134,6 @@ def lexer(code, console, table):
         else:
             check_num(key)
     '''
-
-    def get_int():
-        nonlocal key, matched
-        
 
     def get_num():
         nonlocal key, isNum, matched
@@ -316,6 +305,8 @@ def lexer(code, console, table):
             append_key('id')
         elif isChar:
             append_key('chr_lit')
+        elif isString:
+            append_key('str_lit')
         elif isNum:
             append_key('int_lit')
         else:   
@@ -681,7 +672,9 @@ def lexer(code, console, table):
             new_line()
         
         elif char == '"':
+            isString = True
             get_string()
+            isString = False
 
         elif char == "'":
             isChar = True
@@ -695,8 +688,6 @@ def lexer(code, console, table):
             error_message(f"Invalid identifier: {key}", key)
         
         elif char.isdigit() or char == '~':
-            #while next_char().isdigit():
-            #    key += get_char()
             isNum = True
             get_num()
 
