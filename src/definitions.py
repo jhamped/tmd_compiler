@@ -32,7 +32,7 @@ key1_delims = {
     'def_delim' : whitespace + [':', '/'],
     'comma_delim' : [']', '(', '{', '"', '\'', '/'] + whitespace + alphanumeric + unary_operator,
     'iden_delim' : whitespace + all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '.', ',', '/'],
-    'lit_delim' : whitespace + [';', ',', '&', '/'],
+    'lit_delim' : whitespace + [';', ',', '&', ')','/'],
     'op_delim' : whitespace + alphanumeric + ['(', '~', '/'],
     'unary_delim' : whitespace + alphanumeric + ['(', ')', ';', ',', '~', '/'],
     'paren_delim' : whitespace + alphanumeric + unary_operator + [';', '!', '#', "'", '"', '(', ')', '/'],
@@ -50,11 +50,11 @@ key1_delims = {
     'colon_delim' : whitespace + alphanumeric + unary_operator + ['(', '/'],
     'jmp_delim' : whitespace + [';', '/'],
     'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '/', '('],
+    'num_delim' : whitespace + number_operator + [';', ')', '}', ']', ',', '/'],
     'empty_delim' : whitespace + ['']
 }
 
 key2_delims = {
-    'num_delim' : number_operator + key1_delims['comma_delim'],
     'relate_delim' : key1_delims['op_delim'] + ['!', "'", '"'],
     'relate1_delim' : key1_delims['op_delim'] + ['!'],
     'brace1_delim' : key1_delims['semicolon_delim'] + unary_operator + [';', ',']
