@@ -14,6 +14,7 @@ def lexer(code, console, table):
     isString = False
     isInt = False
     isDec = False
+    stateNum = 0
 
     def get_char():  
         nonlocal pos, col
@@ -26,6 +27,13 @@ def lexer(code, console, table):
     
     def next_char():
         if pos < len(code):
+            return code[pos]
+        return None
+    
+    def prev_char():
+        nonlocal pos
+        if pos > 0:
+            pos -= 1
             return code[pos]
         return None
 
@@ -62,7 +70,7 @@ def lexer(code, console, table):
                 break
             if next_char() == '"': 
                 add_key(420, 421)
-                check_delim(key_delims['lit_delim'], ";, ,, &, )")
+                check_delim(key_delims['lit_delim'], ";, ,, &, ), }")
                 break
             elif next_char() == '\\': 
                 esc = get_char()
@@ -107,55 +115,30 @@ def lexer(code, console, table):
             error_message("Expected: '", key)
 
     def get_dec():
-        nonlocal key, matched, isInt, isDec
+        nonlocal key, matched, isInt, isDec, stateNum
 
         isInt = False
         isDec = True
         trailingZero = ""
         curr = get_char()
-
-        def get_zero():
-            nonlocal trailingZero
-            while next_char() == '0':
-                trailingZero += get_char()
-            check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 270, 271, "num")
-
+  
         key += curr
-        append_state(curr, 269, 270)
-        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 270, 271, "num")
-        if next_char() == '0':
-            get_zero()
+        append_state(curr, stateNum, stateNum+1)
+        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", stateNum+1, stateNum+2, "num")
         if next_char().isdigit():
-            key += trailingZero
-            check_num(269, 270, 271)
-            if next_char() == '0':
-                get_zero()
+            check_num(stateNum+1, stateNum+3, stateNum+4)
             if next_char().isdigit():
-                key += trailingZero
-                check_num(269, 270, 271)
-                if next_char() == '0':
-                    get_zero()
+                check_num(stateNum+3, stateNum+5, stateNum+6)
                 if next_char().isdigit():
-                    key += trailingZero
-                    check_num(269, 270, 271)
-                    if next_char() == '0':
-                        get_zero()
+                    check_num(stateNum+5, stateNum+7, stateNum+8)
                     if next_char().isdigit():
-                        key += trailingZero
-                        check_num(269, 270, 271)
-                        if next_char() == '0':
-                            get_zero()
+                        check_num(stateNum+7, stateNum+9, stateNum+10)
                         if next_char().isdigit():
-                            key += trailingZero
-                            check_num(269, 270, 271)
-                            if next_char() == '0':
-                                get_zero()
+                            check_num(stateNum+9, stateNum+11, stateNum+12)
                             if next_char().isdigit():
                                 key += trailingZero
-                                check_num(269, 270, 271)
-                                if next_char() == '0':
-                                    get_zero()
-
+                                check_num(stateNum+11, stateNum+13, stateNum+14)
+        
         if not matched:
             if next_char() not in whitespace:
                 get_key()
@@ -163,7 +146,7 @@ def lexer(code, console, table):
                 error_message(f"{key} exceeds maximum length of 7 decimal places", key)
 
     def get_num():
-        nonlocal key, isInt, matched, isDec
+        nonlocal key, isInt, matched, isDec, stateNum
         isInt = True
         curr = char
         key = ''
@@ -186,40 +169,39 @@ def lexer(code, console, table):
             elif next_char().isdigit():
                 check_num(249, 251, 252) 
                 if next_char() == '.':
-                    check_dec(249, 269)   
+                    check_dec(251, 284)   
                 elif next_char().isdigit():
                     check_num(251, 253, 254)
                     if next_char() == '.':
-                        check_dec(249, 269)
+                        check_dec(253, 299)
                     elif next_char().isdigit():
                         check_num(253, 255, 256)
                         if next_char() == '.':
-                            check_dec(249, 269)
+                            check_dec(255, 314)
                         elif next_char().isdigit():
                             check_num(255, 257, 258)
                             if next_char() == '.':
-                                check_dec(249, 269)
+                                check_dec(257, 329)
                             elif next_char().isdigit():
                                 check_num(257, 259, 260)
                                 if next_char() == '.':
-                                    check_dec(249, 269)
+                                    check_dec(259, 344)
                                 elif next_char().isdigit():
                                     check_num(259, 261, 262)
                                     if next_char() == '.':
-                                        check_dec(249, 269)
+                                        check_dec(261, 359)
                                     elif next_char().isdigit():
                                         check_num(261, 263, 264)
                                         if next_char() == '.':
-                                            check_dec(249, 269)
+                                            check_dec(263, 374)
                                         elif next_char().isdigit():
                                             check_num(263, 265, 266)
-                                            print(f"next: {next_char()}")
                                             if next_char() == '.':
-                                                check_dec(249, 269)
+                                                check_dec(265, 389)
                                             elif next_char().isdigit():
                                                 check_num(265, 267, 268)
                                                 if next_char() == '.':
-                                                    check_dec(249, 269)
+                                                    check_dec(267, 404)
 
         isInt = False
         if not matched:
@@ -245,11 +227,12 @@ def lexer(code, console, table):
         check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", s2, s3, "num")
 
     def check_dec(s1, s2):
-        nonlocal matched, key, isDec
+        nonlocal matched, key, isDec, stateNum
         add_key(s1, s2)
         if next_char() in whitespace:
             error_message(f"Invalid decimal: {key}", key)
         else:
+            stateNum = s2
             get_dec()
 
     def check_id(s1, s2, s3):
@@ -380,7 +363,7 @@ def lexer(code, console, table):
             error_message(f"Expected: {expected} after {key}", key)
 
     def check_if_id(delim, expected, stateNum1, stateNum2, reserved):
-        nonlocal matched
+        nonlocal matched, key
         if reserved == "word":
             if next_char() not in whitespace and (next_char().isalnum() or next_char() == '_'):
                 matched = False
@@ -392,6 +375,10 @@ def lexer(code, console, table):
 
         matched = True
         state.append(f"end : {stateNum1}-{stateNum2}")
+
+        if reserved == "num":
+            key = key.rstrip('0')
+
         check_delim(delim, expected)
 
     def append_state(stateChar, stateNum1, stateNum2):
@@ -1041,7 +1028,7 @@ def lexer(code, console, table):
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
 
-    #print(state)
+    print(state)
 
     lexeme.clear()
     token.clear()
