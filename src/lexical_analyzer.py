@@ -55,11 +55,13 @@ def lexer(code, console, table):
         col = 0
         line += 1
 
-    def error_message(error, error_key):
+    def error_message(error, expected, error_key, expectedError):
         nonlocal line, col
         console.insert(tk.END, "Error: ", "error")
         console.insert(tk.END, f"{error}\n")
-        console.insert(tk.END, f"       line {line}, column {col-(len(error_key)-1)}\n", "ln_col")
+        if expectedError:
+            console.insert(tk.END, f"        Expected: {expected}\n", "expected")
+        console.insert(tk.END, f"         line {line}, column {col-(len(error_key)-1)}\n", "ln_col")
 
     def get_string():
         nonlocal key
@@ -68,7 +70,7 @@ def lexer(code, console, table):
         ctr = 0
         while True:
             if next_char() is None:  
-                error_message("Expected: \"", key)
+                error_message("Expected: \"", "", key, False)
                 break
             if next_char() == '"': 
                 add_key(420, 421)
@@ -85,7 +87,7 @@ def lexer(code, console, table):
                     else:
                         append_state(esc, 420, 420)
                 else:
-                    error_message(f"Invalid escape sequence: \\{esc}", key)
+                    error_message(f"Invalid escape sequence: \\{esc}", "", key, False)
             else:
                 ctr += 1
                 if ctr == 1:
@@ -110,11 +112,11 @@ def lexer(code, console, table):
                     check_delim(key_delims['lit_delim'], ";, ,, &, )", False)
                 else:
                     get_key()
-                    error_message("Character literals must only contain one character", key)
+                    error_message("Character literals must only contain one character", "", key, False)
         if key.count("'") == 2:
             terminated = True
         if not terminated:
-            error_message("Expected: '", key)
+            error_message("Expected: '", "", key, False)
 
     def get_dec():
         nonlocal key, matched, isInt, isDec, stateNum
@@ -145,7 +147,7 @@ def lexer(code, console, table):
             if next_char() not in whitespace:
                 get_key()
                 print(f"key decimal: {key}")
-                error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+                error_message(f"{key} exceeds maximum length of 7 decimal places", "", key, False)
 
     def get_num():
         nonlocal key, isInt, matched, isDec, stateNum
@@ -216,12 +218,12 @@ def lexer(code, console, table):
                 if '.' in key:
                     literal = key.split('.')
                     if len(literal[0]) > max:
-                        error_message(f"{key} exceeds maximum length of 10 digits", key)
+                        error_message(f"{key} exceeds maximum length of 10 digits", "", key, False)
                     if len(literal[1]) > 7:
-                        error_message(f"{key} exceeds maximum length of 7 decimal places", key)
+                        error_message(f"{key} exceeds maximum length of 7 decimal places", "", key, False)
                 else:
                     if len(key) > max:
-                        error_message(f"{key} exceeds maximum length of 10 digits", key)
+                        error_message(f"{key} exceeds maximum length of 10 digits", "", key, False)
 
     def check_num(s1, s2, s3):
         nonlocal matched
@@ -232,7 +234,7 @@ def lexer(code, console, table):
         nonlocal matched, key, isDec, stateNum
         add_key(s1, s2)
         if next_char() in whitespace:
-            error_message(f"Invalid decimal: {key}", key)
+            error_message(f"Invalid decimal: {key}", "", key, False)
         else:
             stateNum = s2
             get_dec()
@@ -315,9 +317,9 @@ def lexer(code, console, table):
             if next_char() not in whitespace:
                 get_key()
                 if len(key) > 30:
-                    error_message(f"Identifier {key} exceeds maximum length of 30 characters", key)
+                    error_message(f"Identifier {key} exceeds maximum length of 30 characters", "", key, False)
             else:
-                error_message(f"Invalid identifier: {key}", key)
+                error_message(f"Invalid identifier: {key}", "", key, False)
 
     def append_key(lit):
         lexeme.append(key) 
@@ -360,7 +362,7 @@ def lexer(code, console, table):
             skip_whitespace()
 
         if next_char() not in delim:
-            error_message(f"Expected: {expected} after {key}", key)
+            error_message(f"Unexpected {get_char()} after {key}", expected, key, True)
             get_char()
 
     def check_if_id(delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
@@ -710,6 +712,10 @@ def lexer(code, console, table):
             key = char
             get_lexeme()
     
+    def symbol_error():
+        get_key()
+        error_message(f"{key} => invalid operator", "", key, False)
+        
 #---------------------------------------------------------------------------------------
             
     while (char := get_char()) is not None:
@@ -738,7 +744,7 @@ def lexer(code, console, table):
             key = char
             while next_char() not in whitespace:
                 key += get_char()
-            error_message(f"Invalid identifier: {key}", key)
+            error_message(f"Invalid identifier: {key}", "", key, False)
         
         elif char.isdigit() or char == '~':
             isInt = True
@@ -759,8 +765,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['asn_delim'], "letter, number, (, ~, !, ', \", {, #", 117, 118, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '+':
             key = char     
@@ -778,8 +783,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 121, 122, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '-':
             key = char     
@@ -797,8 +801,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 127, 128, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
                     
         elif char == '*':
             key = char     
@@ -812,8 +815,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 133, 134, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '/':
             key = char     
@@ -827,8 +829,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 137, 138, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '%':
             key = char     
@@ -842,8 +843,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 141, 142, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '&':
             key = char  
@@ -857,8 +857,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['concat_delim'], "letter, (, \", ', #", 145, 146, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
                 
         elif char == '|':
             key = char
@@ -870,8 +869,7 @@ def lexer(code, console, table):
                 matched = True
                 check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 150, 151, "symbol", False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '!':
             key = char    
@@ -885,8 +883,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['relate_delim'], "letter, (, \", ', #", 152, 153, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '<':
             key = char  
@@ -904,8 +901,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 156, 157, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '>':
             key = char    
@@ -923,8 +919,7 @@ def lexer(code, console, table):
             else:
                 get_symbol(key_delims['op_delim'], "letter, number, (, ~", 162, 163, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '[':
             key = char
@@ -933,8 +928,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['bracket_delim'], "letter, number, ], ,, +, -", 168, 169, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == ']':
             key = char
@@ -943,8 +937,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '>'", 170, 171, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '{':
             key = char
@@ -953,8 +946,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['brace_delim'], "letter, number, +, -, ;, (, ', \", {, }", 172, 173, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '}':
             key = char
@@ -963,8 +955,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['brace1_delim'], "letter, number, +, -, ;, (, }, ;, ,", 174, 175, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '(':
             key = char
@@ -973,8 +964,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['paren_delim'], "letter, number, +, -, ;, !, #, ', \", (, )", 176, 177, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == ')':
             key = char
@@ -983,8 +973,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['paren1_delim'], "+, -, *, /, %, =, !, <, >, &, |, {, ), ;", 178, 179, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == ',':
             key = char
@@ -993,8 +982,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['comma_delim'], "letter, number, +, -, ], (, {, \", '", 180, 181, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == ';':
             key = char
@@ -1003,8 +991,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['semicolon_delim'], "letter, number, +, -, (, }", 182, 183, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == ':':
             key = char
@@ -1013,8 +1000,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['colon_delim'], "letter, number, +, -, (", 184, 185, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
         elif char == '#':
             key = char
@@ -1023,8 +1009,7 @@ def lexer(code, console, table):
 
             get_symbol(key_delims['interpol_delim'], "\"", 186, 187, False)
             if not matched:
-                get_key()
-                error_message(f"{key} => invalid operator", key)
+                symbol_error()
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
