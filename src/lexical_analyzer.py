@@ -29,6 +29,15 @@ def lexer(code, console, table):
         if pos < len(code):
             return code[pos]
         return None
+    
+    def skip_whitespace():  
+        nonlocal col
+        while(char := next_char()) in whitespace:
+            if char == '\n':
+                new_line()
+            elif char == '\t':
+                col += 3
+            get_char()
 
     def skip_single_comment():  
         while get_char() not in ['\n', None]:
@@ -63,7 +72,7 @@ def lexer(code, console, table):
                 break
             if next_char() == '"': 
                 add_key(420, 421)
-                check_delim(key_delims['lit_delim'], ";, ,, &, ), }")
+                check_delim(key_delims['lit_delim'], ";, ,, &, ), }", False)
                 break
             elif next_char() == '\\': 
                 esc = get_char()
@@ -93,12 +102,12 @@ def lexer(code, console, table):
         if next_char() is not None:
             if next_char() == "'":
                 add_key(424, 425)
-                check_delim(key_delims['lit_delim'], ";, ,, &, )")
+                check_delim(key_delims['lit_delim'], ";, ,, &, )", False)
             else:
                 add_key(423, 424)
                 if next_char() == "'":
                     add_key(424, 425)
-                    check_delim(key_delims['lit_delim'], ";, ,, &, )")
+                    check_delim(key_delims['lit_delim'], ";, ,, &, )", False)
                 else:
                     get_key()
                     error_message("Character literals must only contain one character", key)
@@ -117,7 +126,7 @@ def lexer(code, console, table):
   
         key += curr
         append_state(curr, stateNum, stateNum+1)
-        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", stateNum+1, stateNum+2, "num")
+        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", stateNum+1, stateNum+2, "num", False)
         if next_char().isdigit():
             check_num(stateNum+1, stateNum+3, stateNum+4)
             if next_char().isdigit():
@@ -156,7 +165,7 @@ def lexer(code, console, table):
         if curr.isdigit():
             append_state(curr, 248, 249)
             key += curr
-            check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 249, 250, "num")
+            check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 249, 250, "num", False)
             if next_char() == '.':
                 check_dec(249, 269)
             elif next_char().isdigit():
@@ -217,7 +226,7 @@ def lexer(code, console, table):
     def check_num(s1, s2, s3):
         nonlocal matched
         add_key(s1, s2)
-        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", s2, s3, "num")
+        check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", s2, s3, "num", False)
 
     def check_dec(s1, s2):
         nonlocal matched, key, isDec, stateNum
@@ -231,7 +240,7 @@ def lexer(code, console, table):
     def check_id(s1, s2, s3):
         nonlocal matched
         add_key(s1, s2)
-        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", s2, s3, "iden")
+        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", s2, s3, "iden", True)
 
     def get_id():
         nonlocal pos, key, matched, isIden
@@ -241,7 +250,7 @@ def lexer(code, console, table):
 
         key = curr
         append_state(curr, 0, 188)
-        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 188, 189, "iden")
+        check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 188, 189, "iden", False)
         if next_char() in identifier: 
             check_id(188, 190, 191)
             if next_char() in identifier: 
@@ -331,31 +340,35 @@ def lexer(code, console, table):
         pos -= indexNum
         get_id()
 
-    def get_symbol(delim, expected, stateNum1, stateNum2):
+    def get_symbol(delim, expected, stateNum1, stateNum2, requiredSpace):
         nonlocal matched
         if next_char() in whitespace or next_char() in delim:
             matched = True
-            check_delim(delim, expected)
+            check_delim(delim, expected, requiredSpace)
             append_state("end", stateNum1, stateNum2)
 
-    def check_delim(delim, expected):
+    def check_delim(delim, expected, requiredSpace):
         nonlocal key
-        if isIden:
-            append_key('id')
-        elif isChar:
-            append_key('chr_lit')
-        elif isString:
-            append_key('str_lit')
-        elif isInt:
-            append_key('int_lit')
-        elif isDec:
-            append_key('dec_lit')
-        else:   
-            append_key(key)
+        if not requiredSpace:
+            skip_whitespace()
+
         if next_char() not in delim:
             error_message(f"Expected: {expected} after {key}", key)
+        else:
+            if isIden:
+                append_key('id')
+            elif isChar:
+                append_key('chr_lit')
+            elif isString:
+                append_key('str_lit')
+            elif isInt:
+                append_key('int_lit')
+            elif isDec:
+                append_key('dec_lit')
+            else:   
+                append_key(key)
 
-    def check_if_id(delim, expected, stateNum1, stateNum2, reserved):
+    def check_if_id(delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
         nonlocal matched, key
         if reserved == "word":
             if next_char() not in whitespace and (next_char().isalnum() or next_char() == '_'):
@@ -372,7 +385,7 @@ def lexer(code, console, table):
         if reserved == "num":
             key = key.rstrip('0')
 
-        check_delim(delim, expected)
+        check_delim(delim, expected, requiredSpace)
 
     def append_state(stateChar, stateNum1, stateNum2):
         state.append(f"{stateChar} : {stateNum1}-{stateNum2}")
@@ -389,13 +402,13 @@ def lexer(code, console, table):
                 if next_char() == 'n':
                     add_key(2, 3)
                     matched = True
-                    check_if_id(key_delims['data_delim'], "letter, [, (", 3, 4, "word")
+                    check_if_id(key_delims['data_delim'], "letter, [, (", 3, 4, "word", False)
             elif next_char() == 'r':
                 add_key(1, 5)
                 if next_char() == 'k':
                     add_key(5, 6)
                     matched = True
-                    check_if_id(key_delims['jmp_delim'], ";", 6, 7, "word")
+                    check_if_id(key_delims['jmp_delim'], ";", 6, 7, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -409,7 +422,7 @@ def lexer(code, console, table):
                 if next_char() == 'r':
                     add_key(9, 10)
                     matched = True
-                    check_if_id(key_delims['data_delim'], "letter, [, (", 10, 11, "word")
+                    check_if_id(key_delims['data_delim'], "letter, [, (", 10, 11, "word", False)
             elif next_char() == 'o':
                 add_key(8, 12)
                 if next_char() == 'n':
@@ -419,7 +432,7 @@ def lexer(code, console, table):
                         if next_char() == 't':
                             add_key(14, 15)
                             matched = True
-                            check_if_id(whitespace, "space", 15, 16, "word")
+                            check_if_id(whitespace, "space", 15, 16, "word", True)
             if not matched:
                 get_lexeme()
 
@@ -433,11 +446,11 @@ def lexer(code, console, table):
                 if next_char() == 'c':
                     add_key(18, 19)
                     matched = True
-                    check_if_id(key_delims['data_delim'], "letter, [, (", 19, 20, "word")
+                    check_if_id(key_delims['data_delim'], "letter, [, (", 19, 20, "word", False)
                 elif next_char() == 'f':
                     add_key(18, 21)
                     matched = True
-                    check_if_id(key_delims['def_delim'], ":", 21, 22, "word")
+                    check_if_id(key_delims['def_delim'], ":", 21, 22, "word", False)
             elif next_char() == 'i':
                 add_key(17, 23)
                 if next_char() == 's':
@@ -445,11 +458,11 @@ def lexer(code, console, table):
                     if next_char() == 'p':
                         add_key(24, 25)
                         matched = True
-                        check_if_id(key_delims['state_delim'], "(", 25, 26, "word")
+                        check_if_id(key_delims['state_delim'], "(", 25, 26, "word", False)
             elif next_char() == 'o':
                 add_key(17, 27)
                 matched = True
-                check_if_id(key_delims['block_delim'], "{", 27, 28, "word")
+                check_if_id(key_delims['block_delim'], "{", 27, 28, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -465,13 +478,13 @@ def lexer(code, console, table):
                     if next_char() == 'f':
                         add_key(31, 32)
                         matched = True
-                        check_if_id(key_delims['state_delim'], "(", 32, 33, "word")
+                        check_if_id(key_delims['state_delim'], "(", 32, 33, "word", False)
                 elif next_char() == 's':
                     add_key(30, 34)
                     if next_char() == 'e':
                         add_key(34, 35)
                         matched = True
-                        check_if_id(key_delims['block_delim'], "{", 35, 36, "word")
+                        check_if_id(key_delims['block_delim'], "{", 35, 36, "word", False)
             elif next_char() == 'x':
                 add_key(29, 37)
                 if next_char() == 'i':
@@ -479,7 +492,7 @@ def lexer(code, console, table):
                     if next_char() == 't':
                         add_key(38, 39)
                         matched = True
-                        check_if_id(key_delims['jmp_delim'], ";", 39, 40, "word")
+                        check_if_id(key_delims['jmp_delim'], ";", 39, 40, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -497,14 +510,14 @@ def lexer(code, console, table):
                         if next_char() == 'e':
                             add_key(44, 45)
                             matched = True
-                            check_if_id(key_delims['val_delim'], ";, ,, ), }", 45, 46, "word")
+                            check_if_id(key_delims['val_delim'], ";, ,, ), }", 45, 46, "word", False)
             elif next_char() == 'o':
                 add_key(41, 47)
                 if next_char() == 'r':
                     add_key(47, 48)
                     if next_char() != 'e':
                         matched = True
-                        check_if_id(key_delims['state_delim'], "(", 48, 49, "word")
+                        check_if_id(key_delims['state_delim'], "(", 48, 49, "word", False)
                     else:
                         add_key(48, 50)
                         if next_char() == 'a':
@@ -514,7 +527,7 @@ def lexer(code, console, table):
                                 if next_char() == 'h':
                                     add_key(52, 53)
                                     matched = True
-                                    check_if_id(key_delims['state_delim'], "(", 53, 54, "word")  
+                                    check_if_id(key_delims['state_delim'], "(", 53, 54, "word", False)  
             if not matched:
                 get_lexeme()
 
@@ -526,22 +539,22 @@ def lexer(code, console, table):
             if next_char() == 'f':
                 add_key(55, 56)
                 matched = True
-                check_if_id(key_delims['state_delim'], "(", 56, 57, "word")
+                check_if_id(key_delims['state_delim'], "(", 56, 57, "word", False)
             elif next_char() == 'n':
                 add_key(55, 58)
                 if next_char() != 's' and next_char() != 't':
                     matched = True
-                    check_if_id(whitespace, "identifier", 58, 59, "word")
+                    check_if_id(whitespace, "identifier", 58, 59, "word", True)
                 elif next_char() == 's':
                     add_key(58, 60)
                     if next_char() == 'p':
                         add_key(60, 61)
                         matched = True
-                        check_if_id(key_delims['state_delim'], "(", 61, 62, "word")
+                        check_if_id(key_delims['state_delim'], "(", 61, 62, "word", False)
                 elif next_char() == 't':
                     add_key(58, 63)
                     matched = True
-                    check_if_id(key_delims['data_delim'], "letter, [, (", 63, 64, "word")
+                    check_if_id(key_delims['data_delim'], "letter, [, (", 63, 64, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -555,7 +568,7 @@ def lexer(code, console, table):
                 if next_char() == 'y':
                     add_key(66, 67)
                     matched = True
-                    check_if_id(key_delims['key_delim'], "letter, number, ', \", ~", 67, 68, "word")
+                    check_if_id(whitespace, "literal", 67, 68, "word", True)
             if not matched:
                 get_lexeme()
 
@@ -571,7 +584,7 @@ def lexer(code, console, table):
                     if next_char() == 'n':
                         add_key(71, 72)
                         matched = True
-                        check_if_id(key_delims['state_delim'], "(", 72, 73, "word")
+                        check_if_id(key_delims['state_delim'], "(", 72, 73, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -587,7 +600,7 @@ def lexer(code, console, table):
                     if next_char() == 'e':
                         add_key(76, 77)
                         matched = True
-                        check_if_id(key_delims['val_delim'], ";, ,, ), }", 77, 78, "word")
+                        check_if_id(key_delims['val_delim'], ";, ,, ), }", 77, 78, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -601,13 +614,13 @@ def lexer(code, console, table):
                 if next_char() == 't':
                     add_key(80, 81)
                     matched = True
-                    check_if_id(key_delims['key_delim'], "letter, number, ', \", ~", 81, 82, "word")
+                    check_if_id(whitespace, "literal", 81, 82, "word", True )
             elif next_char() == 's':
                 add_key(79, 83)
                 if next_char() == 'm':
                     add_key(83, 84)
                     matched = True
-                    check_if_id(key_delims['jmp_delim'], ";", 84, 85, "word")
+                    check_if_id(key_delims['jmp_delim'], ";", 84, 85, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -623,18 +636,18 @@ def lexer(code, console, table):
                     if next_char() == 'm':
                         add_key(88, 89)
                         matched = True
-                        check_if_id(whitespace, "identifier", 89, 90, "word")
+                        check_if_id(whitespace, "identifier", 89, 90, "word", True)
             elif next_char() == 't':
                 add_key(86, 91)
                 if next_char() == 'r':
                     add_key(91, 92)
                     if next_char() != 'c':
                         matched = True
-                        check_if_id(key_delims["data_delim"], "letter, [, (", 92, 93, "word")
+                        check_if_id(key_delims["data_delim"], "letter, [, (", 92, 93, "word", False)
                     else:
                         add_key(92, 94)
                         matched = True
-                        check_if_id(whitespace, "identifier", 94, 95, "word")
+                        check_if_id(whitespace, "identifier", 94, 95, "word", True)
             elif next_char() == 'w':
                 add_key(86, 96)
                 if next_char() == 'i':
@@ -646,7 +659,7 @@ def lexer(code, console, table):
                             if next_char() == 'h':
                                 add_key(99, 100)
                                 matched = True
-                                check_if_id(key_delims['state_delim'], "(", 100, 101, "word")
+                                check_if_id(key_delims['state_delim'], "(", 100, 101, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -662,7 +675,7 @@ def lexer(code, console, table):
                     if next_char() == 'e':
                         add_key(104, 105)
                         matched = True
-                        check_if_id(key_delims['val_delim'], ";, ,, ), }", 105, 106, "word")
+                        check_if_id(key_delims['val_delim'], ";, ,, ), }", 105, 106, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -676,7 +689,7 @@ def lexer(code, console, table):
                 if next_char() == 'r':
                     add_key(108, 109)
                     matched = True
-                    check_if_id(whitespace, "identifier", 109, 110, "word")
+                    check_if_id(whitespace, "identifier", 109, 110, "word", True)
             if not matched:
                 get_lexeme()
 
@@ -694,7 +707,7 @@ def lexer(code, console, table):
                         if next_char() == 'e':
                             add_key(114, 115)
                             matched = True
-                            check_if_id(key_delims['state_delim'], "(", 115, 116, "word")
+                            check_if_id(key_delims['state_delim'], "(", 115, 116, "word", False)
             if not matched:
                 get_lexeme()
 
@@ -747,9 +760,9 @@ def lexer(code, console, table):
             if next_char() == '=':
                 add_key(117, 119)
                 matched = True
-                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 119, 120, "symbol")
+                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 119, 120, "symbol", False)
             else:
-                get_symbol(key_delims['asn_delim'], "letter, number, (, ~, !, ', \", {, #", 117, 118)
+                get_symbol(key_delims['asn_delim'], "letter, number, (, ~, !, ', \", {, #", 117, 118, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -762,13 +775,13 @@ def lexer(code, console, table):
             if next_char() == '+':
                 add_key(121, 123)
                 matched = True
-                check_if_id(key_delims['unary_delim'], "letter, number, (, ), ;, ,, ~", 123, 124, "symbol")
+                check_if_id(key_delims['unary_delim'], "letter, number, (, ), ;, ,, ~", 123, 124, "symbol", False)
             elif next_char() == '=':
                 add_key(121, 125)
                 matched = True
-                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 125, 126, "symbol")
+                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 125, 126, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 121, 122)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 121, 122, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -781,13 +794,13 @@ def lexer(code, console, table):
             if next_char() == '-':
                 add_key(127, 129)
                 matched = True
-                check_if_id(key_delims['unary_delim'], "letter, number, (, ), ;, ,, ~", 129, 130, "symbol")
+                check_if_id(key_delims['unary_delim'], "letter, number, (, ), ;, ,, ~", 129, 130, "symbol", False)
             elif next_char() == '=':
                 add_key(127, 131)
                 matched = True
-                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 131, 132, "symbol")
+                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 131, 132, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 127, 128)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 127, 128, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -800,9 +813,9 @@ def lexer(code, console, table):
             if next_char() == '=':
                 add_key(133, 135)
                 matched = True
-                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 135, 136, "symbol")
+                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 135, 136, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 133, 134)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 133, 134, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -815,9 +828,9 @@ def lexer(code, console, table):
             if next_char() == '=':
                 add_key(137, 139)
                 matched = True
-                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 139, 140, "symbol")
+                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 139, 140, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 137, 138)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 137, 138, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -830,9 +843,9 @@ def lexer(code, console, table):
             if next_char() == '=':
                 add_key(141, 143)
                 matched = True
-                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 143, 144, "symbol")
+                check_if_id(key_delims['op_delim'], "letter, number, (, ~", 143, 144, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 141, 142)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 141, 142, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -845,9 +858,9 @@ def lexer(code, console, table):
             if next_char() == '&':
                 add_key(145, 147)
                 matched = True
-                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 147, 148, "symbol")
+                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 147, 148, "symbol", False)
             else:
-                get_symbol(key_delims['concat_delim'], "letter, (, \", ', #", 145, 146)
+                get_symbol(key_delims['concat_delim'], "letter, (, \", ', #", 145, 146, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -860,7 +873,7 @@ def lexer(code, console, table):
             if next_char() == '|':
                 add_key(149, 150)
                 matched = True
-                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 150, 151, "symbol")
+                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 150, 151, "symbol", False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -873,9 +886,9 @@ def lexer(code, console, table):
             if next_char() == '=':
                 add_key(152, 154)
                 matched = True
-                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 154, 155, "symbol")
+                check_if_id(key_delims['relate_delim'], "letter, number, (, ~, !, ', \"", 154, 155, "symbol", False)
             else:
-                get_symbol(key_delims['relate_delim'], "letter, (, \", ', #", 152, 153)
+                get_symbol(key_delims['relate_delim'], "letter, (, \", ', #", 152, 153, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -888,13 +901,13 @@ def lexer(code, console, table):
             if next_char() == '<':
                 add_key(156, 158)
                 matched = True
-                check_if_id(key_delims['var_delim'], "letter, +, -, ], ,", 158, 159, "symbol")
+                check_if_id(key_delims['var_delim'], "letter, +, -, ], ,", 158, 159, "symbol", False)
             elif next_char() == '=':
                 add_key(156, 160)
                 matched = True
-                check_if_id(key_delims['relate1_delim'], "letter, number, (, ~, !", 160, 161, "symbol")
+                check_if_id(key_delims['relate1_delim'], "letter, number, (, ~, !", 160, 161, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 156, 157)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 156, 157, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -907,13 +920,13 @@ def lexer(code, console, table):
             if next_char() == '>':
                 add_key(162, 164)
                 matched = True
-                check_if_id(key_delims['var1_delim'], "ASCII Character", 164, 164, "symbol")
+                check_if_id(key_delims['var1_delim'], "ASCII Character", 164, 164, "symbol", False)
             elif next_char() == '=':
                 add_key(162, 166)
                 matched = True
-                check_if_id(key_delims['relate1_delim'], "letter, number, (, ~, !", 166, 167, "symbol")
+                check_if_id(key_delims['relate1_delim'], "letter, number, (, ~, !", 166, 167, "symbol", False)
             else:
-                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 162, 163)
+                get_symbol(key_delims['op_delim'], "letter, number, (, ~", 162, 163, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -923,7 +936,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 168)
 
-            get_symbol(key_delims['bracket_delim'], "letter, number, ], ,, +, -", 168, 169)
+            get_symbol(key_delims['bracket_delim'], "letter, number, ], ,, +, -", 168, 169, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -933,7 +946,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 170)
 
-            get_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '>'", 170, 171)
+            get_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '>'", 170, 171, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -943,7 +956,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 172)
 
-            get_symbol(key_delims['brace_delim'], "letter, number, +, -, ;, (, ', \", {, }", 172, 173)
+            get_symbol(key_delims['brace_delim'], "letter, number, +, -, ;, (, ', \", {, }", 172, 173, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -953,7 +966,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 174)
 
-            get_symbol(key_delims['brace1_delim'], "letter, number, +, -, ;, (, }, ;, ,", 174, 175)
+            get_symbol(key_delims['brace1_delim'], "letter, number, +, -, ;, (, }, ;, ,", 174, 175, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -963,7 +976,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 176)
 
-            get_symbol(key_delims['paren_delim'], "letter, number, +, -, ;, !, #, ', \", (, )", 176, 177)
+            get_symbol(key_delims['paren_delim'], "letter, number, +, -, ;, !, #, ', \", (, )", 176, 177, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -973,7 +986,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 178)
 
-            get_symbol(key_delims['paren1_delim'], "+, -, *, /, %, =, !, <, >, &, |, {, ), ;", 178, 179)
+            get_symbol(key_delims['paren1_delim'], "+, -, *, /, %, =, !, <, >, &, |, {, ), ;", 178, 179, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -983,7 +996,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 180)
 
-            get_symbol(key_delims['comma_delim'], "letter, number, +, -, ], (, {, \", '", 180, 181)
+            get_symbol(key_delims['comma_delim'], "letter, number, +, -, ], (, {, \", '", 180, 181, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -993,7 +1006,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 182)
 
-            get_symbol(key_delims['semicolon_delim'], "letter, number, +, -, (, }", 182, 183)
+            get_symbol(key_delims['semicolon_delim'], "letter, number, +, -, (, }", 182, 183, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -1003,7 +1016,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 184)
 
-            get_symbol(key_delims['colon_delim'], "letter, number, +, -, (", 184, 185)
+            get_symbol(key_delims['colon_delim'], "letter, number, +, -, (", 184, 185, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -1013,7 +1026,7 @@ def lexer(code, console, table):
             matched = False
             append_state(char, 0, 186)
 
-            get_symbol(key_delims['interpol_delim'], "\"", 186, 187)
+            get_symbol(key_delims['interpol_delim'], "\"", 186, 187, False)
             if not matched:
                 get_key()
                 error_message(f"{key} => invalid operator", key)
@@ -1021,7 +1034,7 @@ def lexer(code, console, table):
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
 
-    print(state)
+    #print(state)
 
     lexeme.clear()
     token.clear()
