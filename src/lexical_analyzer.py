@@ -68,7 +68,7 @@ def lexer(code, console, table):
         ctr = 0
         while True:
             if next_char() is None:  
-                error_message("Expected: \"", string)
+                error_message("Expected: \"", key)
                 break
             if next_char() == '"': 
                 add_key(420, 421)
@@ -349,24 +349,19 @@ def lexer(code, console, table):
 
     def check_delim(delim, expected, requiredSpace):
         nonlocal key
+        if isIden: append_key('id')
+        elif isChar: append_key('chr_lit')
+        elif isString: append_key('str_lit')
+        elif isInt: append_key('int_lit')
+        elif isDec: append_key('dec_lit')
+        else: append_key(key)
+
         if not requiredSpace:
             skip_whitespace()
 
         if next_char() not in delim:
             error_message(f"Expected: {expected} after {key}", key)
-        else:
-            if isIden:
-                append_key('id')
-            elif isChar:
-                append_key('chr_lit')
-            elif isString:
-                append_key('str_lit')
-            elif isInt:
-                append_key('int_lit')
-            elif isDec:
-                append_key('dec_lit')
-            else:   
-                append_key(key)
+            get_char()
 
     def check_if_id(delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
         nonlocal matched, key
