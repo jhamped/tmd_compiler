@@ -69,6 +69,7 @@ def clear_click(event=None):
     console.delete("1.0", tk.END)
     lexeme.clear()
     token.clear()
+    state.clear()
     update_line_numbers()
     window.title("TMD Compiler")
     file_name_label.config(text="") 
@@ -89,6 +90,9 @@ def on_enter_lexical(event):
 def on_leave_lexical(event):
     lexicalBtn.config(fg="black")
 def lexical_click(event):
+    for item in table.get_children():
+        table.delete(item)
+    console.delete("1.0", tk.END)
     code = textFrame.get("1.0", "end")
     lexer(code, console, table)
 
@@ -251,6 +255,7 @@ lineTextBox.tag_configure("right", justify="right")
 # Text editor (textFrame)
 textFrame = tk.Text(codeFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", padx=5, yscrollcommand=code_scroll.set, wrap="none")
 textFrame.pack(side="left", fill="both", expand=True, padx=(0, 5), pady=5)
+textFrame.bind("<Tab>", insert_tab) #CHANGED
 
 # Bind the auto-close function to the relevant keys
 keys_to_bind = ['"', "'", '{', '[', '(', '<', '*', '/']
@@ -287,6 +292,7 @@ console = tk.Text(consoleFrame, bg="#202020", height=15, fg="white", font=("Cons
 console.pack(side="bottom", fill="both")
 console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
 console.tag_configure("ln_col", foreground="#a8a8a8", font=("Consolas", 12))
+console.tag_configure("expected", foreground="#bf384c", font=("Consolas", 12)) #CHANGED
 
 # Right panel
 tableFrame = tk.Frame(window, width=500, bg="#dee4ff")
@@ -294,7 +300,7 @@ tableFrame.pack(side="right", fill="both")
 
 #----------CHANGED-----------
 headingStyle = ttk.Style()
-headingStyle.configure("Custom.Treeview.Heading", font=("Helvetica", 10), background="#dee4ff", relief="flat")
+headingStyle.configure("Custom.Treeview.Heading", font=("Helvetica", 10), background="#f5f6fe", relief="flat")
 headingStyle.map("Custom.Treeview.Heading", background=[("active", "#dee4ff")])
 
 table = ttk.Treeview(tableFrame, columns=("Lexeme", "Token"), show="headings", style="Custom.Treeview")
