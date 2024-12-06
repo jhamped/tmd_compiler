@@ -72,7 +72,7 @@ def lexer(code, console, table):
                 break
             if next_char() == '"': 
                 add_key(420, 421)
-                check_delim(key_delims['lit_delim'], ";, ,, &, ), }", False)
+                check_delim(key_delims['lit_delim'], ";, ,, &, ), }, !, |, =", False)
                 break
             elif next_char() == '\\': 
                 esc = get_char()
@@ -549,7 +549,7 @@ def lexer(code, console, table):
                 elif next_char() == 't':
                     add_key(58, 63)
                     matched = True
-                    check_if_id(key_delims['data_delim'], "letter, [, (", 63, 64, "word", False)
+                    check_if_id(key_delims['data_delim'], "identifier, [, (", 63, 64, "word", False)
             if not matched:
                 get_lexeme()
 
