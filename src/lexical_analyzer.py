@@ -29,13 +29,6 @@ def lexer(code, console, table):
         if pos < len(code):
             return code[pos]
         return None
-    
-    def prev_char():
-        nonlocal pos
-        if pos > 0:
-            pos -= 1
-            return code[pos]
-        return None
 
     def skip_single_comment():  
         while get_char() not in ['\n', None]:
