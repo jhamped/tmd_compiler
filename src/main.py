@@ -90,12 +90,14 @@ def on_enter_lexical(event):
     lexicalBtn.config(fg="white")
 def on_leave_lexical(event):
     lexicalBtn.config(fg="black")
+#---CHANGED---
 def lexical_click(event):
     for item in table.get_children():
         table.delete(item)
     console.delete("1.0", tk.END)
     code = textFrame.get("1.0", "end")
     lexer(code, console, table)
+#---CHANGED---
 
 # File button event
 def on_enter_file(event):
@@ -293,7 +295,7 @@ console = tk.Text(consoleFrame, bg="#202020", height=15, fg="white", font=("Cons
 console.pack(side="bottom", fill="both")
 console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
 console.tag_configure("ln_col", foreground="#a8a8a8", font=("Consolas", 12))
-console.tag_configure("expected", foreground="#bf384c", font=("Consolas", 12)) #CHANGED
+console.tag_configure("expected", foreground="#b23232", font=("Consolas", 12)) #CHANGED
 
 # Right panel
 tableFrame = tk.Frame(window, width=500, bg="#dee4ff")
