@@ -14,12 +14,17 @@ def lexer(code, console, table):
     isDec = False
     matched = False
     
-    def advance():#  
-        nonlocal pos, col
+    def advance():  
+        nonlocal pos, col, line
         if pos < len(code):
             curr = code[pos]
             pos += 1
-            col += 1
+            if curr == '\n':
+                line += 1
+                col = 0
+            else:
+                col += 1
+
             return curr
         return None 
     
@@ -31,10 +36,6 @@ def lexer(code, console, table):
     def skip_whitespace():  
         nonlocal col
         while(char := peek_next()) in whitespace:
-            if char == '\n':
-                new_line()
-            elif char == '\t':
-                col += 3
             advance()
 
     def skip_single_comment():#  
@@ -48,18 +49,13 @@ def lexer(code, console, table):
                 advance() 
                 break
 
-    def new_line():#
-        nonlocal col, line
-        col = 0
-        line += 1
-
     def error_message(error, expected, error_key, expectedError):
         nonlocal line, col
         console.insert(tk.END, "Error: ", "error")
-        console.insert(tk.END, f"{error}\n")
+        console.insert(tk.END, f"{error}")
         if expectedError:
-            console.insert(tk.END, f"        Expected: {expected}\n", "expected")
-        console.insert(tk.END, f"         line {line}, column {col-(len(error_key)-1)}\n", "ln_col")
+            console.insert(tk.END, f"  Expected: {expected}", "expected")
+        console.insert(tk.END, f"\n       line {line}, column {col}\n", "ln_col")
 
     #----------STR_LIT----------
     def get_string():#
@@ -555,7 +551,12 @@ def lexer(code, console, table):
     #----------KEYWORDS----------
 
     #----------SYMBOLS----------
-    def get_symbol():#
+    def get_symbol():
+        nonlocal key, matched
+        def symbol_error():
+            get_key()
+            error_message(f"{key} => invalid operator", "", key, False)
+
         if char == '=':
             match_found(117)
             if peek_next() == '=':
@@ -733,11 +734,6 @@ def lexer(code, console, table):
             key = char
             get_key()
             error_message(f"Invalid: {key}", "", key, False)
-
-        #----------------------
-        def symbol_error():
-            get_key()
-            error_message(f"{key} => invalid operator", "", key, False)
     #----------SYMBOLS----------
 
     #----------CHECKERS----------
@@ -762,7 +758,7 @@ def lexer(code, console, table):
 
     def check_symbol(delim, expected, stateNum1, stateNum2, requiredSpace):
         nonlocal matched
-        if peek_next() in whitespace or peek_next() in delim:
+        if peek_next() in whitespace or peek_next() in delim or peek_next() in punc_symbols:
             matched = True
             check_delim(delim, expected, requiredSpace)
             append_state("end", stateNum1, stateNum2)
@@ -837,7 +833,6 @@ def lexer(code, console, table):
     while (char := advance()) is not None:
         if char == '/' and peek_next() == '/': advance(), skip_single_comment()
         elif char == '/' and peek_next() == '*': advance(), skip_multi_comment()
-        elif char == '\n': new_line()
         elif char == '"': get_string()
         elif char == "'": get_character()       
         elif char.isdigit() or char == '~': get_num()
