@@ -1,5 +1,9 @@
 import string
 
+state = []
+lexeme = []
+token = []
+
 arithmetic_operator = ['+', '-', '*', '/', '%']
 relational_operator = ['==', '!=', '<', '<=', '>', '>=']
 logical_operator = ['&&', '||', '!']
@@ -8,9 +12,7 @@ assignment_operator = ['=', '+=', '-=', '*=', '/=', '%=']
 number_operator = arithmetic_operator + relational_operator + logical_operator + unary_operator
 all_operators = number_operator + assignment_operator
 
-symbols = ['!', '#', '%', '&', '*', '(', ')', '-', '=', '+', '[', ']', '{', '}', ':', ';', ',', '<', '>', '.', '/', '~', '|']
-more_symbols = ['@', '$', '^', '_', '?']
-punc_symbols = more_symbols + symbols
+punc_symbols = ['=', '+', '-', '*', '/', '%', '&', '|', '!', '<', '>', '[', ']', '{', '}', '(', ')', ',', ';', ':', '#', '~', '.', '@', '$', '^', '_', '?']
 quote_symbols = ["'", '"']
 
 alpha = list(string.ascii_letters)
@@ -21,14 +23,13 @@ identifier = alphanumeric + ['_']
 # Regular expression
 keywords = ['strc', 'segm', 'main', 'bln', 'chr', 'int', 'dec', 'str', 'var', 'const', 'true', 'false', 'disp', 'insp', 'if', 
             'elif', 'else', 'switch', 'key', 'def', 'for', 'foreach', 'in', 'do', 'while', 'brk', 'rsm', 'exit', 'ret', 'none']
-reg_symbols =  number_operator + assignment_operator + symbols
 
 whitespace = [' ', '\t', '\n']
 
 # Delimiters
 key1_delims = {
     'state_delim' : whitespace + ['(', '/'], 
-    'block_delim' : whitespace + ['{', '/'],
+    'block_delim' : whitespace + ['{', '/'],    
     'def_delim' : whitespace + [':', '/'],
     'comma_delim' : [']', '(', '{', '"', '\'', '/'] + whitespace + alphanumeric + unary_operator,
     'iden_delim' : whitespace + all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '.', ',', '/'],
