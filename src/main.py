@@ -1,4 +1,5 @@
-from lexical_analyzer import *
+#from lexical_analyzer import *
+from lexer import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import PhotoImage, filedialog
