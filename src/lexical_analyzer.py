@@ -3,6 +3,7 @@ from lexical_func import *
 
 def lexer(code, console, table):
     lex = Lexical(code, console)
+    get = GetLitAndIden(lex)
 
     while (char := lex.advance()) is not None:
         if char == '/' and lex.peek_next() == '/': 
@@ -12,15 +13,15 @@ def lexer(code, console, table):
             lex.advance(), 
             lex.skip_multi_comment()
         elif char == '"': 
-            lex.get_string()
+            get.get_string()
         elif char == "'": 
-            lex.get_character()       
+            get.get_character()       
         elif char.isdigit() or char == '~': 
-            lex.get_num(char)
+            get.get_num(char)
         elif char in alpha: 
-            lex.get_keyword(char)
+            get.get_keyword(char)
         elif char in punc_symbols: 
-            lex.get_symbol(char)
+            get.get_symbol(char)
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
