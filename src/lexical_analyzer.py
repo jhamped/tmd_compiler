@@ -26,7 +26,3 @@ def lexer(code, console, table):
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
     #print(state)
-
-    lexeme.clear()
-    token.clear()
-    state.clear()
