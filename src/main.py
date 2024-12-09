@@ -1,315 +1,613 @@
-#from lexical_analyzer import *
-from lexer import *
+from lexical_analyzer import *
 import tkinter as tk
-from tkinter import ttk
-from tkinter import PhotoImage, filedialog
+from tkinter import ttk, PhotoImage, filedialog, messagebox
 import ctypes as ct
 
-def dark_title_bar(window):
-    window.update()
-    DWMWA_USE_IMMERSIVE_DARK_MODE = 20
-    set_window_attribute = ct.windll.dwmapi.DwmSetWindowAttribute
-    get_parent = ct.windll.user32.GetParent
-    hwnd = get_parent(window.winfo_id())
-    rendering_policy = DWMWA_USE_IMMERSIVE_DARK_MODE
-    value = 2
-    value = ct.c_int(value)
-    set_window_attribute(hwnd, rendering_policy, ct.byref(value), ct.sizeof(value))
+class CustomNotebook(ttk.Notebook):
+    """A ttk Notebook with close buttons on each tab"""
 
-# File operations
-def open_file():
-    # Restrict file dialog to .tmd files primarily
-    file_path = filedialog.askopenfilename(
-        filetypes=[("TMD Files", "*.tmd"), ("All Files", "*.*")]
-    )
-    if file_path:
-        try:
-            if not file_path.endswith(".tmd"):
-                raise ValueError("Only .tmd files are supported.")
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
-                textFrame.delete("1.0", tk.END)
-                textFrame.insert("1.0", content)
+    __initialized = False
 
-            # Extract the file name from the file path
-            file_name = file_path.split("/")[-1] if "/" in file_path else file_path.split("\\")[-1]
-            file_name_label.config(text=file_name)  # Update the navigation bar label
-            
-            window.title(f"TMD Compiler - {file_path}")  # Update window title
-            update_line_numbers()
-        except Exception as e:
-            console.insert(tk.END, f"Error opening file: {str(e)}\n", "error")
+    def __init__(self, *args, **kwargs):
+        if not self.__initialized:
+            self.__initialize_custom_style()
+            self.__inititialized = True
 
-def save_as_file():
-    # Force .tmd as the effective extension
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=".tmd",
-        filetypes=[("TMD Files", "*.tmd")]
-    )
-    if file_path:
-        try:
-            # Ensure the file path ends with .tmd
-            if not file_path.endswith(".tmd"):
-                file_path += ".tmd"
-            with open(file_path, "w", encoding="utf-8") as file:
-                content = textFrame.get("1.0", "end-1c")
-                file.write(content)
+        kwargs["style"] = "CustomNotebook"
+        ttk.Notebook.__init__(self, *args, **kwargs)
 
-                # Extract the file name from the file path
-            file_name = file_path.split("/")[-1] if "/" in file_path else file_path.split("\\")[-1]
-            file_name_label.config(text=file_name)  # Update the navigation bar label
-            
-            window.title(f"TMD Compiler - {file_path}")  # Update window title
-        except Exception as e:
-            console.insert(tk.END, f"Error saving file: {str(e)}\n", "error")
+        self._active = None
 
-def clear_click(event=None):
-    for item in table.get_children():
-        table.delete(item)
-    textFrame.delete("1.0", tk.END)
-    console.delete("1.0", tk.END)
-    lexeme.clear()
-    token.clear()
-    state.clear()
-    update_line_numbers()
-    window.title("TMD Compiler")
-    file_name_label.config(text="") 
+        self.bind("<ButtonPress-1>", self.on_close_press, True)
+        self.bind("<ButtonRelease-1>", self.on_close_release)
+        
 
-# Console close button event
-def consoleClose_click(event):
-    if console_open.get():
-        console.pack_forget()
-        consoleClose.config(text="˄")
-    else:
-        console.pack(side="bottom", fill="both")
-        consoleClose.config(text="˅")
-    console_open.set(not console_open.get())
+    def on_close_press(self, event):
+        """Called when the button is pressed over the close button"""
 
-# Lexical button event
-def on_enter_lexical(event):
-    lexicalBtn.config(fg="white")
-def on_leave_lexical(event):
-    lexicalBtn.config(fg="black")
-#---CHANGED---
-def lexical_click(event):
-    for item in table.get_children():
-        table.delete(item)
-    console.delete("1.0", tk.END)
-    code = textFrame.get("1.0", "end")
-    lexer(code, console, table)
-#---CHANGED---
-
-# File button event
-def on_enter_file(event):
-    file_menu_button.config(fg="white")
-def on_leave_file(event):
-    file_menu_button.config(fg="black")
-
-# Menu drawer event
-def show_file_menu(event):
-    x = file_menu_button.winfo_rootx()
-    y = file_menu_button.winfo_rooty() + file_menu_button.winfo_height()
-    file_menu.post(x, y)
-
-def insert_tab(event):
-    textFrame.insert(tk.INSERT, ' ' * 3)
-    return "break"
-
-# Function to update the line numbers
-def update_line_numbers(event=None):
-    line_numbers = ""
-    
-    line_count = int(textFrame.index('end-1c').split('.')[0])
-    
-    for i in range(1, line_count + 1):
-        if i == 1:
-            line_numbers += f"{i}"
-        else:
-            line_numbers += f"\n{i}"
-    
-    lineTextBox.config(state="normal")
-    lineTextBox.delete("1.0", "end")  
-    lineTextBox.insert("1.0", line_numbers, "right")  
-    lineTextBox.config(state="disabled")
-
-def on_text_change(event=None):
-    update_line_numbers()
-    synchronize_scroll()
-
-def synchronize_scroll():
-    text_frame_scroll_position = textFrame.yview()
-    lineTextBox.yview_moveto(text_frame_scroll_position[0])
-
-def multiple_yview(*args):
-    lineTextBox.yview(*args)
-    textFrame.yview(*args)
-
-# Auto-close marker function
-def auto_close(event, text_widget):
-    closing_markers = {
-        '"': '"',
-        "'": "'",
-        '{': '}', #CHANGED
-        '[': ']',
-        '(': ')',
-        '<': '>>',
-        '/*': '\n\n*/'
-    }
-
-    cursor_index = text_widget.index(tk.INSERT)
-    preceding_char = text_widget.get(f"{cursor_index} - 1c")
-
-    if event.char == "<":
-        if preceding_char == "<":
-            text_widget.insert(tk.INSERT, "<")
-            text_widget.insert(tk.INSERT, ">>")
-            text_widget.mark_set(tk.INSERT, f"{cursor_index} + 1c")
-            return "break"
-        else:
-            text_widget.insert(tk.INSERT, "<")
+        element = self.identify(event.x, event.y)
+        if "close" in element:
+            index = self.index("@%d,%d" % (event.x, event.y))
+            if self.tab(index, 'state') == 'disabled':  # "+" tab is pressed
+                self.add_new_tab(index)
+                return "break"
+            self.state(['pressed'])
+            self._active = index
             return "break"
 
-    if event.char == "*" and preceding_char == "/":
-        text_widget.insert(tk.INSERT, "*")
-        text_widget.insert(tk.INSERT, closing_markers['/*'])
-        text_widget.mark_set(tk.INSERT, f"{cursor_index} + 2c")
-        return "break"
+    def on_close_release(self, event):
+        """Called when the button is released"""
+        if not self.instate(['pressed']):
+            return
 
-    elif event.char in closing_markers and event.char != "*":
-        text_widget.insert(tk.INSERT, event.char)
-        current_pos = text_widget.index(tk.INSERT)
-        closing_marker = closing_markers[event.char]
+        element =  self.identify(event.x, event.y)
+        if "close" not in element:
+            # user moved the mouse off of the close button
+            return
 
-        if event.char == '{':
-            text_widget.insert(current_pos, closing_marker)
-            text_widget.mark_set(tk.INSERT, f"{current_pos} + 0c")
+        index = self.index("@%d,%d" % (event.x, event.y))
+
+        if self._active == index:
+            if len(self.tabs()) > 1:
+                self.forget(index)
+                self.event_generate("<<NotebookTabClosed>>")
+            else:
+                messagebox.showwarning("Warning","Cannot close the remaining tab!")
+        
+        self.state(["!pressed"])
+        self._active = None
+    
+    def __initialize_custom_style(self):
+        style = ttk.Style()
+        style.theme_use("alt")
+        self.images = (
+            tk.PhotoImage("x_close", file="assets/x_close.png"),
+            tk.PhotoImage("x_closeactive", file="assets/x_closeactive.png"),
+            tk.PhotoImage("x_closepressed", file="assets/x_closepressed.png"),
+            tk.PhotoImage("x_notselected", file="")
+        )
+        style.element_create("close", "image", "x_close",
+                            ("active", "pressed", "!disabled", "x_closepressed"),
+                            ("active", "!disabled", "x_closeactive"), 
+                            ("!selected", "x_notselected"),
+                            border=8, sticky='')
+        style.configure("CustomNotebook", background="#1a1a1a", tabmargins=[0, -1.5, 0, 0], relief="flat")
+        style.configure("CustomNotebook.Tab", padding=[0,5], relief="flat", borderwidth="0.5", width=12, anchor="center")
+       
+        style.layout("CustomNotebook", [("CustomNotebook.client", {"sticky": "nswe"})])
+        style.layout("CustomNotebook.Tab", [
+            ("CustomNotebook.tab", {
+                "sticky": "nswe",
+                "children": [
+                    ("CustomNotebook.padding", {
+                        "side": "top",
+                        "sticky": "nswe",
+                        "children": [
+                                    ("CustomNotebook.label", {"side": "left", "sticky": ''}),
+                                    ("CustomNotebook.close", {"side": "left", "sticky": ''}),
+                                ]
+                })
+            ]
+        })
+        ])
+        style.configure("CustomNotebook.Tab", focuscolor=style.configure(".")["background"])
+        style.map(
+            "CustomNotebook.Tab",
+            background=[("selected", "#272727"), ("!selected", "#202020")],
+            foreground=[("selected", "white"), ("!selected", "#616161")],
+        )
+    
+
+class TMDCompiler:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("TMD Compiler")
+        self.window.iconphoto(False, PhotoImage(file="assets/TMD_Logo.png"))
+        self.window.wm_state('zoomed')
+        self.dark_title_bar()
+
+        self.lexeme = []
+        self.token = []
+        self.opened_files = {}  
+        self.create_ui()
+        self.keyboard_shortcut()
+
+    def dark_title_bar(self):
+        self.window.update()
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        set_window_attribute = ct.windll.dwmapi.DwmSetWindowAttribute
+        get_parent = ct.windll.user32.GetParent
+        hwnd = get_parent(self.window.winfo_id())
+        value = ct.c_int(2)
+        set_window_attribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ct.byref(value), ct.sizeof(value))
+
+    def create_ui(self):
+        style = ttk.Style()
+        style.theme_use("alt")
+        
+        self.create_left_panel()
+        self.create_notebook()
+        self.create_console()
+        self.create_code_editor()
+        self.create_right_panel()
+
+    def create_left_panel(self):
+        self.environFrame = tk.Frame(self.window, bg="#202020")
+        self.environFrame.pack(side="left", fill="both", expand=True)
+
+        navFrame = tk.Frame(self.environFrame, bg="#a6b3f1", height=35)
+        navFrame.pack(side="top", fill="x")
+
+        # Load base icons and resize them to a smaller size
+        self.new_icon = tk.PhotoImage(file="assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
+        self.new_hover_icon = tk.PhotoImage(file="assets/save_icon_hover.png").subsample(28, 28)
+        self.open_icon = tk.PhotoImage(file="assets/open_icon.png").subsample(30, 30)
+        self.open_hover_icon = tk.PhotoImage(file="assets/open_icon_hover.png").subsample(30, 30)
+        self.save_icon = tk.PhotoImage(file="assets/save_icon.png").subsample(33, 33)
+        self.save_hover_icon = tk.PhotoImage(file="assets/_new_icon_hover.png").subsample(33, 33)
+
+        # Define hover and leave behavior as methods of the class
+        def on_hover_button(self, button, hover_icon):
+            button.config(image=hover_icon)
+
+        def on_leave_button(self, button, original_icon):
+            button.config(image=original_icon)
+
+        # New button
+        self.new_button = tk.Label(
+            navFrame, image=self.new_icon, text=" New", font=("Helvetica", 10, "bold"),
+            compound="left", bg="#a6b3f1", borderwidth=0, padx=4, pady=8
+        )
+        self.new_button.pack(side="left", padx=5)
+        self.new_button.bind("<Button-1>", lambda e: self.new_file())
+        self.new_button.bind("<Enter>", lambda e: self.new_button.config(image=self.new_hover_icon, fg="white"))
+        self.new_button.bind("<Leave>", lambda e: self.new_button.config(image=self.new_icon, fg="black"))
+        
+        # Separator
+        separator = tk.Canvas(navFrame, width=1, height=30, bg="black", highlightthickness=0)
+        separator.pack(side="left", pady=6, padx=5)
+
+
+        # Open button
+        self.open_button = tk.Label(
+            navFrame, image=self.open_icon, text=" Open", font=("Helvetica", 10, "bold"),
+            compound="left", bg="#a6b3f1", borderwidth=0, padx=4, pady=5
+        )
+        self.open_button.pack(side="left", padx=5)
+        self.open_button.bind("<Button-1>", lambda e: self.open_file())
+        self.open_button.bind("<Enter>", lambda e: self.open_button.config(image=self.open_hover_icon, fg="white"))
+        self.open_button.bind("<Leave>", lambda e: self.open_button.config(image=self.open_icon, fg="black"))
+
+        # Separator
+        separator = tk.Canvas(navFrame, width=1, height=30, bg="black", highlightthickness=0)
+        separator.pack(side="left", pady=6, padx=5)
+
+        
+        # Save button
+        self.save_button = tk.Label(
+            navFrame, image=self.save_icon, text=" Save", font=("Helvetica", 10, "bold"),
+            compound="left", bg="#a6b3f1", borderwidth=0, padx=4, pady=5
+        )
+        self.save_button.pack(side="left", padx=5)
+        self.save_button.bind("<Button-1>", lambda e: self.save_as_file())
+        self.save_button.bind("<Enter>", lambda e: self.save_button.config(image=self.save_hover_icon, fg="white"))
+        self.save_button.bind("<Leave>", lambda e: self.save_button.config(image=self.save_icon, fg="black"))
+
+
+        # Lexical button
+        self.lexicalBtn = tk.Label(
+            navFrame, text="Lexical", font=("Helvetica", 11, "bold"),
+            bg="#a6b3f1", borderwidth=1, relief="solid", width=8
+        )
+        self.lexicalBtn.pack(side="right", pady=5, padx=(0, 15))
+        self.lexicalBtn.bind("<Button-1>", self.lexical_click)
+        self.lexicalBtn.bind("<Enter>", lambda e: self.lexicalBtn.config(fg="white"))
+        self.lexicalBtn.bind("<Leave>", lambda e: self.lexicalBtn.config(fg="black"))
+    
+    def create_notebook(self):
+        # Initialize the CustomNotebook
+        self.notebook = CustomNotebook(self.environFrame)
+        self.notebook.pack(fill="both")
+
+        new_tab_frame = tk.Frame(self.notebook, bg="#272727")
+        
+        new_tab_frame.pack(fill="x",padx=(0, 0), pady=0)
+
+        # Check if the notebook has any existing tabs
+        if len(self.notebook.tabs()) > 0:
+            # Insert at index 0 if there are already tabs
+            self.notebook.insert(0, new_tab_frame, text="Untitled")
         else:
-            text_widget.insert(current_pos, closing_marker)
-            text_widget.mark_set(tk.INSERT, current_pos)
-        return "break"
+            # Add as the first tab if there are no existing tabs
+            self.notebook.add(new_tab_frame, text="Untitled")
+        
+        # Select the new tab
+        self.notebook.select(new_tab_frame)
+
+    def create_code_editor(self):
+        
+        self.codeFrame = tk.Frame(self.environFrame, bg="#272727")
+        self.codeFrame.pack(side="top", fill="both", expand=True)
+        code_scroll = ttk.Scrollbar(self.codeFrame, style="Black.Vertical.TScrollbar")
+
+        self.lineTextBox = tk.Text(self.codeFrame, width=4, bg="#272727", fg="white",
+                                   font=("Courier New", 13), insertbackground="black", padx=5, wrap="none", yscrollcommand=code_scroll.set)
+        self.lineTextBox.pack(side="left", fill="y", padx=(0, 0), pady=0)
+        self.lineTextBox.tag_configure("right", justify="right", relief="flat")
+
+        self.textFrame = tk.Text(self.codeFrame, height=25, bg="#272727", fg="white",
+                                 font=("Courier New", 13), insertbackground="white", padx=5, wrap="none", yscrollcommand=code_scroll.set)
+        self.textFrame.pack(side="left", fill="both", expand=True, padx=(0, 1), pady=0)
+
+        #style scrollbar
+        scrollStyle = ttk.Style()
+        scrollStyle.configure("Black.Vertical.TScrollbar", background="#393939", troughcolor="#202020", arrowcolor="#A3A3A3", bordercolor="#393939")
+        scrollStyle.map("Black.Vertical.TScrollbar",background=[("active", "#393939"), ("disabled", "#393939")],)
+        
+        code_scroll.pack(side="right", fill="y")
+
+        self.textFrame.config(yscrollcommand=code_scroll.set)
+        self.lineTextBox.config(yscrollcommand=code_scroll.set)
+
+        self.textFrame.bind("<KeyRelease>", self.on_text_change)
+        self.textFrame.bind("<Configure>", self.on_text_change)
+        self.notebook.bind("<<NotebookTabChanged>>", self.get_current_tab)
+        
+        self.textFrame.bind("<MouseWheel>", lambda event: self.synchronize_scroll())  
+        self.lineTextBox.bind("<MouseWheel>", lambda event: self.synchronize_scroll1()) 
+        keys_to_bind = ['"', "'", '{', '[', '(', '<', '*', '/']
+        for key in keys_to_bind:
+            self.textFrame.bind(f"<Key-{key}>", lambda event, widget=self.textFrame: self.auto_close(event, widget))
+            
+    def create_console(self):
+        # Create the console frame with an initial fixed height
+        self.consoleFrame = tk.Frame(self.environFrame, bg="#202020", height=200)
+        self.consoleFrame.pack(side="bottom", fill="x")
+        self.consoleFrame.pack_propagate(False)  # Prevent auto-resizing
+
+        # Add a panel for the draggable area
+        consolePanel = tk.Frame(self.consoleFrame, bg="#1A1A1A", height=10, cursor="sb_v_double_arrow")
+        consolePanel.pack(side="top", fill="x")
+
+        self.consoleClose = tk.Label(consolePanel, text="˅", font=("Consolas", 13),
+                                    fg="#ffffff", bg="#1A1A1A")
+        self.consoleClose.pack(side="right", pady=(7, 0), padx=(0, 15))
+        self.consoleClose.bind("<Button-1>", self.consoleClose_click)
+
+        # Create the text widget for the console
+        self.console = tk.Text(
+            self.consoleFrame, bg="#202020", fg="white",
+            font=("Consolas", 12), padx=10, pady=10, borderwidth=1, relief="solid"
+        )
+        self.console.pack(side="bottom", fill="both", expand=True)
+        self.console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
+        self.console.tag_configure("ln_col", foreground="#a8a8a8", font=("Consolas", 12))
+        self.consoleFlag = False
+        # Bind mouse events for resizing
+        consolePanel.bind("<ButtonPress-1>", self.start_drag)
+        consolePanel.bind("<B1-Motion>", self.perform_drag)
+
+    def start_drag(self, event):
+        # Record the initial mouse position and console height
+        self.start_y = event.y_root
+        self.start_height = self.consoleFrame.winfo_height()
+        # Store the total height of the environment frame for boundaries
+        self.environ_height = self.environFrame.winfo_height()
+
+    def perform_drag(self, event):
+        # Calculate the vertical change in mouse position
+        delta_y = self.start_y - event.y_root
+        new_console_height = self.start_height + delta_y
+        """
+        self.console.insert(1.0,f"height:   {new_console_height}   delta_y: {delta_y}   start: {self.start_y}   y_root: {event.y_root}\n")
+        """
+        
+        if new_console_height > 200:
+            self.consoleClose.config(text="˅")
+            self.consoleFlag = True
+        else:
+            self.consoleClose.config(text="˄")
+            
+        # Define minimum and maximum heights for the console
+        min_console_height = 50  # Minimum height for the console
+        max_console_height = self.environ_height - 50  # Leave at least 50px for the code editor
+
+        # Constrain the new console height within the allowed range
+        new_console_height = max(min_console_height, min(new_console_height, max_console_height))
+
+        # Update the console frame's height
+        self.consoleFrame.config(height=new_console_height)
+
+        # Update the code editor frame's height
+        code_editor_height = self.environ_height - new_console_height
+        self.codeFrame.pack_configure(height=code_editor_height)
+
+        # Force the code editor to update its layout
+        self.codeFrame.update_idletasks()
+        
+    def consoleClose_click(self, event):
+        if self.consoleClose.cget("text") == "˅":
+            self.console.pack_forget()  # Hide the console
+            self.consoleClose.config(text="˄")
+            self.consoleFrame.config(height=30)  # Minimized height for the header only
+        else:
+            self.console.pack(side="bottom", fill="both", expand=True)  # Show the console
+            self.consoleClose.config(text="˅")
+            self.consoleFrame.config(height=200)  # Restore to default height
+
+    def create_right_panel(self):
+        tableFrame = tk.Frame(self.window, width=500, bg="#e5e2ed")
+        tableFrame.pack(side="right", fill="both")
+
+        headingStyle = ttk.Style()
+        headingStyle.configure("Custom.Treeview.Heading", font=("Helvetica", 10), background="#dee4ff", relief="flat")
+        headingStyle.map("Custom.Treeview.Heading", background=[("active", "#dee4ff")])
+
+        self.table = ttk.Treeview(tableFrame, columns=("Lexeme", "Token"), show="headings", style="Custom.Treeview")
+        self.table.heading("#1", text="Lexeme")
+        self.table.heading("#2", text="Token")
+        self.table.pack(fill="both", expand=True)
+
+    def multiple_yview(self, *args):
+        self.lineTextBox.yview(*args)
+        self.textFrame.yview(*args)
+    
+    def clear_text(self):
+        current_tab = self.notebook.select()  
+        for item in self.table.get_children():
+            self.table.delete(item)
+        self.textFrame.delete("1.0", tk.END)
+        self.console.delete("1.0", tk.END)
+        self.lexeme.clear()
+        self.token.clear()
+        current_tab = self.notebook.select()
+        self.notebook.tab(current_tab, text="Untitled")  
+        
+        self.update_line_numbers()
+        
+    def has_text(self):
+        if len(self.textFrame.get("1.0", "end-1c").strip()) > 0:
+            return True
+        else:
+            return False
+    
+    def new_file(self, event=None):
+        current_tab = self.notebook.select()  
+        self.current_tab_name = self.notebook.tab(current_tab, "text") 
+        
+        if self.has_text() and self.current_tab_name == "Untitled":
+            resp = messagebox.askyesno("Save as file",f"{self.current_tab_name} is unsaved! Do you want to save?")
+            if resp:
+                self.save_as_file()
+            else:
+                self.clear_text()
+        elif self.current_tab_name != "Untitled":
+            resp = messagebox.askyesno("Save as file",f"{self.current_tab_name} is unsaved! Do you want to save?")
+            if resp:
+                self.save_as_file()
+            else:
+                self.notebook.tab(current_tab, text="Untitled")
+                self.clear_text()
+                print("a")
+        else: 
+            
+            self.notebook.tab(current_tab, text="Untitled")
+            self.clear_text()
+            print("b")
+            
+    def open_file(self):
+        current_tab = self.notebook.select()  
+        self.current_tab_name = self.notebook.tab(current_tab, "text") 
+        resp = False
+        if self.current_tab_name == "Untitled":
+            if self.has_text() and self.current_tab_name == "Untitled":
+                resp = messagebox.askyesno("Open file",f"{self.current_tab_name} is unsaved! Do you want to save?")
+                if resp:
+                    self.save_as_file()
+                
+        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    fileName = file_path.split("/")[-1]
+                    if len(fileName) > 13:
+                        fileName = fileName[:10] + "…"
+                    file_info = {"name": fileName, "path": file_path}
+                    
+                    index = self.find_tab_index(fileName)
+                    if index is not None:
+                        self.notebook.forget(index)
+                        
+                    self.opened_files[file_info["name"]] = file_info
+
+                    new_frame = tk.Frame(self.notebook, bg="#272727")
+                    self.notebook.add(new_frame, text=fileName)  #
+                    self.notebook.select(new_frame)
+                    
+                    content = file.read()
+                    self.textFrame.delete("1.0", tk.END)
+                    self.textFrame.insert("1.0", content)
+                    
+                    if not resp or not self.has_text:
+                        self.forget_tab_by_name("Untitled")
+                    self.update_line_numbers()
+
+            except Exception as e:
+                self.console.insert(tk.END, f"Error opening file: {str(e)}\n", "error")
+            
+    
+    def save_as_file(self):
+        current_tab = self.notebook.select()  
+        self.current_tab_name = self.notebook.tab(current_tab, "text")
+        if self.current_tab_name == "Untitled":
+            file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                    filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+            if file_path:
+                try:
+                    with open(file_path, "w", encoding="utf-8") as file:
+                        content = self.textFrame.get("1.0", "end-1c")
+                        file.write(content)
+                    
+                    current_tab = self.notebook.select()
+                    if len(self.current_tab_name) < 15:
+                        filename = file_path.split("/")[-1]
+                        fileName = filename[:13] + "..."
+                    else:
+                        fileName = file_path.split("/")[-1]
+                        
+                    self.notebook.tab(current_tab, text=fileName)  
+
+                    self.opened_files[self.notebook.tab(current_tab, "text")] = {"path": file_path}
+                    
+                    self.window.title(f"TMD Compiler - {file_path}")
+                except Exception as e:
+                    self.console.insert(tk.END, f"Error saving file: {str(e)}\n", "error")
+        else:
+            current_tab = self.notebook.select()  
+            self.current_tab_name = self.notebook.tab(current_tab, "text") 
+            file_info = self.opened_files.get(self.current_tab_name)
+            
+            if self.current_tab_name == "Untitled":
+                self.save_as_file()
+            try:
+                file_path = file_info["path"] 
+                with open(file_path, "w", encoding="utf-8") as file:
+                    content = self.textFrame.get("1.0", "end-1c")
+                    file.write(content)
+            except Exception as e:
+                self.console.insert(tk.END, f"Error saving file: {str(e)}\n", "error")
+                
+    def get_current_tab(self, event):
+        current_tab = self.notebook.select()  
+        self.current_tab_name = self.notebook.tab(current_tab, "text") 
+        
+        if self.current_tab_name == "Untitled":
+            return
+        
+        file_info = self.opened_files.get(self.current_tab_name)
+        if file_info:  
+            file_path = file_info["path"]  
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                    self.textFrame.delete("1.0", tk.END)
+                    self.textFrame.insert("1.0", content)
+                self.window.title(f"TMD Compiler - {file_path}")
+                self.update_line_numbers()
+            except Exception as e:
+                self.console.insert(tk.END, f"Error opening file: {str(e)}\n", "error")
+        else:
+            self.console.insert(tk.END, "Error: No file info found for the current tab.\n", "error")
+    def find_tab_index(self, name):
+        for index in range(self.notebook.index("end")):
+            if self.notebook.tab(index, "text") == name:
+                return index
+        return
+    
+    def forget_tab_by_name(self, name):
+        index = self.find_tab_index(name)
+        if index is not None:
+            self.notebook.forget(index)
+    # Auto-close marker function
+    
+    def auto_close(self, event, text_widget):
+        closing_markers = {
+            '"': '"',
+            "'": "'",
+            '{': '   }',
+            '[': ']',
+            '(': ')',
+            '<': '>>',
+            '/*': '   */'
+        }
+
+        cursor_index = text_widget.index(tk.INSERT)
+        preceding_char = text_widget.get(f"{cursor_index} - 1c")
+
+        if event.char == "<":
+            if preceding_char == "<":
+                text_widget.insert(tk.INSERT, "<")
+                text_widget.insert(tk.INSERT, ">>")
+                text_widget.mark_set(tk.INSERT, f"{cursor_index} + 1c")
+                return "break"
+            else:
+                text_widget.insert(tk.INSERT, "<")
+                return "break"
+
+        if event.char == "*" and preceding_char == "/":
+            text_widget.insert(tk.INSERT, "*")
+            text_widget.insert(tk.INSERT, closing_markers['/*'])
+            text_widget.mark_set(tk.INSERT, f"{cursor_index} + 2c")
+            return "break"
+
+        elif event.char in closing_markers and event.char != "*":
+            text_widget.insert(tk.INSERT, event.char)
+            current_pos = text_widget.index(tk.INSERT)
+            closing_marker = closing_markers[event.char]
+
+            if event.char == '{':
+                text_widget.insert(current_pos, closing_marker)
+                text_widget.mark_set(tk.INSERT, f"{current_pos} + 1c")
+            else:
+                text_widget.insert(current_pos, closing_marker)
+                text_widget.mark_set(tk.INSERT, current_pos)
+            return "break"
+
+    def on_enter_lexical(self, event):
+        self.lexicalBtn.config(fg="white")
+    def on_leave_lexical(self,event):
+        self.lexicalBtn.config(fg="black")
+    def lexical_click(self, event):
+        for item in self.table.get_children():
+            self.table.delete(item)
+        self.console.delete("1.0", tk.END)
+        code = self.textFrame.get("1.0", "end")
+        lexer(code, self.console, self.table)
+
+    def update_line_numbers(self, event=None):
+        line_numbers = ""
+        line_count = int(self.textFrame.index('end-1c').split('.')[0])
+        line_numbers = "\n".join(str(i) for i in range(1, line_count + 1))
+
+        self.lineTextBox.config(state="normal")
+        self.lineTextBox.delete("1.0", "end")
+        self.lineTextBox.insert("1.0", line_numbers, "right")
+        self.lineTextBox.config(state="disabled")
+
+    def on_text_change(self, event=None):
+        self.update_line_numbers()
+        self.synchronize_scroll()
+
+    def synchronize_scroll(self):
+        self.text_frame_scroll_position = self.textFrame.yview()
+        self.lineTextBox.yview_moveto(self.text_frame_scroll_position[0])
+    
+    def synchronize_scroll1(self):
+        self.line_frame_scroll_position = self.lineTextBox.yview()
+        self.textFrame.yview_moveto(self.line_frame_scroll_position[0])
+
+    def _show_file_menu(self, event):
+        x = self.file_menu_button.winfo_rootx()
+        y = self.file_menu_button.winfo_rooty() + self.file_menu_button.winfo_height()
+        self.file_menu.post(x, y)
+    def doubleclick(self):
+        print("doubleclick")
+    def singleclick(self):
+        print
+    def keyboard_shortcut(self, event=None):
+        self.window.bind("<Control-s>", lambda event: self.save_as_file())
+        self.window.bind("<Control-S>", lambda event: self.save_as_file())
+        self.window.bind("<Control-o>", lambda event: self.open_file())
+        self.window.bind("<Control-O>", lambda event: self.open_file())
+        self.window.bind("<Control-n>", lambda event: self.new_file())
+        self.window.bind("<Control-N>", lambda event: self.new_file())
+        self.lineTextBox.bind("<Double-Button-1>", lambda event: self.doubleclick())
+        self.lineTextBox.bind("<Double-Button-1>", lambda event: self.singleclick())
+        
+    def run(self):
+        self.window.mainloop()
 
 
-# Main window
-window = tk.Tk()
-window.title("TMD Compiler")
-icon = PhotoImage(file="TMD_Compiler/assets/TMD_Logo.png")
-window.iconphoto(False, icon)
-window.wm_state('zoomed')
-dark_title_bar(window)
-
-console_open = tk.BooleanVar(value=True)
-
-# Left panel
-environFrame = tk.Frame(window, bg="#202020")
-environFrame.pack(side="left", fill="both", expand=True)
-
-# Navigation bar
-navFrame = tk.Frame(environFrame, bg="#a6b3f1", height=8)
-navFrame.pack(side="top", fill="x")
-
-# File name label (centered)
-file_name_label = tk.Label(
-    navFrame, text="", font=("Helvetica", 10, "bold"), bg="#a6b3f1", fg="black"
-)
-file_name_label.place(relx=0.5, rely=0.5, anchor="center")  # Center-aligned
-
-# File drawer (Menu button for File operations)
-file_menu_button = tk.Label(navFrame, text="File", font=("Helvetica", 11, "bold"), bg="#a6b3f1", fg="black")
-file_menu_button.pack(side="left", pady=5, padx=(15, 0))
-file_menu_button.bind("<Button-1>", show_file_menu)
-file_menu_button.bind("<Enter>", on_enter_file)
-file_menu_button.bind("<Leave>", on_leave_file)
-
-# Load and resize icons 
-open_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon.png").subsample(50, 50)  
-save_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon.png").subsample(50, 50)
-new_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon.png").subsample(50, 50)
-
-# File menu
-file_menu = tk.Menu(file_menu_button, tearoff=0, bg="#a6b3f1", fg="black", font=("Helvetica", 10))
-file_menu.add_command(label="New", image=new_icon, compound="left", command=clear_click)
-file_menu.add_command(label="Open", image=open_icon, compound="left", command=open_file)
-file_menu.add_command(label="Save", image=save_icon, compound="left", command=save_as_file)
-
-# Lexical button
-lexicalBtn = tk.Label(navFrame, text="Lexical", font=("Helvetica", 11, "bold"), bg="#a6b3f1", borderwidth=1, relief="solid", width=8)
-lexicalBtn.pack(side="right", pady=5, padx=(0, 15))
-lexicalBtn.bind("<Button-1>", lexical_click)
-lexicalBtn.bind("<Enter>", on_enter_lexical)
-lexicalBtn.bind("<Leave>", on_leave_lexical)
-
-# Code frame
-codeFrame = tk.Frame(environFrame, bg="#202020")
-codeFrame.pack(side="top", fill="both", expand=True)
-
-#style scrollbar
-scrollStyle = ttk.Style()
-scrollStyle.theme_use("clam")
-scrollStyle.configure("Black.Vertical.TScrollbar", background="#393939", troughcolor="#202020", arrowcolor="#A3A3A3", bordercolor="#393939")
-scrollStyle.map("Black.Vertical.TScrollbar",background=[("active", "#393939"), ("disabled", "#393939")],)
-
-code_scroll = ttk.Scrollbar(codeFrame, style="Black.Vertical.TScrollbar")
-
-# Line numbers (lineTextBox)
-lineTextBox = tk.Text(codeFrame, width=4, bg="#202020", fg="white", font=("Courier New", 13), insertbackground="black", padx=5, yscrollcommand=code_scroll.set, wrap="none", state="disabled")
-lineTextBox.pack(side="left", fill="y", padx=(5, 0), pady=5)
-lineTextBox.tag_configure("right", justify="right")
-
-# Text editor (textFrame)
-textFrame = tk.Text(codeFrame, height=25, bg="#272727", fg="white", font=("Courier New", 13), insertbackground="white", padx=5, yscrollcommand=code_scroll.set, wrap="none")
-textFrame.pack(side="left", fill="both", expand=True, padx=(0, 5), pady=5)
-textFrame.bind("<Tab>", insert_tab) #CHANGED
-
-# Bind the auto-close function to the relevant keys
-keys_to_bind = ['"', "'", '{', '[', '(', '<', '*', '/']
-for key in keys_to_bind:
-    textFrame.bind(f"<Key-{key}>", lambda event, widget=textFrame: auto_close(event, widget))
-
-textFrame.config(yscrollcommand=code_scroll.set)
-lineTextBox.config(yscrollcommand=code_scroll.set)
-
-code_scroll.pack(side="right", fill="y")
-code_scroll.config(command=multiple_yview)
-
-textFrame.bind("<KeyRelease>", on_text_change)
-textFrame.bind("<Configure>", on_text_change)
-
-# Console frame
-consoleFrame = tk.Frame(environFrame, bg="#202020")
-consoleFrame.pack(side="bottom", fill="both")
-
-# Console panel
-consolePanel = tk.Frame(consoleFrame, bg="#202020", height=3)
-consolePanel.pack(side="top", fill="both")
-
-# Console close button
-consoleClose = tk.Label(consolePanel, text="˅", font=("Consolas", 13), fg="#ffffff", bg="#202020")
-consoleClose.pack(side="right", pady=(7, 0), padx=(0, 15))
-consoleClose.bind("<Button-1>", consoleClose_click)
-
-textFrame.bind("<MouseWheel>", lambda event: synchronize_scroll())  
-lineTextBox.bind("<MouseWheel>", lambda event: synchronize_scroll()) 
-
-# Console
-console = tk.Text(consoleFrame, bg="#202020", height=15, fg="white", font=("Consolas", 12), padx=10, pady=10, borderwidth=1, relief="solid")
-console.pack(side="bottom", fill="both")
-console.tag_configure("error", foreground="#b23232", font=("Consolas", 12, "bold"))
-console.tag_configure("ln_col", foreground="#a8a8a8", font=("Consolas", 12))
-console.tag_configure("expected", foreground="#b23232", font=("Consolas", 12)) #CHANGED
-
-# Right panel
-tableFrame = tk.Frame(window, width=500, bg="#dee4ff")
-tableFrame.pack(side="right", fill="both")
-
-#----------CHANGED-----------
-headingStyle = ttk.Style()
-headingStyle.configure("Custom.Treeview.Heading", font=("Helvetica", 10), background="#f5f6fe", relief="flat")
-headingStyle.map("Custom.Treeview.Heading", background=[("active", "#dee4ff")])
-
-table = ttk.Treeview(tableFrame, columns=("Lexeme", "Token"), show="headings", style="Custom.Treeview")
-table.heading("#1", text="Lexeme")
-table.heading("#2", text="Token")
-table.pack(fill="both", expand=True)
-#---------CHANGED-----------
-
-window.mainloop()
+if __name__ == "__main__":
+    app = TMDCompiler()
+    app.run()
