@@ -140,11 +140,11 @@ class TMDCompiler:
 
         # Load base icons and resize them to a smaller size
         self.new_icon = tk.PhotoImage(file="assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
-        self.new_hover_icon = tk.PhotoImage(file="assets/save_icon_hover.png").subsample(28, 28)
+        self.new_hover_icon = tk.PhotoImage(file="assets/_new_icon_hover.png").subsample(28, 28)
         self.open_icon = tk.PhotoImage(file="assets/open_icon.png").subsample(30, 30)
         self.open_hover_icon = tk.PhotoImage(file="assets/open_icon_hover.png").subsample(30, 30)
         self.save_icon = tk.PhotoImage(file="assets/save_icon.png").subsample(33, 33)
-        self.save_hover_icon = tk.PhotoImage(file="assets/_new_icon_hover.png").subsample(33, 33)
+        self.save_hover_icon = tk.PhotoImage(file="assets/save_icon_hover.png").subsample(33, 33)
 
         # Define hover and leave behavior as methods of the class
         def on_hover_button(self, button, hover_icon):
@@ -238,6 +238,8 @@ class TMDCompiler:
         self.textFrame = tk.Text(self.codeFrame, height=25, bg="#272727", fg="white",
                                  font=("Courier New", 13), insertbackground="white", padx=5, wrap="none", yscrollcommand=code_scroll.set)
         self.textFrame.pack(side="left", fill="both", expand=True, padx=(0, 1), pady=0)
+        self.textFrame.bind("<Tab>", self.insert_tab)
+
 
         #style scrollbar
         scrollStyle = ttk.Style()
@@ -405,7 +407,7 @@ class TMDCompiler:
                 if resp:
                     self.save_as_file()
                 
-        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+        file_path = filedialog.askopenfilename(filetypes=[("TMD Files", "*.tmd")])
         if file_path:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
@@ -440,8 +442,8 @@ class TMDCompiler:
         current_tab = self.notebook.select()  
         self.current_tab_name = self.notebook.tab(current_tab, "text")
         if self.current_tab_name == "Untitled":
-            file_path = filedialog.asksaveasfilename(defaultextension=".txt",
-                                                    filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+            file_path = filedialog.asksaveasfilename(defaultextension=".tmd",
+                                                    filetypes=[("TMD Files", "*.tmd")])
             if file_path:
                 try:
                     with open(file_path, "w", encoding="utf-8") as file:
@@ -508,17 +510,21 @@ class TMDCompiler:
         index = self.find_tab_index(name)
         if index is not None:
             self.notebook.forget(index)
+
+    def insert_tab(self, event):
+        self.textFrame.insert(tk.INSERT, ' ' * 3)
+        return "break"
+
     # Auto-close marker function
-    
     def auto_close(self, event, text_widget):
         closing_markers = {
             '"': '"',
             "'": "'",
-            '{': '   }',
+            '{': '}',
             '[': ']',
             '(': ')',
             '<': '>>',
-            '/*': '   */'
+            '/*': '\n\n*/'
         }
 
         cursor_index = text_widget.index(tk.INSERT)
@@ -547,7 +553,7 @@ class TMDCompiler:
 
             if event.char == '{':
                 text_widget.insert(current_pos, closing_marker)
-                text_widget.mark_set(tk.INSERT, f"{current_pos} + 1c")
+                text_widget.mark_set(tk.INSERT, f"{current_pos} + 0c")
             else:
                 text_widget.insert(current_pos, closing_marker)
                 text_widget.mark_set(tk.INSERT, current_pos)
@@ -590,10 +596,7 @@ class TMDCompiler:
         x = self.file_menu_button.winfo_rootx()
         y = self.file_menu_button.winfo_rooty() + self.file_menu_button.winfo_height()
         self.file_menu.post(x, y)
-    def doubleclick(self):
-        print("doubleclick")
-    def singleclick(self):
-        print
+    
     def keyboard_shortcut(self, event=None):
         self.window.bind("<Control-s>", lambda event: self.save_as_file())
         self.window.bind("<Control-S>", lambda event: self.save_as_file())
@@ -601,8 +604,7 @@ class TMDCompiler:
         self.window.bind("<Control-O>", lambda event: self.open_file())
         self.window.bind("<Control-n>", lambda event: self.new_file())
         self.window.bind("<Control-N>", lambda event: self.new_file())
-        self.lineTextBox.bind("<Double-Button-1>", lambda event: self.doubleclick())
-        self.lineTextBox.bind("<Double-Button-1>", lambda event: self.singleclick())
+        self.window.bind("<Tab>", lambda event: self.insertTab())
         
     def run(self):
         self.window.mainloop()
