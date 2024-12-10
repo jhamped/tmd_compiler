@@ -420,8 +420,8 @@ class TMDCompiler:
                         if resp:
                             self.save_as_file()
                     fileName = file_path.split("/")[-1]
-                    if len(fileName) > 12:
-                        fileName = fileName[:12]
+                    if len(fileName) > 11:
+                        fileName = fileName[:11]
                     file_info = {"name": fileName, "path": file_path}
                     
                     index = self.find_tab_index(fileName)
@@ -459,9 +459,10 @@ class TMDCompiler:
                         file.write(content)
                     
                     current_tab = self.notebook.select()
-                    if len(self.current_tab_name) < 12:
-                        filename = file_path.split("/")[-1]
-                        fileName = filename[:12]
+                    if len(self.current_tab_name) < 11:
+                        fileName = file_path.split("/")[-1]
+                        fileName = fileName[:11]
+                        
                     else:
                         fileName = file_path.split("/")[-1]
                         
