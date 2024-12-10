@@ -1,4 +1,4 @@
-from lexer import *
+from lexical_analyzer import *
 import tkinter as tk
 from tkinter import ttk, PhotoImage, filedialog, messagebox
 import ctypes as ct
@@ -61,9 +61,9 @@ class CustomNotebook(ttk.Notebook):
         style = ttk.Style()
         style.theme_use("alt")
         self.images = (
-            tk.PhotoImage("x_close", file="TMD_Compiler/assets/x_close.png"),
-            tk.PhotoImage("x_closeactive", file="TMD_Compiler/assets/x_closeactive.png"),
-            tk.PhotoImage("x_closepressed", file="TMD_Compiler/assets/x_closepressed.png"),
+            tk.PhotoImage("x_close", file="assets/x_close.png"),
+            tk.PhotoImage("x_closeactive", file="assets/x_closeactive.png"),
+            tk.PhotoImage("x_closepressed", file="assets/x_closepressed.png"),
             tk.PhotoImage("x_notselected", file="")
         )
         style.element_create("close", "image", "x_close",
@@ -102,7 +102,7 @@ class TMDCompiler:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("TMD Compiler")
-        self.window.iconphoto(False, PhotoImage(file="TMD_Compiler/assets/TMD_Logo.png"))
+        self.window.iconphoto(False, PhotoImage(file="assets/TMD_Logo.png"))
         self.window.wm_state('zoomed')
         self.dark_title_bar()
 
@@ -139,12 +139,12 @@ class TMDCompiler:
         navFrame.pack(side="top", fill="x")
 
         # Load base icons and resize them to a smaller size
-        self.new_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
-        self.new_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon_hover.png").subsample(28, 28)
-        self.open_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon.png").subsample(30, 30)
-        self.open_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon_hover.png").subsample(30, 30)
-        self.save_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon.png").subsample(33, 33)
-        self.save_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon_hover.png").subsample(33, 33)
+        self.new_icon = tk.PhotoImage(file="assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
+        self.new_hover_icon = tk.PhotoImage(file="assets/_new_icon_hover.png").subsample(28, 28)
+        self.open_icon = tk.PhotoImage(file="assets/open_icon.png").subsample(30, 30)
+        self.open_hover_icon = tk.PhotoImage(file="assets/open_icon_hover.png").subsample(30, 30)
+        self.save_icon = tk.PhotoImage(file="assets/save_icon.png").subsample(33, 33)
+        self.save_hover_icon = tk.PhotoImage(file="assets/save_icon_hover.png").subsample(33, 33)
 
         # Define hover and leave behavior as methods of the class
         def on_hover_button(self, button, hover_icon):
@@ -236,7 +236,7 @@ class TMDCompiler:
         self.lineTextBox.tag_configure("right", justify="right", relief="flat")
 
         self.textFrame = tk.Text(self.codeFrame, height=25, bg="#272727", fg="white",
-                                 font=("Courier New", 13), insertbackground="white", padx=5, wrap="none", yscrollcommand=code_scroll.set)
+                                 font=("Courier New", 13), insertbackground="white", padx=5, wrap="none", yscrollcommand=code_scroll.set, undo=True)
         self.textFrame.pack(side="left", fill="both", expand=True, padx=(0, 1), pady=0)
         self.textFrame.bind("<Tab>", self.insert_tab)
 
@@ -387,33 +387,41 @@ class TMDCompiler:
             resp = messagebox.askyesno("Save as file",f"{self.current_tab_name} is unsaved! Do you want to save?")
             if resp:
                 self.save_as_file()
+                self.notebook.tab(current_tab, text="Untitled")
+                self.clear_text()
+
             else:
                 self.notebook.tab(current_tab, text="Untitled")
                 self.clear_text()
-                print("a")
         else: 
             
             self.notebook.tab(current_tab, text="Untitled")
             self.clear_text()
-            print("b")
             
     def open_file(self):
         current_tab = self.notebook.select()  
         self.current_tab_name = self.notebook.tab(current_tab, "text") 
         resp = False
+        flag = True
         if self.current_tab_name == "Untitled":
             if self.has_text() and self.current_tab_name == "Untitled":
                 resp = messagebox.askyesno("Open file",f"{self.current_tab_name} is unsaved! Do you want to save?")
                 if resp:
-                    self.save_as_file()
-                
+                    self.save_as_file() 
+                    current_tab = self.notebook.select()
+                    flag = False
+                    self.current_tab_name = self.notebook.tab(current_tab, "text") 
         file_path = filedialog.askopenfilename(filetypes=[("TMD Files", "*.tmd")])
         if file_path:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
+                    if flag:
+                        resp = messagebox.askyesno("Open file",f"Do you want to save first?")
+                        if resp:
+                            self.save_as_file()
                     fileName = file_path.split("/")[-1]
-                    if len(fileName) > 13:
-                        fileName = fileName[:10] + "…"
+                    if len(fileName) > 12:
+                        fileName = fileName[:12]
                     file_info = {"name": fileName, "path": file_path}
                     
                     index = self.find_tab_index(fileName)
@@ -451,9 +459,9 @@ class TMDCompiler:
                         file.write(content)
                     
                     current_tab = self.notebook.select()
-                    if len(self.current_tab_name) < 15:
+                    if len(self.current_tab_name) < 12:
                         filename = file_path.split("/")[-1]
-                        fileName = filename[:13] + "..."
+                        fileName = filename[:12]
                     else:
                         fileName = file_path.split("/")[-1]
                         
