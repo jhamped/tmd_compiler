@@ -403,6 +403,9 @@ class TMDCompiler:
         self.current_tab_name = self.notebook.tab(current_tab, "text") 
         resp = False
         flag = True
+        total_tabs = len(self.notebook.tabs())
+        if total_tabs > 11:
+            return
         if self.current_tab_name == "Untitled":
             if self.has_text() and self.current_tab_name == "Untitled":
                 resp = messagebox.askyesno("Open file",f"{self.current_tab_name} is unsaved! Do you want to save?")
@@ -440,6 +443,7 @@ class TMDCompiler:
                     
                     if not resp or not self.has_text:
                         self.forget_tab_by_name("Untitled")
+                    
                     self.update_line_numbers()
 
             except Exception as e:
@@ -514,7 +518,6 @@ class TMDCompiler:
             if self.notebook.tab(index, "text") == name:
                 return index
         return
-    
     def forget_tab_by_name(self, name):
         index = self.find_tab_index(name)
         if index is not None:
