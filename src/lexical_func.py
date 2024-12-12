@@ -69,7 +69,7 @@ class GetLitAndIden:
     def get_string(self):
         self.lex.isString = True
         self.lex.key = '"'
-        self.modify.append_state(self.lex.key, 0, 419)
+        self.modify.append_state(self.lex.key, 0, 421)
         ctr = 0
 
         while True:
@@ -77,7 +77,7 @@ class GetLitAndIden:
                 self.lex.error_message("Expected: \"", "", False)
                 break
             if self.lex.peek_next() == '"': 
-                self.modify.add_key(420, 421)
+                self.modify.add_key(422, 423)
                 self.check.check_delim(key_delims['lit_delim'], ";, ,, &, ), }, !, |, =, :", False)
                 break
             elif self.lex.peek_next() == '\\': 
@@ -87,17 +87,17 @@ class GetLitAndIden:
                     self.lex.key += esc
                     ctr += 1
                     if ctr == 1:
-                        self.modify.append_state(esc, 419, 420)
+                        self.modify.append_state(esc, 421, 422)
                     else:
-                        self.modify.append_state(esc, 420, 420)
+                        self.modify.append_state(esc, 422, 422)
                 else:
                     self.lex.error_message(f"Invalid escape sequence: \\{esc}", "", False)
             else:
                 ctr += 1
                 if ctr == 1:
-                    self.modify.add_key(419, 420)
+                    self.modify.add_key(421, 422)
                 else:
-                    self.modify.add_key(420, 420)
+                    self.modify.add_key(422, 422)
         
         self.lex.isString = False
 
@@ -106,15 +106,15 @@ class GetLitAndIden:
         terminated = False
         self.lex.key = "'"
 
-        self.modify.append_state(self.lex.key, 0, 423)
+        self.modify.append_state(self.lex.key, 0, 425)
         if self.lex.peek_next() is not None:
             if self.lex.peek_next() == "'":
-                self.modify.add_key(424, 425)
+                self.modify.add_key(426, 427)
                 self.check.check_delim(key_delims['lit_delim'], ";, ,, &, )", False)
             else:
-                self.modify.add_key(423, 424)
+                self.modify.add_key(425, 426)
                 if self.lex.peek_next() == "'":
-                    self.modify.add_key(424, 425)
+                    self.modify.add_key(426, 427)
                     self.check.check_delim(key_delims['lit_delim'], ";, ,, &, )", False)
                 else:
                     self.modify.get_key(key_delims['lit_delim'])
@@ -132,7 +132,7 @@ class GetLitAndIden:
         self.lex.key = ''
 
         if curr == '~':
-            self.modify.append_state('~', 0, 248)
+            self.modify.append_state('~', 0, 250)
             self.lex.key += curr
             curr = self.lex.advance()
 
@@ -141,47 +141,47 @@ class GetLitAndIden:
                 curr = self.lex.advance()
         
         if curr.isdigit():
-            self.modify.append_state(curr, 248, 249)
+            self.modify.append_state(curr, 250, 251)
             self.lex.key += curr
-            self.check.check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 249, 250, "num", False)
+            self.check.check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", 251, 252, "num", False)
             if self.lex.peek_next() == '.':
-                self.check.check_dec(249, 269)
+                self.check.check_dec(251, 271)
             elif self.lex.peek_next().isdigit():
-                self.check.check_num(249, 251, 252) 
+                self.check.check_num(251, 253, 254) 
                 if self.lex.peek_next() == '.':
-                    self.check.check_dec(251, 284)   
+                    self.check.check_dec(253, 286)   
                 elif self.lex.peek_next().isdigit():
-                    self.check.check_num(251, 253, 254)
+                    self.check.check_num(253, 255, 256)
                     if self.lex.peek_next() == '.':
-                        self.check.check_dec(253, 299)
+                        self.check.check_dec(255, 301)
                     elif self.lex.peek_next().isdigit():
-                        self.check.check_num(253, 255, 256)
+                        self.check.check_num(255, 257, 258)
                         if self.lex.peek_next() == '.':
-                            self.check.check_dec(255, 314)
+                            self.check.check_dec(257, 316)
                         elif self.lex.peek_next().isdigit():
-                            self.check.check_num(255, 257, 258)
+                            self.check.check_num(257, 259, 260)
                             if self.lex.peek_next() == '.':
-                                self.check.check_dec(257, 329)
+                                self.check.check_dec(259, 331)
                             elif self.lex.peek_next().isdigit():
-                                self.check.check_num(257, 259, 260)
+                                self.check.check_num(259, 261, 262)
                                 if self.lex.peek_next() == '.':
-                                    self.check.check_dec(259, 344)
+                                    self.check.check_dec(261, 346)
                                 elif self.lex.peek_next().isdigit():
-                                    self.check.check_num(259, 261, 262)
+                                    self.check.check_num(261, 263, 264)
                                     if self.lex.peek_next() == '.':
-                                        self.check.check_dec(261, 359)
+                                        self.check.check_dec(263, 361)
                                     elif self.lex.peek_next().isdigit():
-                                        self.check.check_num(261, 263, 264)
+                                        self.check.check_num(263, 265, 266)
                                         if self.lex.peek_next() == '.':
-                                            self.check.check_dec(263, 374)
+                                            self.check.check_dec(265, 376)
                                         elif self.lex.peek_next().isdigit():
-                                            self.check.check_num(263, 265, 266)
+                                            self.check.check_num(265, 267, 268)
                                             if self.lex.peek_next() == '.':
-                                                self.check.check_dec(265, 389)
+                                                self.check.check_dec(267, 391)
                                             elif self.lex.peek_next().isdigit():
-                                                self.check.check_num(265, 267, 268)
+                                                self.check.check_num(267, 269, 270)
                                                 if self.lex.peek_next() == '.':
-                                                    self.check.check_dec(267, 404)
+                                                    self.check.check_dec(269, 406)
 
         self.lex.isInt = False
         if not self.lex.matched:
@@ -240,66 +240,66 @@ class GetLitAndIden:
         curr = self.lex.advance()
 
         self.lex.key = curr
-        self.modify.append_state(curr, 0, 188)
-        self.check.check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 188, 189, "iden", False)
+        self.modify.append_state(curr, 0, 190)
+        self.check.check_if_id(key_delims['iden_delim'], "operator, ;, &, >, (, ), [, ], {, ., ,", 190, 191, "iden", False)
         if self.lex.peek_next() in identifier: 
-            self.check.check_id(188, 190, 191)
+            self.check.check_id(190, 192, 193)
             if self.lex.peek_next() in identifier: 
-                self.check.check_id(190, 192, 193)
+                self.check.check_id(192, 194, 195)
                 if self.lex.peek_next() in identifier: 
-                    self.check.check_id(192, 194, 195)
+                    self.check.check_id(194, 196, 197)
                     if self.lex.peek_next() in identifier: 
-                        self.check.check_id(194, 196, 197)
+                        self.check.check_id(196, 198, 199)
                         if self.lex.peek_next() in identifier: 
-                            self.check.check_id(196, 198, 199)
+                            self.check.check_id(198, 200, 201)
                             if self.lex.peek_next() in identifier: 
-                                self.check.check_id(198, 200, 201)
+                                self.check.check_id(200, 202, 203)
                                 if self.lex.peek_next() in identifier: 
-                                    self.check.check_id(200, 202, 203)
+                                    self.check.check_id(202, 204, 205)
                                     if self.lex.peek_next() in identifier: 
-                                        self.check.check_id(202, 204, 205)
+                                        self.check.check_id(204, 206, 207)
                                         if self.lex.peek_next() in identifier: 
-                                            self.check.check_id(204, 206, 207)
+                                            self.check.check_id(206, 208, 209)
                                             if self.lex.peek_next() in identifier: 
-                                                self.check.check_id(206, 208, 209)
+                                                self.check.check_id(208, 210, 211)
                                                 if self.lex.peek_next() in identifier: 
-                                                    self.check.check_id(208, 210, 211)
+                                                    self.check.check_id(210, 212, 213)
                                                     if self.lex.peek_next() in identifier: 
-                                                        self.check.check_id(210, 212, 213)
+                                                        self.check.check_id(212, 214, 215)
                                                         if self.lex.peek_next() in identifier: 
-                                                            self.check.check_id(212, 214, 215)
+                                                            self.check.check_id(214, 216, 217)
                                                             if self.lex.peek_next() in identifier: 
-                                                                self.check.check_id(214, 216, 217)
+                                                                self.check.check_id(216, 218, 219)
                                                                 if self.lex.peek_next() in identifier: 
-                                                                    self.check.check_id(216, 218, 219)
+                                                                    self.check.check_id(218, 220, 221)
                                                                     if self.lex.peek_next() in identifier: 
-                                                                        self.check.check_id(218, 220, 221)
+                                                                        self.check.check_id(220, 222, 223)
                                                                         if self.lex.peek_next() in identifier: 
-                                                                            self.check.check_id(220, 222, 223)
+                                                                            self.check.check_id(222, 224, 225)
                                                                             if self.lex.peek_next() in identifier: 
-                                                                                self.check.check_id(222, 224, 225)
+                                                                                self.check.check_id(224, 226, 227)
                                                                                 if self.lex.peek_next() in identifier: 
-                                                                                    self.check.check_id(224, 226, 227)
+                                                                                    self.check.check_id(226, 228, 229)
                                                                                     if self.lex.peek_next() in identifier: 
-                                                                                        self.check.check_id(226, 228, 229)
+                                                                                        self.check.check_id(228, 230, 231)
                                                                                         if self.lex.peek_next() in identifier: 
-                                                                                            self.check.check_id(228, 230, 231)
+                                                                                            self.check.check_id(230, 232, 233)
                                                                                             if self.lex.peek_next() in identifier: 
-                                                                                                self.check.check_id(230, 232, 233)
+                                                                                                self.check.check_id(232, 234, 235)
                                                                                                 if self.lex.peek_next() in identifier: 
-                                                                                                    self.check.check_id(232, 234, 233)
+                                                                                                    self.check.check_id(234, 236, 237)
                                                                                                     if self.lex.peek_next() in identifier: 
-                                                                                                        self.check.check_id(234, 236, 237)
+                                                                                                        self.check.check_id(236, 238, 239)
                                                                                                         if self.lex.peek_next() in identifier: 
-                                                                                                            self.check.check_id(236, 238, 239)
+                                                                                                            self.check.check_id(238, 240, 241)
                                                                                                             if self.lex.peek_next() in identifier: 
-                                                                                                                self.check.check_id(238, 240, 241)
+                                                                                                                self.check.check_id(240, 242, 243)
                                                                                                                 if self.lex.peek_next() in identifier: 
-                                                                                                                    self.check.check_id(240, 242, 243)
+                                                                                                                    self.check.check_id(242, 244, 245)
                                                                                                                     if self.lex.peek_next() in identifier: 
-                                                                                                                        self.check.check_id(242, 244, 245)
+                                                                                                                        self.check.check_id(244, 246, 247)
                                                                                                                         if self.lex.peek_next() in identifier: 
-                                                                                                                            self.check.check_id(244, 246, 247)
+                                                                                                                            self.check.check_id(246, 248, 249)
 
         self.lex.isIden = False
         if self.lex.invalid:
