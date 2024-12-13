@@ -241,9 +241,13 @@ class GetLitAndIden:
         
         self.lex.isDec = False
         if not self.lex.matched:
-            print(f"length; {len(decimal)}")
+            decimal = ''
             if self.lex.peek_next() not in whitespace:
-                self.modify.get_key(key_delims['num_delim'])
+                while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
+                    decimal += self.lex.advance()
+                if all(char == '0' for char in decimal):
+                    self.check.check_if_match(key_delims['num_delim'], "operator, ;, ), }, ], ,", 0, 0, "num", False)
+                    return
                 if len(decimal) >= 7:
                     self.lex.error_message(f"{self.lex.key} exceeds maximum length of 7 decimal places", "", False)
                     return
@@ -339,6 +343,8 @@ class GetLitAndIden:
         self.get_id()
 
     def get_keyword(self, char):
+        self.lex.isIden = False
+
         if char == 'b':
             self.modify.match_found(1, char)
             if self.lex.peek_next() == 'l':
@@ -805,6 +811,8 @@ class Checkers:
             self.modify.append_state("end", stateNum1, stateNum2)
 
     def check_delim(self, delim, expected, requiredSpace):
+        word = ''
+        
         if not requiredSpace:
             self.lex.skip_whitespace()
 
@@ -812,12 +820,16 @@ class Checkers:
             if self.lex.isIden and self.lex.peek_next() in alpha:
                 self.modify.append_key('id')
                 self.lex.key = ''
+                GetLitAndIden(self.lex).get_keyword(self.lex.advance())
                 return
 
-            if self.lex.key == '#' and self.lex.peek_next() in alpha:
-                self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
+            if self.lex.peek_next() in alpha:
                 while self.lex.peek_next() in identifier:
-                    self.lex.advance()
+                    word += self.lex.advance()
+                if word not in keywords:
+                    self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
+                else:
+                    self.lex.error_message(f"Unexpected {word} after {self.lex.key}", expected, True)
                 return
 
             self.lex.error_message(f"Unexpected {self.lex.advance()} after {self.lex.key}", expected, True)
