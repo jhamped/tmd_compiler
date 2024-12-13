@@ -22,6 +22,10 @@ def lexer(code, console, table):
             get.get_keyword(char)
         elif char in punc_symbols: 
             get.get_symbol(char)
+        elif char in whitespace:
+            pass
+        else:
+            lex.error_message(f"Invalid character: {char}", "", False)
 
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
