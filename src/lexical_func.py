@@ -186,9 +186,17 @@ class GetLitAndIden:
         self.lex.isInt = False
         if not self.lex.matched:
             if self.lex.peek_next() not in whitespace:
+                self.lex.key += curr
                 self.modify.get_key(key_delims['num_delim'])
                 if self.lex.key.startswith('~'):
                     max = 11
+                    if not self.lex.key[1].isdigit():
+                        if '.' in self.lex.key:
+                            self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
+                        else:
+                            if self.lex.peek_next() in [')', '}', ']']:
+                                self.lex.key += self.lex.advance()
+                            self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
                 else:
                     max = 10
                 if '.' in self.lex.key:
@@ -206,23 +214,24 @@ class GetLitAndIden:
         self.lex.isDec = True
         trailingZero = ""
         curr = self.lex.advance()
-  
         self.lex.key += curr
-        self.modify.append_state(curr, self.lex.stateNum, self.lex.stateNum+1)
-        self.check.check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", self.lex.stateNum+1, self.lex.stateNum+2, "num", False)
-        if self.lex.peek_next().isdigit():
-            self.check.check_num(self.lex.stateNum+1, self.lex.stateNum+3, self.lex.stateNum+4)
+
+        if curr.isdigit():
+            self.modify.append_state(curr, self.lex.stateNum, self.lex.stateNum+1)
+            self.check.check_if_id(key_delims['num_delim'], "operator, ;, ), }, ], ,", self.lex.stateNum+1, self.lex.stateNum+2, "num", False)
             if self.lex.peek_next().isdigit():
-                self.check.check_num(self.lex.stateNum+3, self.lex.stateNum+5, self.lex.stateNum+6)
+                self.check.check_num(self.lex.stateNum+1, self.lex.stateNum+3, self.lex.stateNum+4)
                 if self.lex.peek_next().isdigit():
-                    self.check.check_num(self.lex.stateNum+5, self.lex.stateNum+7, self.lex.stateNum+8)
+                    self.check.check_num(self.lex.stateNum+3, self.lex.stateNum+5, self.lex.stateNum+6)
                     if self.lex.peek_next().isdigit():
-                        self.check.check_num(self.lex.stateNum+7, self.lex.stateNum+9, self.lex.stateNum+10)
+                        self.check.check_num(self.lex.stateNum+5, self.lex.stateNum+7, self.lex.stateNum+8)
                         if self.lex.peek_next().isdigit():
-                            self.check.check_num(self.lex.stateNum+9, self.lex.stateNum+11, self.lex.stateNum+12)
+                            self.check.check_num(self.lex.stateNum+7, self.lex.stateNum+9, self.lex.stateNum+10)
                             if self.lex.peek_next().isdigit():
-                                self.lex.key += trailingZero
-                                self.check.check_num(self.lex.stateNum+11, self.lex.stateNum+13, self.lex.stateNum+14)
+                                self.check.check_num(self.lex.stateNum+9, self.lex.stateNum+11, self.lex.stateNum+12)
+                                if self.lex.peek_next().isdigit():
+                                    self.lex.key += trailingZero
+                                    self.check.check_num(self.lex.stateNum+11, self.lex.stateNum+13, self.lex.stateNum+14)
         
         self.lex.isDec = False
         if not self.lex.matched:
@@ -233,7 +242,7 @@ class GetLitAndIden:
                 elif len(self.lex.key) > 7:
                     self.lex.error_message(f"{self.lex.key} exceeds maximum length of 7 decimal places", "", False)
                 else:
-                    self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def get_id(self):
         self.lex.isIden = True
@@ -719,7 +728,10 @@ class GetLitAndIden:
             self.modify.match_found(186, char)
             self.check.check_symbol(key_delims['interpol_delim'], "\"", 186, 187, False)
             if not self.lex.matched:
-                symbol_error()
+                if self.lex.peek_next() in punc_symbols:
+                    symbol_error()
+                else:
+                    self.check.check_delim(key_delims['interpol_delim'], "\"", False)
 
         elif char == '.':
             self.lex.key = char
@@ -732,14 +744,13 @@ class GetLitAndIden:
                 while self.lex.peek_next() not in whitespace and (self.lex.peek_next() not in key_delims['num_delim'] or self.lex.peek_next() not in key_delims['iden_delim']):
                     fraction += self.lex.peek_next()
                     self.lex.advance()
-                if fraction.isdigit():
+                if fraction.isdigit() and not self.lex.struct:
                     self.lex.key += fraction
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                 else:
                     if fraction == '':
                         self.lex.error_message(f"Unexpected None after .", "identifier", True)
                     elif self.lex.struct:
-                        self.lex.key += fraction
                         self.lex.error_message(f"Invalid identifier: {fraction}", "", False)
                     else:
                         self.lex.key += fraction
@@ -795,13 +806,19 @@ class Checkers:
                 self.lex.key = ''
                 return
 
+            if self.lex.peek_next().isalpha():
+                self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
+                while self.lex.peek_next() in identifier:
+                    self.lex.advance()
+                return
+
             self.lex.error_message(f"Unexpected {self.lex.advance()} after {self.lex.key}", expected, True)
             self.lex.advance()
         else:
-            if self.lex.isIden: 
-                self.modify.append_key('id')
-                if self.lex.peek_next() == '.':
-                    self.lex.struct = True
+            if self.lex.isIden or self.lex.key == ']':
+                if self.lex.peek_next() == '.': self.lex.struct = True
+
+            if self.lex.isIden: self.modify.append_key('id')
             elif self.lex.isChar: self.modify.append_key('chr_lit')
             elif self.lex.isString: self.modify.append_key('str_lit')
             elif self.lex.isInt: self.modify.append_key('int_lit')
