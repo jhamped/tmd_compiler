@@ -241,13 +241,15 @@ class GetLitAndIden:
         
         self.lex.isDec = False
         if not self.lex.matched:
-            decimal = ''
+            lex = ''
             if self.lex.peek_next() not in whitespace:
                 while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
-                    decimal += self.lex.advance()
-                if all(char == '0' for char in decimal):
+                    lex += self.lex.advance()
+                if all(char == '0' for char in lex):
                     self.check.check_if_match(key_delims['num_delim'], "operator, ;, ), }, ], ,", 0, 0, "num", False)
                     return
+                self.lex.key += lex
+                decimal += lex
                 if len(decimal) >= 7:
                     self.lex.error_message(f"{self.lex.key} exceeds maximum length of 7 decimal places", "", False)
                     return
