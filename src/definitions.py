@@ -7,7 +7,7 @@ token = []
 arithmetic_operator = ['+', '-', '*', '/', '%']
 relational_operator = ['==', '!=', '<', '<=', '>', '>=']
 logical_operator = ['&', '|', '!']
-unary_operator = ['++', '--']
+unary_operator = ['+', '-']
 assignment_operator = ['=', '+=', '-=', '*=', '/=', '%=']
 number_operator = arithmetic_operator + relational_operator + logical_operator + unary_operator
 all_operators = number_operator + assignment_operator
@@ -35,7 +35,7 @@ key1_delims = {
     'comma_delim' : [']', '(', '{', '"', '\'', '+', '-', '/', '.'] + whitespace + alphanumeric,
     'iden_delim' : whitespace + all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ',', '/'],
     'lit_delim' : whitespace + [';', ',', '&', ')', '}', '!', '=', '|', ':', '/'],
-    'op_delim' : whitespace + alphanumeric + ['(', '~', '/', '.'],
+    'op_delim' : whitespace + alphanumeric + ['(', '~', '/', '.', '+', '-'],
     'unary_delim' : whitespace + alphanumeric + ['(', ')', ';', ',', '~', '/'],
     'paren_delim' : whitespace + alphanumeric + [';', '!', '#', "'", '"', '(', ')', '+', '-', '/', '.'],
     'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ',', '/'],
@@ -47,12 +47,12 @@ key1_delims = {
     'var1_delim' : whitespace + ascii_def,
     'concat_delim' : whitespace + alpha + ['(', '"', "'", '#', '/'],
     'interpol_delim' : whitespace + ['"', '/'],
-    'data_delim' : whitespace + alpha + ['[', '(', '/'],
-    'val_delim' : whitespace + [';', ',', ')', '}', '/'],
+    'data_delim' : whitespace + ['[', '(', '/'],
+    'val_delim' : whitespace + [';', ',', ')', '}', '/', '!', '&', '='],
     'colon_delim' : whitespace + alphanumeric + ['(', '+', '-', '/'],
     'jmp_delim' : whitespace + [';', '/'],
     'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '/', '(', '.'],
-    'num_delim' : whitespace + all_operators + [';', ')', '}', ']', ',', '/'],
+    'num_delim' : whitespace + all_operators + [':', ';', ')', '}', ']', ',', '/'],
     'empty_delim' : whitespace + ['']
 }
 
