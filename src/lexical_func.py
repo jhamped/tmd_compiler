@@ -852,6 +852,17 @@ class Checkers:
         if not requiredSpace:
             self.lex.skip_whitespace()
 
+        if self.lex.peek_next() == '/':
+            self.lex.advance()
+            if self.lex.peek_next() == '/': 
+                self.lex.advance() 
+                self.lex.skip_single_comment()
+        if self.lex.peek_next() == '/':
+            self.lex.advance()
+            if self.lex.peek_next() == '*': 
+                self.lex.advance() 
+                self.lex.skip_multi_comment()
+
         if self.lex.peek_next() not in delim:
             if self.lex.isIden and self.lex.peek_next() in alpha:
                 self.modify.append_key('id')
