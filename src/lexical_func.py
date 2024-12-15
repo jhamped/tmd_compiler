@@ -137,7 +137,7 @@ class GetLitAndIden:
             curr = self.lex.advance()
 
         if curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
-            while curr == '0' and self.lex.peek_next() != '.':
+            while curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
                 curr = self.lex.advance()
         
         if curr in digit:
@@ -857,11 +857,15 @@ class Checkers:
             if self.lex.peek_next() == '/': 
                 self.lex.advance() 
                 self.lex.skip_single_comment()
+            else:
+                self.lex.pos -= 1
         if self.lex.peek_next() == '/':
             self.lex.advance()
             if self.lex.peek_next() == '*': 
                 self.lex.advance() 
                 self.lex.skip_multi_comment()
+            else:
+                self.lex.pos -= 1
 
         if self.lex.peek_next() not in delim:
             if self.lex.isIden and self.lex.peek_next() in alpha:
@@ -894,6 +898,7 @@ class Checkers:
             else: self.modify.append_key(self.lex.key)
 
     def check_if_match(self, delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
+        addZero = False
         if reserved in ["iden", "word"]:
             if self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
                 self.lex.matched = False
@@ -913,7 +918,13 @@ class Checkers:
         state.append(f"end : {stateNum1}-{stateNum2}")
 
         if reserved == "num" and not self.lex.key == '0' and '.' in self.lex.key:
+            literal = self.lex.key.split('.')
+            if all(char == '0' for char in literal[1]):        
+                addZero = True
             self.lex.key = self.lex.key.rstrip('0')
+
+        if addZero:
+            self.lex.key += '0'
 
         self.check_delim(delim, expected, requiredSpace)
 
