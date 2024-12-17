@@ -239,7 +239,6 @@ class GetLitAndIden:
                                     decimal += self.lex.peek_next()
                                     self.check.check_num(self.lex.stateNum+11, self.lex.stateNum+13, self.lex.stateNum+14)
         
-        self.lex.isDec = False
         if not self.lex.matched:
             lex = ''
             if self.lex.peek_next() not in whitespace:
@@ -804,6 +803,7 @@ class GetLitAndIden:
                         self.lex.error_message(f"Invalid identifier: {fraction}", "", False)
                     else:
                         self.lex.key += fraction
+                        print("passed")
                         self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
                     
                         
@@ -834,6 +834,7 @@ class Checkers:
         else:
             self.lex.stateNum = s2
             GetLitAndIden(self.lex).get_dec()
+            self.lex.isDec = False
 
     def check_id(self, s1, s2, s3):
         self.modify.add_key(s1, s2)
@@ -884,7 +885,7 @@ class Checkers:
             elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'var']:
                 self.modify.append_key(self.lex.key)
             else:
-                self.lex.error_message(f"Unexpected {self.lex.advance()} after {self.lex.key}", expected, True)
+                self.lex.error_message(f"Unexpected {self.lex.peek_next()} after {self.lex.key}", expected, True)
                 self.lex.advance()
         else:
             if self.lex.isIden or self.lex.key == ']':
