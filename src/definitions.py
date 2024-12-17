@@ -12,7 +12,7 @@ assignment_operator = ['=', '+=', '-=', '*=', '/=', '%=']
 number_operator = arithmetic_operator + relational_operator + logical_operator + unary_operator
 all_operators = number_operator + assignment_operator
 
-punc_symbols = ['=', '+', '-', '*', '/', '%', '&', '|', '!', '<', '>', '[', ']', '{', '}', '(', ')', ',', ';', ':', '#', '~', '.', '@', '$', '^', '_', '?']
+punc_symbols = ['=', '+', '-', '*', '/', '%', '&', '|', '!', '<', '>', '[', ']', '{', '}', '(', ')', ',', ';', ':', '#', '~', '.', '@', '$', '^', '_', '?', '\\']
 quote_symbols = ["'", '"']
 
 alpha = list(string.ascii_letters)
@@ -29,31 +29,30 @@ whitespace = [' ', '\t', '\n']
 
 # Delimiters
 key1_delims = {
-    'state_delim' : whitespace + ['('], 
-    'block_delim' : whitespace + ['{'],    
-    'def_delim' : whitespace + [':'],
-    'comma_delim' : [']', '(', '{', '"', '\'', '+', '-', '.'] + whitespace + alphanumeric,
-    'iden_delim' : whitespace + all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','],
-    'lit_delim' : whitespace + [';', ',', '&', ')', '}', '!', '=', '|', ':'],
-    'op_delim' : whitespace + alphanumeric + ['(', '~', '/', '.', '+', '-'],
-    'unary_delim' : whitespace + alphanumeric + ['(', ')', ';', ',', '~'],
-    'paren_delim' : whitespace + alphanumeric + [';', '!', '#', "'", '"', '(', ')', '+', '-', '.'],
-    'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ','],
-    'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.'],
-    'semicolon_delim' : whitespace + alphanumeric + whitespace + ['(', '}', '+', '-', None],
-    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.'],
-    'bracket1_delim' : whitespace + number_operator + alpha + [')', '=', ';', '&', '.'],
-    'var_delim' : whitespace + alpha + ['(', '+', '-'],
-    'var1_delim' : whitespace + ascii_def,
-    'concat_delim' : whitespace + alpha + ['(', '"', "'", '#'],
-    'interpol_delim' : whitespace + ['"'],
-    'data_delim' : whitespace + ['[', '('],
-    'val_delim' : whitespace + [';', ',', ')', '}', '!', '&', '='],
-    'colon_delim' : whitespace + alphanumeric + ['(', '+', '-'],
-    'jmp_delim' : whitespace + [';'],
-    'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '(', '.'],
-    'num_delim' : whitespace + all_operators + [':', ';', ')', '}', ']', ','],
-    'empty_delim' : whitespace + ['']
+    'state_delim' : ['('], 
+    'block_delim' : ['{'],    
+    'def_delim' : [':'],
+    'comma_delim' : [']', '(', '{', '"', '\'', '+', '-', '.'] + alphanumeric,
+    'iden_delim' : all_operators + [';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','],
+    'lit_delim' : [';', ',', '&', ')', '}', '!', '=', '|', ':'],
+    'op_delim' : alphanumeric + ['(', '~', '/', '.', '+', '-'],
+    'unary_delim' : alphanumeric + number_operator + ['(', ')', ';', ',', '~'],
+    'paren_delim' : alphanumeric + [';', '!', '#', "'", '"', '(', ')', '+', '-', '.'],
+    'paren1_delim' : arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ','],
+    'brace_delim' : alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.'],
+    'semicolon_delim' : alphanumeric + ['(', '}', '+', '-', None],
+    'bracket_delim' : alphanumeric + [']', ',', '+', '-', '.'],
+    'bracket1_delim' : number_operator + alpha + [')', '=', ';', '&', '.'],
+    'var_delim' : alpha + ['(', '+', '-'],
+    'var1_delim' : ascii_def,
+    'concat_delim' : alpha + ['(', '"', "'", '#'],
+    'interpol_delim' : ['"'],
+    'data_delim' : ['[', '('],
+    'val_delim' : [';', ',', ')', '}', '!', '&', '=', '|'],
+    'colon_delim' : alphanumeric + ['(', '+', '-'],
+    'jmp_delim' : [';'],
+    'key_delim' : alphanumeric + ["'", '"', '~', '(', '.'],
+    'num_delim' : all_operators + [':', ';', ')', '}', ']', ','],
 }
 
 key2_delims = {
