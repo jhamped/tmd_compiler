@@ -805,7 +805,6 @@ class GetLitAndIden:
                         self.lex.key += fraction
                         self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
                     
-                        
         elif char == '_':
             self.lex.key = char
             self.modify.get_key('')
@@ -848,7 +847,8 @@ class Checkers:
 
     def check_delim(self, delim, expected, requiredSpace):
         word = ''
-        
+        esc = ''
+    
         if not requiredSpace:
             self.lex.skip_whitespace()
 
@@ -867,6 +867,9 @@ class Checkers:
             else:
                 self.lex.pos -= 1
 
+        if not requiredSpace:
+            self.lex.skip_whitespace()
+
         if self.lex.peek_next() not in delim:
             if self.lex.isIden and self.lex.peek_next() in alpha:
                 self.modify.append_key('id')
@@ -874,18 +877,26 @@ class Checkers:
                 GetLitAndIden(self.lex).get_keyword(self.lex.advance())
                 return
 
-            if self.lex.peek_next() in alpha and self.lex.key not in ['bln', 'chr', 'dec', 'int', 'var']:
+            if self.lex.peek_next() in alpha and self.lex.key not in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
                 while self.lex.peek_next() in identifier:
                     word += self.lex.advance()
                 if word not in keywords:
                     self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
                 else:
                     self.lex.error_message(f"Unexpected {word} after {self.lex.key}", expected, True)
-            elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'var']:
+            elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
                 self.modify.append_key(self.lex.key)
             else:
                 self.lex.error_message(f"Unexpected {self.lex.peek_next()} after {self.lex.key}", expected, True)
+                if self.lex.peek_next() == '\\':
+                    ctr = 1
+                    while ctr <=2:
+                        esc += self.lex.advance()
+                        ctr += 1
+                    self.lex.error_message(f"Invalid escape sequence: {esc}", "", False)
+                    return
                 self.lex.advance()
+                
         else:
             if self.lex.isIden or self.lex.key == ']':
                 if self.lex.peek_next() == '.': self.lex.struct = True
