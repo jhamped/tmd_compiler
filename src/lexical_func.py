@@ -190,7 +190,7 @@ class GetLitAndIden:
                 self.modify.get_key(key_delims['num_delim'])
                 if self.lex.key.startswith('~'):
                     max = 11
-                    if not self.lex.key[1] in digit:
+                    if not self.lex.key[1].isdigit():
                         if '.' in self.lex.key:
                             self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                         else:
@@ -793,7 +793,7 @@ class GetLitAndIden:
                 while self.lex.peek_next() not in whitespace and (self.lex.peek_next() not in key_delims['num_delim'] or self.lex.peek_next() not in key_delims['iden_delim']):
                     fraction += self.lex.peek_next()
                     self.lex.advance()
-                if fraction in digit and not self.lex.struct:
+                if fraction.isdigit() and not self.lex.struct:
                     self.lex.key += fraction
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                 else:
