@@ -574,213 +574,128 @@ class GetLitAndIden:
             self.get_lexeme()
 
     def get_symbol(self, char):
-        def symbol_error():
-            while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
-                self.lex.key += self.lex.advance()
-            self.lex.error_message(f"Invalid operator: {self.lex.key}", "", False)
-
         if char == '=':
             self.modify.match_found(117, char)
             if self.lex.peek_next() == '=':
-                delim = key_delims['relate_delim']
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 117, 119, 120, "symbol", False)
             else:
-                delim = key_delims['asn_delim']
                 self.check.check_symbol(key_delims['asn_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"', '{', '#'", 117, 118, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '+':
             self.modify.match_found(121, char)
             if self.lex.peek_next() == '+':
-                delim = key_delims['unary_delim']
                 self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 121, 123, 124, "symbol", False)
             elif self.lex.peek_next() == '=':
-                delim = key_delims['op_delim']
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 121, 125, 126, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 121, 122, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '-':
             self.modify.match_found(127, char)
             if self.lex.peek_next() == '-':
-                delim = key_delims['unary_delim']
                 self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 127, 129, 130, "symbol", False)
             elif self.lex.peek_next() == '=':
-                delim = key_delims['op_delim']
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 127, 131, 132, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 127, 128, False)
-            if not self.lex.matched:
-                symbol_error()
                         
         elif char == '*':
             self.modify.match_found(133, char)
             if self.lex.peek_next() == '=':
-                delim = key_delims['op_delim']
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 133, 135, 136, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 133, 134, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '/':
             self.modify.match_found(137, char)
             if self.lex.peek_next() == '=':
-                delim = key_delims['op_delim']
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 137, 139, 140, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 137, 138, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '%':
             self.modify.match_found(141, char)
             if self.lex.peek_next() == '=':
-                delim = key_delims['op_delim']
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 141, 143, 144, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 141, 142, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '&':
             self.modify.match_found(145, char)
             if self.lex.peek_next() == '&':
-                delim = key_delims['relate_delim']
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 145, 147, 148, "symbol", False)
             else:
-                delim = key_delims['concat_delim']
                 self.check.check_symbol(key_delims['concat_delim'], "alpha,'(', '\"', '\'', '#'", 145, 146, False)
-            if not self.lex.matched:
-                symbol_error()
                 
         elif char == '|':
             self.modify.match_found(149, char)
             if self.lex.peek_next() == '|':
-                delim = key_delims['relate_delim']
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 149, 150, 151, "symbol", False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '!':
             self.modify.match_found(152, char)
             if self.lex.peek_next() == '=':
-                delim = key_delims['relate_delim']
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 152, 154, 155, "symbol", False)
             else:
-                delim = key_delims['relate_delim']
                 self.check.check_symbol(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 152, 153, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '<':
             self.modify.match_found(156, char)
             if self.lex.peek_next() == '<':
-                delim = key_delims['var_delim']
                 self.modify.add_matched_key(key_delims['var_delim'], "alpha,'(', '+', '-'", 156, 158, 159, "symbol", False)
             elif self.lex.peek_next() == '=':
-                delim = key_delims['relate1_delim']
                 self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 156, 160, 161, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 156, 157, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '>':
             self.modify.match_found(162, char)
             if self.lex.peek_next() == '>':
-                delim = key_delims['var1_delim']
                 self.modify.add_matched_key(key_delims['var1_delim'], "ASCII Character", 162, 164, 164, "symbol", False)
             elif self.lex.peek_next() == '=':
-                delim = key_delims['relate1_delim']
                 self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 162, 166, 167, "symbol", False)
             else:
-                delim = key_delims['op_delim']
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 162, 163, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '[':
             self.modify.match_found(168, char)
-            delim = key_delims['bracket_delim']
             self.check.check_symbol(key_delims['bracket_delim'], "alpha, number, ']', ',', '+', '-'", 168, 169, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == ']':
             self.modify.match_found(170, char)
-            delim = key_delims['bracket1_delim']
             self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '{':
             self.modify.match_found(172, char)
-            delim = key_delims['brace_delim']
             self.check.check_symbol(key_delims['brace_delim'], "alpha, number, ';', '(', "'", '"', '{', '}', '+', '-'", 172, 173, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '}':
             self.modify.match_found(174, char)
-            delim = key_delims['brace1_delim']
             self.check.check_symbol(key_delims['brace1_delim'], "alpha, number, '(', '}', '+', '-', None, ';', ','", 174, 175, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '(':
             self.modify.match_found(176, char)
-            delim = key_delims['paren_delim']
             self.check.check_symbol(key_delims['paren_delim'], "alpha, number, ';', '!', '#', '\'', '\"', '(', ')', '+', '-', '.'", 176, 177, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == ')':
             self.modify.match_found(178, char)
-            delim = key_delims['paren1_delim']
             self.check.check_symbol(key_delims['paren1_delim'], "'+', '-', '*', '/', '%', '=', '!', '<', '>', '&', '|', '{', ')', ';'", 178, 179, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == ',':
             self.modify.match_found(180, char)
-            delim = key_delims['comma_delim']
             self.check.check_symbol(key_delims['comma_delim'], "alpha, number,']', '(', '{', '\"', '\'', '+', '-'", 180, 181, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == ';':
             self.modify.match_found(182, char)
-            delim = key_delims['semicolon_delim']
             self.check.check_symbol(key_delims['semicolon_delim'], "alpha, number, '(', '}', '+', '-', None", 182, 183, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == ':':
             self.modify.match_found(184, char)
-            delim = key_delims['colon_delim']
             self.check.check_symbol(key_delims['colon_delim'], "alpha, number, '(', '+', '-'", 184, 185, False)
-            if not self.lex.matched:
-                symbol_error()
 
         elif char == '#':
             self.modify.match_found(186, char)
-            delim = key_delims['interpol_delim']
             self.check.check_symbol(key_delims['interpol_delim'], "\"", 186, 187, False)
-            if not self.lex.matched:
-                if self.lex.peek_next() in punc_symbols:
-                    symbol_error()
-                else:
-                    self.check.check_delim(key_delims['interpol_delim'], "\"", False)
 
         elif char == '.':
             self.lex.key = char
@@ -840,10 +755,10 @@ class Checkers:
             self.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", s2, s3, "iden", False)            
 
     def check_symbol(self, delim, expected, stateNum1, stateNum2, requiredSpace):
-        if self.lex.peek_next() in whitespace or self.lex.peek_next() in delim or self.lex.peek_next() in punc_symbols:
+        if self.lex.peek_next() in whitespace or self.lex.peek_next() in delim:
             self.lex.matched = True
-            self.check_delim(delim, expected, requiredSpace)
             self.modify.append_state("end", stateNum1, stateNum2)
+        self.check_delim(delim, expected, requiredSpace)
 
     def check_delim(self, delim, expected, requiredSpace):
         word = ''
