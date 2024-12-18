@@ -663,7 +663,10 @@ class GetLitAndIden:
 
         elif char == ']':
             self.modify.match_found(170, char)
-            self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, False)
+            if self.lex.peek_next() == '.':
+                self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, False)
+            else:
+                self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, True)
 
         elif char == '{':
             self.modify.match_found(172, char)
@@ -769,12 +772,19 @@ class Checkers:
             self.lex.skip_whitespace()
 
         if self.lex.peek_next() == '/':
-            self.lex.advance()
-            if self.lex.peek_next() == '/': 
-                self.lex.advance() 
-                self.lex.skip_single_comment()
-            else:
-                self.lex.pos -= 1
+            while True:
+                print("pass")
+                self.lex.advance()
+                if self.lex.peek_next() == '/': 
+                    self.lex.advance() 
+                    self.lex.skip_single_comment()
+                    self.lex.skip_whitespace()
+                    if self.lex.peek_next() == '/':
+                        continue
+                    else:
+                        break
+                else:
+                    self.lex.pos -= 1
         if self.lex.peek_next() == '/':
             self.lex.advance()
             if self.lex.peek_next() == '*': 
