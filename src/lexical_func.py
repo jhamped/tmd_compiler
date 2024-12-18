@@ -763,6 +763,7 @@ class Checkers:
     def check_delim(self, delim, expected, requiredSpace):
         word = ''
         esc = ''
+        invalid = ''
     
         if not requiredSpace:
             self.lex.skip_whitespace()
@@ -809,6 +810,11 @@ class Checkers:
                         esc += self.lex.advance()
                         ctr += 1
                     self.lex.error_message(f"Invalid escape sequence: {esc}", "", False)
+                    return
+                if self.lex.peek_next() == '~':
+                    while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
+                        invalid += self.lex.advance()
+                    self.lex.error_message(f"Invalid: {invalid}", "", False)
                     return
                 self.lex.advance()
                 
