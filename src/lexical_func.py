@@ -92,6 +92,12 @@ class GetLitAndIden:
                         self.modify.append_state(esc, 422, 422)
                 else:
                     self.lex.error_message(f"Invalid escape sequence: \\{esc}", "", False)
+            elif self.lex.peek_next() == "\n":
+                while self.lex.peek_next() != '"':
+                    self.lex.key += self.lex.advance()
+                self.lex.key += self.lex.advance()
+                self.lex.error_message(f"Invalid string: {self.lex.key}", "", False)
+                break
             else:
                 ctr += 1
                 if ctr == 1:
@@ -127,6 +133,7 @@ class GetLitAndIden:
         self.lex.isChar = False
 
     def get_num(self, char):
+        self.lex.matched = False
         self.lex.isInt = True
         curr = char
         self.lex.key = ''
@@ -140,6 +147,9 @@ class GetLitAndIden:
             while curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
                 curr = self.lex.advance()
         
+        print(f"curr: {curr}")
+        print(self.lex.matched)
+
         if curr in digit:
             self.modify.append_state(curr, 250, 251)
             self.lex.key += curr
