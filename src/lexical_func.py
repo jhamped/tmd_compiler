@@ -244,7 +244,7 @@ class GetLitAndIden:
             if self.lex.peek_next() not in whitespace:
                 while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
                     lex += self.lex.advance()
-                if all(char == '0' for char in lex):
+                if all(char == '0' for char in lex) and lex != '':
                     self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 0, 0, "num", False)
                     return
                 self.lex.key += lex
@@ -255,7 +255,7 @@ class GetLitAndIden:
                 if self.lex.key.count('.') > 1:
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                     return
-                self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
+            self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def get_id(self):
         self.lex.isIden = True
@@ -704,6 +704,8 @@ class GetLitAndIden:
             self.lex.key = char
             fraction = ''
 
+            self.lex.skip_whitespace()
+
             if self.lex.struct and self.lex.peek_next() in alpha:
                 self.modify.append_key(self.lex.key)
                 self.get_id()
@@ -749,8 +751,11 @@ class Checkers:
             self.lex.error_message(f"Invalid decimal: {self.lex.key}", "", False)
         else:
             self.lex.stateNum = s2
-            GetLitAndIden(self.lex).get_dec()
-            self.lex.isDec = False
+            if self.lex.peek_next() in alphanumeric:
+                GetLitAndIden(self.lex).get_dec()
+                self.lex.isDec = False
+            else:
+                self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def check_id(self, s1, s2, s3):
         self.modify.add_key(s1, s2)
@@ -768,12 +773,14 @@ class Checkers:
         esc = ''
         invalid = ''
     
+        if self.lex.peek_next() == None:
+            return
+
         if not requiredSpace:
             self.lex.skip_whitespace()
 
         if self.lex.peek_next() == '/':
             while True:
-                print("pass")
                 self.lex.advance()
                 if self.lex.peek_next() == '/': 
                     self.lex.advance() 
