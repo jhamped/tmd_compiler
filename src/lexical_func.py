@@ -146,9 +146,6 @@ class GetLitAndIden:
         if curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
             while curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
                 curr = self.lex.advance()
-        
-        print(f"curr: {curr}")
-        print(self.lex.matched)
 
         if curr in digit:
             self.modify.append_state(curr, 250, 251)
@@ -782,9 +779,6 @@ class Checkers:
         word = ''
         esc = ''
         invalid = ''
-    
-        if self.lex.peek_next() == None:
-            return
 
         if not requiredSpace:
             self.lex.skip_whitespace()
@@ -802,6 +796,8 @@ class Checkers:
                         break
                 else:
                     self.lex.pos -= 1
+                    break
+
         if self.lex.peek_next() == '/':
             self.lex.advance()
             if self.lex.peek_next() == '*': 
