@@ -93,9 +93,15 @@ class GetLitAndIden:
                 else:
                     self.lex.error_message(f"Invalid escape sequence: \\{esc}", "", False)
             elif self.lex.peek_next() == "\n":
-                while self.lex.peek_next() != '"':
+                curr = self.lex.advance()
+                while self.lex.peek_next() != '"' and self.lex.peek_next() != None:
+                    self.lex.key += curr
+                    curr = self.lex.advance()
+                if self.lex.peek_next() == '"':
+                    self.lex.key += curr
                     self.lex.key += self.lex.advance()
-                self.lex.key += self.lex.advance()
+                else:
+                    continue
                 self.lex.error_message(f"Invalid string: {self.lex.key}", "", False)
                 break
             else:
@@ -248,12 +254,18 @@ class GetLitAndIden:
         
         if not self.lex.matched:
             lex = ''
+            invalid = False
             if self.lex.peek_next() not in whitespace:
+                if curr not in digit:
+                    lex += curr
+                    invalid = True
                 while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
                     lex += self.lex.advance()
                 if all(char == '0' for char in lex) and lex != '':
                     self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 0, 0, "num", False)
                     return
+                if invalid:
+                    lex = lex[1:]
                 self.lex.key += lex
                 decimal += lex
                 if len(decimal) >= 7:
@@ -262,7 +274,6 @@ class GetLitAndIden:
                 if self.lex.key.count('.') > 1:
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                     return
-            print("pass")
             self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def get_id(self):
