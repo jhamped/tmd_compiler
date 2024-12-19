@@ -49,8 +49,10 @@ class Lexical:
     def skip_multi_comment(self):
         while True:
             char = self.advance()
-            if char == '*' and self.peek_next() == '/':
+            if char == '*' and self.peek_next() == '/' and char != None:
                 self.advance() 
+                break
+            elif char == None:
                 break
 
     def error_message(self, error, expected, expectedError):
@@ -734,7 +736,6 @@ class GetLitAndIden:
                     self.lex.advance()
                 if fraction.isdigit() and not self.lex.struct:
                     self.lex.key += fraction
-                    print("pass 1")
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                 else:
                     if fraction == '':
@@ -768,7 +769,7 @@ class Checkers:
     def check_dec(self, s1, s2):
         self.modify.add_key(s1, s2)
         if self.lex.peek_next() in whitespace:
-            self.lex.error_message(f"Invalid decimal: {self.lex.key}", "", False)
+            self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
         else:
             self.lex.stateNum = s2
             if self.lex.peek_next() in alphanumeric:
