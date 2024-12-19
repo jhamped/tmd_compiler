@@ -262,6 +262,7 @@ class GetLitAndIden:
                 if self.lex.key.count('.') > 1:
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                     return
+            print("pass")
             self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def get_id(self):
@@ -722,6 +723,7 @@ class GetLitAndIden:
                     self.lex.advance()
                 if fraction.isdigit() and not self.lex.struct:
                     self.lex.key += fraction
+                    print("pass 1")
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                 else:
                     if fraction == '':
@@ -762,6 +764,7 @@ class Checkers:
                 GetLitAndIden(self.lex).get_dec()
                 self.lex.isDec = False
             else:
+                self.modify.get_key(key_delims['num_delim'])
                 self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def check_id(self, s1, s2, s3):
