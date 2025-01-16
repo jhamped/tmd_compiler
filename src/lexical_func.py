@@ -482,6 +482,7 @@ class GetLitAndIden:
                 elif self.lex.peek_next() == 't':
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", False)
             if not self.lex.matched:
+                print("pass")
                 self.get_lexeme()
 
         elif char == 'k':
@@ -855,7 +856,7 @@ class Checkers:
                         invalid += self.lex.advance()
                     self.lex.error_message(f"Invalid: {invalid}", "", False)
                     return
-                self.lex.advance()
+                #self.lex.advance()
                 
         else:
             if self.lex.isIden or self.lex.key == ']':
