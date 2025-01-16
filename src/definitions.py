@@ -3,6 +3,7 @@ import string
 state = []
 lexeme = []
 token = []
+idens = []
 
 arithmetic_operator = ['+', '-', '*', '/', '%']
 relational_operator = ['==', '!=', '<', '<=', '>', '>=']
