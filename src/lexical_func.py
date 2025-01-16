@@ -9,6 +9,7 @@ class Lexical:
         self.code = code
         self.console = console
 
+        self.idNum = 0
         self.stateNum = 0
         self.key = ""
         self.isIden = False
@@ -860,7 +861,14 @@ class Checkers:
             if self.lex.isIden or self.lex.key == ']':
                 if self.lex.peek_next() == '.': self.lex.struct = True
 
-            if self.lex.isIden: self.modify.append_key('id')
+            if self.lex.isIden: 
+                if self.lex.key in idens:
+                    id = idens.index(self.lex.key)
+                else:
+                    id = self.lex.idNum
+                    self.lex.idNum += 1
+                    idens.append(self.lex.key)
+                self.modify.append_key(f'id{id+1}')
             elif self.lex.isChar: self.modify.append_key('chr_lit')
             elif self.lex.isString: self.modify.append_key('str_lit')
             elif self.lex.isInt: self.modify.append_key('int_lit')
