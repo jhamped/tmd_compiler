@@ -482,7 +482,6 @@ class GetLitAndIden:
                 elif self.lex.peek_next() == 't':
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", False)
             if not self.lex.matched:
-                print("pass")
                 self.get_lexeme()
 
         elif char == 'k':
@@ -501,7 +500,7 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'i':
                     self.modify.add_key(70, 71)
                     if self.lex.peek_next() == 'n':
-                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 71, 72, 73, "word", False)
+                        self.modify.add_matched_key(key_delims['block_delim'], "'{'", 71, 72, 73, "word", False)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -664,18 +663,14 @@ class GetLitAndIden:
 
         elif char == '<':
             self.modify.match_found(156, char)
-            if self.lex.peek_next() == '<':
-                self.modify.add_matched_key(key_delims['var_delim'], "alpha,'(', '+', '-'", 156, 158, 159, "symbol", False)
-            elif self.lex.peek_next() == '=':
+            if self.lex.peek_next() == '=':
                 self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 156, 160, 161, "symbol", False)
             else:
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 156, 157, False)
 
         elif char == '>':
             self.modify.match_found(162, char)
-            if self.lex.peek_next() == '>':
-                self.modify.add_matched_key(key_delims['var1_delim'], "ASCII Character", 162, 164, 164, "symbol", False)
-            elif self.lex.peek_next() == '=':
+            if self.lex.peek_next() == '=':
                 self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 162, 166, 167, "symbol", False)
             else:
                 self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 162, 163, False)
@@ -718,10 +713,6 @@ class GetLitAndIden:
         elif char == ':':
             self.modify.match_found(184, char)
             self.check.check_symbol(key_delims['colon_delim'], "alpha, number, '(', '+', '-'", 184, 185, False)
-
-        elif char == '#':
-            self.modify.match_found(186, char)
-            self.check.check_symbol(key_delims['interpol_delim'], "\"", 186, 187, False)
 
         elif char == '.':
             self.lex.key = char
@@ -861,6 +852,19 @@ class Checkers:
         else:
             if self.lex.isIden or self.lex.key == ']':
                 if self.lex.peek_next() == '.': self.lex.struct = True
+
+            if self.lex.isIden and self.lex.peek_next() in ['!', '&', '|']:
+                curr = self.lex.advance()
+                if curr == '!' and self.lex.peek_next() != '=':
+                    self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
+                    return
+                elif curr == '&' and self.lex.peek_next() != '&':
+                    self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
+                    return
+                elif curr == '|' and self.lex.peek_next() != '|':
+                    self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
+                    return
+                self.lex.pos -= 1
 
             if self.lex.isIden: 
                 if self.lex.key in idens:
