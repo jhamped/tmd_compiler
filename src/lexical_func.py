@@ -858,9 +858,6 @@ class Checkers:
                 if curr == '!' and self.lex.peek_next() != '=':
                     self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
                     return
-                elif curr == '&' and self.lex.peek_next() != '&':
-                    self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
-                    return
                 elif curr == '|' and self.lex.peek_next() != '|':
                     self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
                     return
