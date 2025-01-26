@@ -193,6 +193,23 @@ class TMDCompiler:
         self.save_button.bind("<Enter>", lambda e: self.save_button.config(image=self.save_hover_icon, fg="white"))
         self.save_button.bind("<Leave>", lambda e: self.save_button.config(image=self.save_icon, fg="black"))
 
+        # Semantic button
+        self.semanticBtn = tk.Label(
+            navFrame, text="Semantic", font=("Helvetica", 11, "bold"),
+            bg="#a6b3f1", borderwidth=1, relief="solid", width=8
+        )
+        self.semanticBtn.pack(side="right", pady=5, padx=(0, 20))
+        self.semanticBtn.bind("<Enter>", lambda e: self.semanticBtn.config(fg="white"))
+        self.semanticBtn.bind("<Leave>", lambda e: self.semanticBtn.config(fg="black"))
+
+        # Syntax button
+        self.syntaxBtn = tk.Label(
+            navFrame, text="Syntax", font=("Helvetica", 11, "bold"),
+            bg="#a6b3f1", borderwidth=1, relief="solid", width=8
+        )
+        self.syntaxBtn.pack(side="right", pady=5, padx=(0, 15))
+        self.syntaxBtn.bind("<Enter>", lambda e: self.syntaxBtn.config(fg="white"))
+        self.syntaxBtn.bind("<Leave>", lambda e: self.syntaxBtn.config(fg="black"))
 
         # Lexical button
         self.lexicalBtn = tk.Label(
@@ -203,6 +220,7 @@ class TMDCompiler:
         self.lexicalBtn.bind("<Button-1>", self.lexical_click)
         self.lexicalBtn.bind("<Enter>", lambda e: self.lexicalBtn.config(fg="white"))
         self.lexicalBtn.bind("<Leave>", lambda e: self.lexicalBtn.config(fg="black"))
+
     
     def create_notebook(self):
         # Initialize the CustomNotebook
@@ -571,6 +589,18 @@ class TMDCompiler:
                 text_widget.mark_set(tk.INSERT, current_pos)
             return "break"
 
+    def on_enter_semantic(self, event):
+        self.semanticBtn.config(fg="white")
+    def on_leave_semantic(self,event):
+        self.semanticBtn.config(fg="black")
+
+
+    def on_enter_syntax(self, event):
+        self.syntaxBtn.config(fg="white")
+    def on_leave_syntax(self,event):
+        self.syntaxBtn.config(fg="black")
+
+
     def on_enter_lexical(self, event):
         self.lexicalBtn.config(fg="white")
     def on_leave_lexical(self,event):
@@ -584,6 +614,7 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
+
 
     def update_line_numbers(self, event=None):
         line_numbers = ""
