@@ -1,13 +1,8 @@
 from definitions import *
 
-# Parsing table based on the provided grammar
+"""
 parsing_table = {
-    "<program>": {
-        "segm": ["<global_dec>", "main", "{", "<statements>", "}"],
-        "main": ["<global_dec>", "main", "{", "<statements>", "}"], 
-        "str": ["<global_dec>", "main", "{", "<statements>", "}"],
-        #(lahat ng nasa predict set)
-    },
+    "<program>": {},
     "<global_dec>": {
         "segm": ["<segm>", "<global_dec>"],
         "main": ["null"],
@@ -88,13 +83,24 @@ parsing_table = {
 		    ")": ["null"]
     }
 }
+"""
 
+# Parsing table based on the provided grammar
 def parse():
-    stack = ["$", "<program>"]  # Initialize stack with start symbol and end marker
+    add_all_set()
+
+    stack = ["<program>"]  # Initialize stack with start symbol and end marker
     current_token_index = 0
 
     def get_lookahead():
-        return token[current_token_index] if current_token_index < len(token) else None
+        curr_token = token[current_token_index]
+        
+        if current_token_index < len(token):
+            if curr_token.startswith("id"):
+                curr_token = "id"
+            return curr_token
+        else:
+            None
 
     while stack:
         top = stack.pop()
