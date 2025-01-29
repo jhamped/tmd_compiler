@@ -105,7 +105,7 @@ parsing_table = {
     "<struct_id_tail>": {"[": ["[", "<index>", "]"]}, 
     "<statements>": {"}": ["null"]},
     "<other_statements>": {"id": ["<assignment_statements>", "<statements>"], "disp": ["<output_statement>", "<statements>"],
-        "insp": ["<input_statement>", "<statements>"], "ret": ["<return_statement>", "<statements>"], "exit": ["exit", ";", "<statements>"]},
+        "insp": ["<input_statement>", "<statements>"], "ret": ["<return_statement>", "<statements>"], "exit": ["exit", ";", "<statements>"], "brk": ["brk", ";", "<statements>"]},
     "<assignment_statements>": {"id": ["id", "<assignment_tail>", ";"]},
     "<assignment_tail>": {"(": ["(", "<args>", ")"]},
     "<assignment_id_tail>": {"[": ["[", "<index>", "]"], ".": [".", "id", "<id_array_tail>"]},
@@ -129,15 +129,12 @@ parsing_table = {
     "<if_statement>": {"if": ["if", "(", "<condition>", ")", "{", "<conditional_body>", "}", "<elif_statement>", "<else_statement>"]},
     "<elif_statement>": {"elif": ["elif", "(", "<condition>", ")", "{", "<conditional_body>", "}", "<elif_statement>", "<else_statement>"]},
     "<else_statement>": {"else": ["else", "{", "<conditional_body>", "}"]},
-    "<switch_statement>": {"switch": ["switch", "(", "id", "<id_tail>", ")", "{", "<key_block>", "<def_block>}"]},
+    "<switch_statement>": {"switch": ["switch", "(", "id", "<id_tail>", ")", "{", "<key_block>", "<def_block>", "}"]},
     "<key_block>": {"key": ["key", "<literals>", ":", "<conditional_body>", "<more_key>"]},
     "<more_key>": {"key": ["<key_block>", "<more_key>"]},
     "<def_block>": {"}": ["null"], "def": ["def", ":", "<conditional_body>"]},
     "<conditional_body>": {"brk": ["brk", ";", "<conditional_body>"]},
-    "<looping_statement>": {"for": ["<for_statement>"]},
-    "<looping_statement>": {"while": ["<while_statement>"]},
-    "<looping_statement>": {"do": ["<do_statement>"]},
-    "<looping_statement>": {"foreach": ["<foreach_statement>"]},
+    "<looping_statement>": {"for": ["<for_statement>"], "while": ["<while_statement>"], "do": ["<do_statement>"], "foreach": ["<foreach_statement>"]},
     "<for_statement>": {"for": ["for", "(", "<initialization>", ";", "<condition>", ";", "<iteration>", ")", "{", "<looping_body>", "}"]},
     "<while_statement>": {"while": ["while", "(", "<condition>", ")", "{" "<looping_body>", "}"]},
     "<do_statement>": {"do": ["do", "{", "<looping_body>", "}", "while", "(", "<condition>", ")", ";"]},
@@ -218,11 +215,12 @@ def add_all_set():
     add_set(["int", "dec", "chr", "str", "bln", "var"], "<instance_declaration>", ["<members_declaration>", "<more_members>"])
     add_set(["[", ",", ";"], "<struct_id_tail>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", 
-        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach"], "<statements>", ["<other_statements>"])
+        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach", "brk", "rsm", "key", "def", "}"], "<statements>", ["<other_statements>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "var", "strc"], "<other_statements>", ["<declaration_statement>", "<statements>"])
     add_set(["++", "--"], "<other_statements>", ["<pre_unary>", "<statements>"])
     add_set(["if", "switch"], "<other_statements>", ["<conditional_statement>", "<statements>"])
     add_set(["for", "while", "do", "foreach"], "<other_statements>", ["<looping_statement>", "<statements>"])
+    add_set(["def", "key", "}"], "<other_statements>", ["null"])
     add_set(["++", "--"], "<assignment_tail>", ["<unary_op>", "<more_unary>"])
     add_set(["[", ".",  "=", "+=", "-=", "*=", "/=", "%="], "<assignment_tail>", ["<assignment_id_tail>", "<assignment_op>", "<value>", "<more_assignment>"])
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
@@ -245,7 +243,7 @@ def add_all_set():
     add_set(["def", "}"], "<more_key>", ["null"])
     add_set(["key", "def", "}"], "<conditional_body>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", 
-        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach"], "<conditional_body>", ["<other_statements>", "<conditional_body>"])
+        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach", "brk"], "<conditional_body>", ["<other_statements>", "<conditional_body>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", 
         "ret", "exit", "if", "switch", "for", "while", "do", "brk", "rsm"], "<nested_foreach_body>", ["<foreach_body>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc"], "<foreach_body>", ["<declaration_statement>", "<foreach_body>"])
