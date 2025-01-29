@@ -1,4 +1,5 @@
-from lexical_analyzer import *
+from lexer import *
+from parser import *
 import tkinter as tk
 from tkinter import ttk, PhotoImage, filedialog, messagebox
 import ctypes as ct
@@ -61,9 +62,9 @@ class CustomNotebook(ttk.Notebook):
         style = ttk.Style()
         style.theme_use("alt")
         self.images = (
-            tk.PhotoImage("x_close", file="assets/x_close.png"),
-            tk.PhotoImage("x_closeactive", file="assets/x_closeactive.png"),
-            tk.PhotoImage("x_closepressed", file="assets/x_closepressed.png"),
+            tk.PhotoImage("x_close", file="TMD_Compiler/assets/x_close.png"),
+            tk.PhotoImage("x_closeactive", file="TMD_Compiler/assets/x_closeactive.png"),
+            tk.PhotoImage("x_closepressed", file="TMD_Compiler/assets/x_closepressed.png"),
             tk.PhotoImage("x_notselected", file="")
         )
         style.element_create("close", "image", "x_close",
@@ -102,7 +103,7 @@ class TMDCompiler:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("TMD Compiler")
-        self.window.iconphoto(False, PhotoImage(file="assets/TMD_Logo.png"))
+        self.window.iconphoto(False, PhotoImage(file="TMD_Compiler/assets/TMD_Logo.png"))
         self.window.wm_state('zoomed')
         self.dark_title_bar()
 
@@ -139,12 +140,12 @@ class TMDCompiler:
         navFrame.pack(side="top", fill="x")
 
         # Load base icons and resize them to a smaller size
-        self.new_icon = tk.PhotoImage(file="assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
-        self.new_hover_icon = tk.PhotoImage(file="assets/_new_icon_hover.png").subsample(28, 28)
-        self.open_icon = tk.PhotoImage(file="assets/open_icon.png").subsample(30, 30)
-        self.open_hover_icon = tk.PhotoImage(file="assets/open_icon_hover.png").subsample(30, 30)
-        self.save_icon = tk.PhotoImage(file="assets/save_icon.png").subsample(33, 33)
-        self.save_hover_icon = tk.PhotoImage(file="assets/save_icon_hover.png").subsample(33, 33)
+        self.new_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
+        self.new_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon_hover.png").subsample(28, 28)
+        self.open_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon.png").subsample(30, 30)
+        self.open_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon_hover.png").subsample(30, 30)
+        self.save_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon.png").subsample(33, 33)
+        self.save_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon_hover.png").subsample(33, 33)
 
         # Define hover and leave behavior as methods of the class
         def on_hover_button(self, button, hover_icon):
@@ -210,6 +211,7 @@ class TMDCompiler:
         self.syntaxBtn.pack(side="right", pady=5, padx=(0, 15))
         self.syntaxBtn.bind("<Enter>", lambda e: self.syntaxBtn.config(fg="white"))
         self.syntaxBtn.bind("<Leave>", lambda e: self.syntaxBtn.config(fg="black"))
+        self.syntaxBtn.bind("<Button-1>", self.syntax_click)
 
         # Lexical button
         self.lexicalBtn = tk.Label(
@@ -594,13 +596,6 @@ class TMDCompiler:
     def on_leave_semantic(self,event):
         self.semanticBtn.config(fg="black")
 
-
-    def on_enter_syntax(self, event):
-        self.syntaxBtn.config(fg="white")
-    def on_leave_syntax(self,event):
-        self.syntaxBtn.config(fg="black")
-
-
     def on_enter_lexical(self, event):
         self.lexicalBtn.config(fg="white")
     def on_leave_lexical(self,event):
@@ -609,11 +604,29 @@ class TMDCompiler:
         lexeme.clear()
         token.clear()
         state.clear()
+        idens.clear()
         for item in self.table.get_children():
             self.table.delete(item)
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
+
+    def on_enter_syntax(self, event):
+        self.syntaxBtn.config(fg="white")
+    def on_leave_syntax(self,event):
+        self.syntaxBtn.config(fg="black")
+    def syntax_click(self, event):
+        #self.lexical_click
+        lexeme.clear()
+        token.clear()
+        state.clear()
+        idens.clear()
+        for item in self.table.get_children():
+            self.table.delete(item)
+        self.console.delete("1.0", tk.END)
+        code = self.textFrame.get("1.0", "end")
+        lexer(code, self.console, self.table)
+        parse()
 
 
     def update_line_numbers(self, event=None):
