@@ -160,43 +160,43 @@ class GetLitAndIden:
             self.modify.append_state(curr, 250, 251)
             self.lex.key += curr
             self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 251, 252, "num", False)
-            if self.lex.peek_next() == '.':
+            if self.lex.peek_next() == '.' and self.lex.isDec == False:
                 self.check.check_dec(251, 271)
             elif self.lex.peek_next() in digit:
                 self.check.check_num(251, 253, 254) 
-                if self.lex.peek_next() == '.':
+                if self.lex.peek_next() == '.' and self.lex.isDec == False:
                     self.check.check_dec(253, 286)   
                 elif self.lex.peek_next() in digit:
                     self.check.check_num(253, 255, 256)
-                    if self.lex.peek_next() == '.':
+                    if self.lex.peek_next() == '.' and self.lex.isDec == False:
                         self.check.check_dec(255, 301)
                     elif self.lex.peek_next() in digit:
                         self.check.check_num(255, 257, 258)
-                        if self.lex.peek_next() == '.':
+                        if self.lex.peek_next() == '.' and self.lex.isDec == False:
                             self.check.check_dec(257, 316)
                         elif self.lex.peek_next() in digit:
                             self.check.check_num(257, 259, 260)
-                            if self.lex.peek_next() == '.':
+                            if self.lex.peek_next() == '.' and self.lex.isDec == False:
                                 self.check.check_dec(259, 331)
                             elif self.lex.peek_next() in digit:
                                 self.check.check_num(259, 261, 262)
-                                if self.lex.peek_next() == '.':
+                                if self.lex.peek_next() == '.' and self.lex.isDec == False:
                                     self.check.check_dec(261, 346)
                                 elif self.lex.peek_next() in digit:
                                     self.check.check_num(261, 263, 264)
-                                    if self.lex.peek_next() == '.':
+                                    if self.lex.peek_next() == '.' and self.lex.isDec == False:
                                         self.check.check_dec(263, 361)
                                     elif self.lex.peek_next() in digit:
                                         self.check.check_num(263, 265, 266)
-                                        if self.lex.peek_next() == '.':
+                                        if self.lex.peek_next() == '.' and self.lex.isDec == False:
                                             self.check.check_dec(265, 376)
                                         elif self.lex.peek_next() in digit:
                                             self.check.check_num(265, 267, 268)
-                                            if self.lex.peek_next() == '.':
+                                            if self.lex.peek_next() == '.' and self.lex.isDec == False:
                                                 self.check.check_dec(267, 391)
                                             elif self.lex.peek_next() in digit:
                                                 self.check.check_num(267, 269, 270)
-                                                if self.lex.peek_next() == '.':
+                                                if self.lex.peek_next() == '.' and self.lex.isDec == False:
                                                     self.check.check_dec(269, 406)
 
         self.lex.isInt = False
@@ -659,7 +659,7 @@ class GetLitAndIden:
             if self.lex.peek_next() == '=':
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 152, 154, 155, "symbol", False)
             else:
-                self.check.check_symbol(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 152, 153, False)
+                self.check.check_symbol([alpha, "("], "alpha, '(',", 152, 153, False)
 
         elif char == '<':
             self.modify.match_found(156, char)
@@ -848,6 +848,7 @@ class Checkers:
                     self.lex.error_message(f"Invalid: {invalid}", "", False)
                     return
                 #self.lex.advance()
+                self.lex.isDec = True
                 
         else:
             if self.lex.isIden or self.lex.key == ']':
