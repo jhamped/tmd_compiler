@@ -146,7 +146,7 @@ parsing_table = {
     "<looping_body>": {"}": ["null"], "brk": ["brk", ";", "<looping_body>"], "rsm": ["rsm", ";", "<looping_body>"]},
     "<initialization>": {},
     "<for_datatype>": {"id": ["null"], "int": ["int"], "dec": ["dec"], "chr": ["chr"], "var": ["var"]},
-    "<initial_value>": {"chr_lit": ["chr_lit"], "int_lit": ["int_lit"], "dec_lit": ["dec_lit"]},
+    "<initial_value>": {"chr_lit": ["chr_lit", "<expression>"], "int_lit": ["int_lit", "<expression>"], "dec_lit": ["dec_lit", "<expression>"],"id":["id","<id_tail>","<expression>"]},
     "<condition>": {},
     "<con_value>": {"(": ["(", "<con_operand>", "<con_expression>",")","<con_expression>"]},
     "<con_expression>": {},
@@ -255,7 +255,7 @@ def add_all_set():
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", 
         "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach"], "<looping_body>", ["<other_statements>", "<looping_body>"])
     add_set(["int", "dec", "chr", "var", "id"], "<initialization>", ["<for_datatype>", "id", "<id_tail>", "=", "<initial_value>"])
-    add_set(["str", "bln", "chr", "dec", "int"], "<initial_value>", ["<type_conversion>"]) 
+    add_set(["str", "bln", "chr", "dec", "int"], "<initial_value>", ["<type_conversion>", "<expression>"]) 
     add_set(["!", "(", "str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<condition>", ["<not_op>", "<con_value>"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<con_value>", ["<con_operand>", "<con_expression>"])
     add_set([")", ";"], "<con_expression>", ["null"])
