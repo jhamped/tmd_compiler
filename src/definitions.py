@@ -296,3 +296,8 @@ def add_all_set():
     add_set([";", ")"],"<ret_expression>",["null"])
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!="],"<ret_expression>",["<operator>","<not_op>","<tail_operand>"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "id", "++", "--", ")"],"<ret_args>",["<args>"])
+
+#SEMANTIC
+datatype = ["var", "str", "chr", "int", "dec", "bln"]
+literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"]
+valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": "dec_lit","bln": ["true", "false"] } 
