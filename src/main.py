@@ -1,5 +1,6 @@
 from lexer import *
 from parser import *
+from semantic import *
 import tkinter as tk
 from tkinter import ttk, PhotoImage, filedialog, messagebox
 import ctypes as ct
@@ -202,6 +203,7 @@ class TMDCompiler:
         self.semanticBtn.pack(side="right", pady=5, padx=(0, 20))
         self.semanticBtn.bind("<Enter>", lambda e: self.semanticBtn.config(fg="white"))
         self.semanticBtn.bind("<Leave>", lambda e: self.semanticBtn.config(fg="black"))
+        self.semanticBtn.bind("<Button-1>", self.semantic_click)
 
         # Syntax button
         self.syntaxBtn = tk.Label(
@@ -627,6 +629,18 @@ class TMDCompiler:
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
         parse()
+    def semantic_click(self, event):
+        #self.lexical_click
+        lexeme.clear()
+        token.clear()
+        state.clear()
+        idens.clear()
+        for item in self.table.get_children():
+            self.table.delete(item)
+        self.console.delete("1.0", tk.END)
+        code = self.textFrame.get("1.0", "end")
+        lexer(code, self.console, self.table)
+        semantic()
 
 
     def update_line_numbers(self, event=None):
