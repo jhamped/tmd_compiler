@@ -44,7 +44,7 @@ def semantic():
                     id_value = token[current_token_index] 
                     print(f"-ID: {id_value} datatype: {datatype_value}")
                     #check if ID already declared
-                    if datatype_value !="null":
+                    if datatype_value !="null" and token[current_token_index-1]!=",":
                         if any(entry["identifier"] == id_value for entry in symbol_table):
                             raise Exception(f"SEMANTIC ERROR: Identifier {id_value} already declared")
                     elif datatype_value =="null":
