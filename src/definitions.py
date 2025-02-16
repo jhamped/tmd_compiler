@@ -51,6 +51,7 @@ key1_delims = {
     'jmp_delim' : whitespace + [';'],
     'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '(', '.'],
     'num_delim' : whitespace + all_operators + [':', ';', ')', '}', ']', ','],
+    'not_delim' : whitespace + alpha + ['(']
 }
 
 key2_delims = {
