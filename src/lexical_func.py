@@ -70,6 +70,7 @@ class GetLitAndIden:
         self.check = Checkers(lex)
 
     def get_string(self):
+        self.lex.isDec = False
         self.lex.isString = True
         self.lex.key = '"'
         self.modify.append_state(self.lex.key, 0, 421)
@@ -117,6 +118,7 @@ class GetLitAndIden:
         self.lex.isString = False
 
     def get_character(self):
+        self.lex.isDec = False
         self.lex.isChar = True
         terminated = False
         self.lex.key = "'"
@@ -142,6 +144,7 @@ class GetLitAndIden:
         self.lex.isChar = False
 
     def get_num(self, char):
+        self.lex.isDec = False
         self.lex.matched = False
         self.lex.isInt = True
         curr = char
@@ -280,6 +283,7 @@ class GetLitAndIden:
             self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def get_id(self):
+        self.lex.isDec = False
         self.lex.isIden = True
         curr = self.lex.advance()
 
@@ -366,6 +370,7 @@ class GetLitAndIden:
         self.get_id()
 
     def get_keyword(self, char):
+        self.lex.isDec = False
         self.lex.isIden = False
 
         if char == 'b':
@@ -596,6 +601,7 @@ class GetLitAndIden:
             self.get_lexeme()
 
     def get_symbol(self, char):
+        self.lex.isDec = False
         if char == '=':
             self.modify.match_found(117, char)
             if self.lex.peek_next() == '=':
@@ -659,7 +665,7 @@ class GetLitAndIden:
             if self.lex.peek_next() == '=':
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 152, 154, 155, "symbol", False)
             else:
-                self.check.check_symbol([alpha, "("], "alpha, '(',", 152, 153, False)
+                self.check.check_symbol(key_delims['not_delim'], "alpha, '(',", 152, 153, False)
 
         elif char == '<':
             self.modify.match_found(156, char)
@@ -784,7 +790,6 @@ class Checkers:
         self.check_delim(delim, expected, requiredSpace)
 
     def check_delim(self, delim, expected, requiredSpace):
-        word = ''
         esc = ''
         invalid = ''
 
@@ -824,14 +829,7 @@ class Checkers:
                 GetLitAndIden(self.lex).get_keyword(self.lex.advance())
                 return
 
-            if self.lex.peek_next() in alpha and self.lex.key not in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
-                while self.lex.peek_next() in identifier:
-                    word += self.lex.advance()
-                if word not in keywords:
-                    self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
-                else:
-                    self.lex.error_message(f"Unexpected {word} after {self.lex.key}", expected, True)
-            elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
+            if self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
                 self.modify.append_key(self.lex.key)
             else:
                 self.lex.error_message(f"Unexpected {self.lex.peek_next()} after {self.lex.key}", expected, True)
