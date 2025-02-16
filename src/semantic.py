@@ -39,17 +39,20 @@ def semantic():
                 print(f"lookahead {lookahead}")
                 if lookahead in datatype:
                     datatype_value = lookahead
-                    print(f"Datatype: {datatype_value}")
+                    print(f"-Datatype: {datatype_value}")
                 elif lookahead == "id":
                     id_value = token[current_token_index] 
-                    print(f"ID: {id_value}")
+                    print(f"-ID: {id_value} datatype: {datatype_value}")
                     #check if ID already declared
                     if datatype_value !="null":
                         if any(entry["identifier"] == id_value for entry in symbol_table):
                             raise Exception(f"SEMANTIC ERROR: Identifier {id_value} already declared")
+                    elif datatype_value =="null":
+                        if not any(entry["identifier"] == id_value for entry in symbol_table):
+                            raise Exception(f"SEMANTIC ERROR: Identifier {id_value} not declared{ token[current_token_index]}")
                 elif lookahead in literals:
                     literal_value = lookahead
-                    print(f"Literal: {literal_value}")
+                    print(f"-Literal: {literal_value}")
                     if datatype_value == "null":
                         for entry in symbol_table:
                             print(f"entry: {entry["identifier"]}")
@@ -61,6 +64,8 @@ def semantic():
                     else:
                         raise Exception(f"{datatype_value} cannot be initialized as {literal_value}")
                 elif lookahead == ",":
+                    print("-Symbol: ,")
+                    print(datatype_value)
                     if any(entry["identifier"] == id_value for entry in symbol_table):
                         for entry in symbol_table:
                             if entry["identifier"] == id_value:
@@ -71,6 +76,7 @@ def semantic():
                     print(f"Symbol Table Updated")
                     print("------------------------------------------------------------------")
                 elif lookahead == ";":
+                    print("-Symbol: ;")
                     if any(entry["identifier"] == id_value for entry in symbol_table):
                         for entry in symbol_table:
                             if entry["identifier"] == id_value:
