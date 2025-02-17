@@ -43,7 +43,7 @@ key1_delims = {
     'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.', '~'],
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
     'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.'],
-    'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&'],
+    'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.'],
     'concat_delim' : whitespace + alpha + ['(', '"', "'", '#'],
     'data_delim' : whitespace + ['[', '('],
     'val_delim' : whitespace + [';', ',', ')', '}', '!', '&', '=', '|'],
