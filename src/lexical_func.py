@@ -688,9 +688,8 @@ class GetLitAndIden:
         elif char == ']':
             self.modify.match_found(170, char)
             if self.lex.peek_next() == '.':
-                self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, False)
-            else:
-                self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, True)
+                self.lex.struct = True
+            self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 170, 171, True)
 
         elif char == '{':
             self.modify.match_found(172, char)
