@@ -824,7 +824,13 @@ class Checkers:
 
         if self.lex.peek_next() not in delim:
             if self.lex.isIden and self.lex.peek_next() in alpha:
-                self.modify.append_key('id')
+                if self.lex.key in idens:
+                    id = idens.index(self.lex.key)
+                else:
+                    id = self.lex.idNum
+                    self.lex.idNum += 1
+                    idens.append(self.lex.key)
+                self.modify.append_key(f'id{id+1}')
                 self.lex.key = ''
                 GetLitAndIden(self.lex).get_keyword(self.lex.advance())
                 return
