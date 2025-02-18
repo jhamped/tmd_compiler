@@ -743,6 +743,7 @@ class GetLitAndIden:
                     else:
                         self.lex.key += fraction
                         self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
+            self.lex.struct = False
                     
         elif char == '_':
             self.lex.key = char
