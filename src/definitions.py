@@ -75,7 +75,7 @@ parsing_table = {
     "<segm>": {"segm": ["segm", "id", "(", "<parameter>", ")", "{", "<statements>", "}", "<segm>"]},
     "<parameter>": {")": ["null"]},
     "<mul_parameter>": {")": ["null"], ",": [",", "<vartype>", "id", "<mul_parameter>"]},
-    "<declaration_statement>": {"strc": "<struct_declaration>"},
+    "<declaration_statement>": {},
     "<identifier_declaration>": {"var": ["var", "<variable_declaration>"], "const": ["const", "<const_dec_tail>"]},
     "<iden_dec_tail>": {"id": ["<variable_declaration>"], "[": ["<array_declaration>"]},
     "<const_dec_tail>": {"var": ["var", "<const_declaration>"]},
@@ -207,6 +207,7 @@ def add_all_set():
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "main", "}"], "<segm>", ["null"])
     add_set(["str", "bln", "chr", "dec", "int", "var"], "<parameter>", ["<vartype>", "id", "<mul_parameter>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln"], "<declaration_statement>", ["<identifier_declaration>"])
+    add_set(["strc"], "<declaration_statement>", ["<struct_declaration>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<identifier_declaration>", ["<datatype>", "<iden_dec_tail>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<const_dec_tail>", ["<datatype>", "<const_dec_in>"])
     add_set([";", ","], "<init_statement>", ["null"])
@@ -303,5 +304,4 @@ def add_all_set():
 #SEMANTIC
 datatype = ["var", "str", "chr", "int", "dec", "bln"]
 literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"]
-valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": "dec_lit","bln": ["true", "false"], "var":literals} 
-
+valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": "dec_lit","bln": ["true", "false"], "var":literals}
