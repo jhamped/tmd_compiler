@@ -378,7 +378,7 @@ class GetLitAndIden:
             if self.lex.peek_next() == 'l':
                 self.modify.add_key(1, 2)
                 if self.lex.peek_next() == 'n':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 2, 3, 4, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 2, 3, 4, "word", True)
             elif self.lex.peek_next() == 'r':
                 self.modify.add_key(1, 5)
                 if self.lex.peek_next() == 'k':
@@ -391,7 +391,7 @@ class GetLitAndIden:
             if self.lex.peek_next() == 'h':
                 self.modify.add_key(8, 9)
                 if self.lex.peek_next() == 'r':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 9, 10, 11, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 9, 10, 11, "word", True)
             elif self.lex.peek_next() == 'o':
                 self.modify.add_key(8, 12)
                 if self.lex.peek_next() == 'n':
@@ -408,7 +408,7 @@ class GetLitAndIden:
             if self.lex.peek_next() == 'e':
                 self.modify.add_key(17, 18)
                 if self.lex.peek_next() == 'c':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 18, 19, 20, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 18, 19, 20, "word", True)
                 elif self.lex.peek_next() == 'f':
                     self.modify.add_matched_key(key_delims['def_delim'], "':'", 18, 21, 22, "word", False)
             elif self.lex.peek_next() == 'i':
@@ -485,7 +485,7 @@ class GetLitAndIden:
                     if self.lex.peek_next() == 'p':
                         self.modify.add_matched_key(key_delims['state_delim'], "'('", 60, 61, 62, "word", False)
                 elif self.lex.peek_next() == 't':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -835,7 +835,14 @@ class Checkers:
                 GetLitAndIden(self.lex).get_keyword(self.lex.advance())
                 return
 
-            if self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
+            if self.lex.peek_next() in alpha and self.lex.key not in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
+                while self.lex.peek_next() in identifier:
+                    word += self.lex.advance()
+                if word not in keywords:
+                    self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
+                else:
+                    self.lex.error_message(f"Unexpected {word} after {self.lex.key}", expected, True)
+            elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
                 self.modify.append_key(self.lex.key)
             else:
                 self.lex.error_message(f"Unexpected {self.lex.peek_next()} after {self.lex.key}", expected, True)
