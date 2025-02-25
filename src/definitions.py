@@ -126,7 +126,7 @@ parsing_table = {
     "<post_unary>": {"id": ["<unary_id>", "<unary_op>"]},
     "<unary_id>": {"id": ["<id_holder>"]},
     "<return_statement>": {"ret": ["ret", "<return_value>", ";"]},
-    "<return_value>": {"(": ["(", "<return_value>", ")"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"]},
+    "<return_value>": {"(": ["(", "<return_value>", ")", "<ret_expression>"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"]},
     "<ret_expression>": {},
     "<ret_id_tail>": {"[": ["[", "<index>", "]"], "(": ["(", "<ret_args>", ")"], ".": [".", "id", "<id_array_tail>"]},
     "<ret_args>": {"(": ["(", "<ret_args>",")"]},
