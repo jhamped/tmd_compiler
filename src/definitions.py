@@ -112,7 +112,7 @@ parsing_table = {
     "<assignment_id_tail>": {"[": ["[", "<index>", "]"], ".": [".", "id", "<id_array_tail>"]},
     "<more_assignment>": {";": ["null"], ",": [",", "id", "<assignment_tail>"]},
     "<output_statement>": {"disp": ["disp", "(", "<value>", ")", ";"]},
-    "<value>": {"(": ["(","<value>",")"], "none": ["none"]},
+    "<value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
     "<more_value>": {"&": ["&", "<value>"]},
     "<input_statement>": {"insp": ["insp", "(", "<id_holder>", ")", ";"]},
     "<id_holder>": {"id": ["id", "<hold_id_tail>"]},
