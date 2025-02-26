@@ -792,6 +792,7 @@ class Checkers:
     def check_delim(self, delim, expected, requiredSpace):
         esc = ''
         invalid = ''
+        word = ''
 
         if not requiredSpace:
             self.lex.skip_whitespace()
