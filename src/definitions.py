@@ -39,7 +39,7 @@ key1_delims = {
     'op_delim' : whitespace + alphanumeric + ['(', '~', '.', '+', '-'],
     'unary_delim' : whitespace + alphanumeric + number_operator + ['(', ')', ';', ',', '~'],
     'paren_delim' : whitespace + alphanumeric + [';', '!', '#', "'", '"', '(', ')', '+', '-', '.', '~'],
-    'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ','],
+    'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ',', '=', '!'],
     'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.', '~'],
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
     'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.'],
