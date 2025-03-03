@@ -125,14 +125,14 @@ parsing_table = {
     "<hold_id_tail_next>": {"[": ["[", "<index>", "]"]},
     "<more_hold_id_tail>": {".": [".","id","<hold_id_tail_next>"]},
     "<pre_unary_statement>": {},
-    "<pre_unary_paren>": {"(": ["(","pre_unary_paren",")"]},
-    "<unary_statement>": {"(": ["(","unary_statement",")"], "id": ["<post_unary>", "<more_unary>"]},
+    "<pre_unary_paren>": {},
+    "<unary_statement>": {"id": ["<post_unary>", "<more_unary>"]},
     "<more_unary>": {",": [",", "<unary_statement>"]},
     "<pre_unary>": {},
     "<post_unary>": {"id": ["<unary_id>", "<unary_op>"]},
     "<unary_id>": {"id": ["<id_holder>"]},
     "<return_statement>": {"ret": ["ret", "<return_value>", ";"]},
-    "<return_value>": {"(": ["(", "<return_value>", ")"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"]},
+    "<return_value>": {"(": ["(", "<return_value>", ")", "<ret_expression>"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"]},
     "<ret_expression>": {},
     "<ret_id_tail>": {"[": ["[", "<index>", "]"], "(": ["(", "<args>", ")"], ".": [".", "id", "<id_array_tail>"]},
     "<conditional_statement>": {"if": ["<if_statement>"], "switch": ["<switch_statement>"]},
@@ -245,7 +245,7 @@ def add_all_set():
     add_set([",", ";"], "<struct_id_tail>", ["null"])
     add_set(["brk", "rsm", "key", "def","}"], "<statements>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc"], "<statements>", ["<declaration_statement>", "<statements>"])
-    add_set(["++", "--", "("], "<statements>", ["<pre_unary_statement>", "<statements>"])
+    add_set(["++", "--"], "<statements>", ["<pre_unary_statement>", "<statements>"])
     add_set(["if", "switch"], "<statements>", ["<conditional_statement>", "<statements>"])
     add_set(["for", "while", "do", "foreach"], "<statements>", ["<looping_statement>", "<statements>"])
     add_set(["++", "--"], "<assignment_tail>", ["<unary_op>", "<more_unary>"])
@@ -258,7 +258,7 @@ def add_all_set():
     add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_hold_id_tail>", ["null"])
-    add_set(["++", "--", "("], "<pre_unary_statement>", {"<pre_unary_paren>", "<more_unary>", ";"})
+    add_set(["++", "--"], "<pre_unary_statement>", ["<pre_unary_paren>", "<more_unary>", ";"])
     add_set(["++", "--"], "<pre_unary_paren>", {"<pre_unary>"})
     add_set(["++", "--"], "<unary_statement>", ["<pre_unary>", "<more_unary>"])
     add_set([")", ";" ], "<more_unary>", ["null"])
@@ -271,20 +271,20 @@ def add_all_set():
     add_set([")", ";","+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<ret_id_tail>", ["null"])
     add_set(["++", "--"], "<ret_id_tail>", ["<unary_op>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
-             "do", "foreach", "brk", "rsm", "key", "def", "else", "(","}"], "<elif_statement>", ["null"])
+             "do", "foreach", "brk", "rsm", "key", "def", "else","}"], "<elif_statement>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", 
-             "while", "do", "foreach", "brk", "rsm", "key", "segm", "def", "(", "}" ], "<else_statement>", ["null"])
+             "while", "do", "foreach", "brk", "rsm", "key", "segm", "def", "}" ], "<else_statement>", ["null"])
     add_set(["def", "}"], "<more_key>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
-             "do", "foreach", "segm", "brk", "def", "key", "(", "}"], "<conditional_body>", ["<statements>", "<brk>"])
+             "do", "foreach", "segm", "brk", "def", "key", "}"], "<conditional_body>", ["<statements>", "<brk>"])
     add_set(["def","rsm", "key", "}"], "<brk>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", 
-        "ret", "exit", "if", "switch", "for", "while", "do", "brk", "rsm", "(", "}"], "<nested_foreach_body>", ["<foreach_body>"])
+        "ret", "exit", "if", "switch", "for", "while", "do", "brk", "rsm", "}"], "<nested_foreach_body>", ["<foreach_body>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc"], "<foreach_body>", ["<declaration_statement>", "<foreach_body>"])
     add_set(["if", "switch"], "<foreach_body>", ["<conditional_statement>", "<foreach_body>"])
-    add_set(["++", "--", "("], "<foreach_body>", ["<pre_unary_statement>", "<foreach_body>"])
+    add_set(["++", "--"], "<foreach_body>", ["<pre_unary_statement>", "<foreach_body>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", 
-        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach", "segm", "brk", "rsm","(","}"], "<looping_body>", ["<statements>", "<brk>","<rsm>"])
+        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach", "segm", "brk", "rsm","}"], "<looping_body>", ["<statements>", "<brk>","<rsm>"])
     add_set(["int", "dec", "chr", "var", "id"], "<initialization>", ["<for_datatype>", "id", "<hold_id_tail>", "=", "<initial_value>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<initial_value>", ["<type_conversion>", "<expression>"]) 
     add_set(["!", "(", "str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<condition>", ["<not_op>", "<con_value>"])
