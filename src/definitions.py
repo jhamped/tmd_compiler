@@ -91,10 +91,10 @@ parsing_table = {
     "<id_declare>": {"(": ["(","<id_declare>",")"], "id": ["id"]},
     "<array_declaration>": {"[": ["[", "<array_dimension>", ";"]},
     "<array_dimension>": {"]": ["]", "<id_declare>", "<array_init>", "<more_array_init>"], ",": [",", "]", "<id_declare>", "<two_array_init>", "<more_two_array_init>"]},
-    "<array_init>": {";": ["null"], "=": ["=", "{", "<array_elements>", "<more_lit>","}"]},
+    "<array_init>": {"=": ["=", "{", "<array_elements>", "<more_lit>","}"]},
     "<more_lit>": {"}": ["null"], ",": [",", "<array_elements>", "<more_lit>"]},
     "<more_array_init>": {";": ["null"], ",": [",", "id", "<array_init>"]},
-    "<two_array_init>": {";": ["null"], "=": ["=", "{", "{", "<array_elements>", "<more_lit>", "}", "<two_more_lit>", "}"]},
+    "<two_array_init>": {"=": ["=", "{", "{", "<array_elements>", "<more_lit>", "}", "<two_more_lit>", "}"]},
     "<two_more_lit>": {"}": ["null"], ",": [",", "{", "<array_elements>", "<more_lit>", "}", "<two_more_lit>"]},
     "<more_two_array_init>": {";": ["null"], ",": [",", "id", "<two_array_init>"]},
     "<array_elements>": {"(":["(","<array_elements>",")"],"none": ["none"]},
@@ -110,7 +110,8 @@ parsing_table = {
     "<struct_id>": {},
     "<struct_id_tail>": {"[": ["[", "<index>", "]"]}, 
     "<statements>": {"id": ["<assignment_statements>", "<statements>"], "disp": ["<output_statement>", "<statements>"],
-        "insp": ["<input_statement>", "<statements>"], "ret": ["<return_statement>", "<statements>"], "exit": ["exit", ";", "<statements>"], "segm": ["<segm>","<statements>"]},
+        "insp": ["<input_statement>", "<statements>"], "ret": ["<return_statement>", "<statements>"], "exit": ["exit", ";", "<statements>"], "segm": ["<segm_statements>","<statements>"]},
+    "<segm_statements>": {"segm": ["segm", "id", "(", "<parameter>", ")", "{", "<statements>", "}"]},
     "<assignment_statements>": {"id": ["id", "<assignment_tail>", ";"]},
     "<assignment_tail>": {"(": ["(", "<args>", ")"]},
     "<assignment_id_tail>": {"[": ["[", "<index>", "]"], ".": [".", "id", "<id_array_tail>"]},
@@ -120,24 +121,23 @@ parsing_table = {
     "<more_value>": {"&": ["&", "<value>"]},
     "<input_statement>": {"insp": ["insp", "(", "<id_holder>", ")", ";"]},
     "<id_holder>": {"id": ["id", "<hold_id_tail>"]},
-    "<hold_id_tail>": {"[": ["[", "<index>", "]"], ".": [".", "id", "<hold_id_tail_next>"]},
+    "<hold_id_tail>": {"[": ["[", "<index>", "]", "<more_hold_id_tail>"], ".": [".", "id", "<hold_id_tail_next>"]},
     "<hold_id_tail_next>": {"[": ["[", "<index>", "]"]},
     "<more_hold_id_tail>": {".": [".","id","<hold_id_tail_next>"]},
     "<pre_unary_statement>": {},
     "<pre_unary_paren>": {"(": ["(","pre_unary_paren",")"]},
     "<unary_statement>": {"(": ["(","unary_statement",")"], "id": ["<post_unary>", "<more_unary>"]},
-    "<more_unary>": {";": ["null"], ",": [",", "<unary_statement>"]},
+    "<more_unary>": {",": [",", "<unary_statement>"]},
     "<pre_unary>": {},
     "<post_unary>": {"id": ["<unary_id>", "<unary_op>"]},
     "<unary_id>": {"id": ["<id_holder>"]},
     "<return_statement>": {"ret": ["ret", "<return_value>", ";"]},
     "<return_value>": {"(": ["(", "<return_value>", ")"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"]},
     "<ret_expression>": {},
-    "<ret_id_tail>": {"[": ["[", "<index>", "]"], "(": ["(", "<ret_args>", ")"], ".": [".", "id", "<id_array_tail>"]},
-    "<ret_args>": {"(": ["(", "<ret_args>",")"]},
+    "<ret_id_tail>": {"[": ["[", "<index>", "]"], "(": ["(", "<args>", ")"], ".": [".", "id", "<id_array_tail>"]},
     "<conditional_statement>": {"if": ["<if_statement>"], "switch": ["<switch_statement>"]},
     "<if_statement>": {"if": ["if", "(", "<condition>", ")", "{", "<conditional_body>", "}", "<elif_statement>", "<else_statement>"]},
-    "<elif_statement>": {"elif": ["elif", "(", "<condition>", ")", "{", "<conditional_body>", "}", "<elif_statement>", "<else_statement>"]},
+    "<elif_statement>": {"elif": ["elif", "(", "<condition>", ")", "{", "<conditional_body>", "}", "<elif_statement>"]},
     "<else_statement>": {"else": ["else", "{", "<conditional_body>", "}"]},
     "<switch_statement>": {"switch": ["switch", "(", "id", "<id_tail>", ")", "{", "<key_block>", "<def_block>", "}"]},
     "<key_block>": {"key": ["key", "<literals>", ":", "<conditional_body>", "<more_key>"]},
@@ -150,8 +150,8 @@ parsing_table = {
     "<while_statement>": {"while": ["while", "(", "<condition>", ")", "{", "<looping_body>", "}"]},
     "<do_statement>": {"do": ["do", "{", "<looping_body>", "}", "while", "(", "<condition>", ")", ";"]},
     "<foreach_statement>": {"foreach": ["foreach", "(", "<for_datatype>", "id", "in", "id", ")", "{", "<nested_foreach_body>", "}"]},
-    "<nested_foreach_body>": {"}": ["null"], "foreach": ["foreach", "(", "id", "in", "id", ")", "{", "<foreach_body>", "}"]},
-    "<foreach_body>": {"}": ["null"], "for": ["<for_statement>", "<foreach_body>"], "do": ["<do_statement>", "<foreach_body>"], "while": ["<while_statement>", "<foreach_body>"],
+    "<nested_foreach_body>": {"foreach": ["foreach", "(", "id", "in", "id", ")", "{", "<foreach_body>", "}"]},
+    "<foreach_body>": {"}": ["null"],"for": ["<for_statement>", "<foreach_body>"], "do": ["<do_statement>", "<foreach_body>"], "while": ["<while_statement>", "<foreach_body>"],
         "insp": ["<input_statement>", "<foreach_body>"], "disp": ["<output_statement>", "<foreach_body>"], "id": ["<assignment_statements>", "<foreach_body>"],
         "ret": ["<return_statement>", "<foreach_body>"], "exit": ["exit", ";", "<foreach_body>"], "brk": ["brk", ";", "<foreach_body>"], "rsm": ["rsm", ";", "<foreach_body>"]},
     "<looping_body>": {},
@@ -200,8 +200,9 @@ parsing_table = {
     "<id_tail>": {"[": ["[", "<index>", "]", "<more_id_tail>"], "(": ["(", "<args>", ")"], ".": [".", "id", "<id_array_tail>"]},
     "<id_array_tail>": {"[": ["[", "<index>", "]"]},
     "<more_id_tail>": {".": [".","id","<id_array_tail>"]},
-    "<args>": {"id": ["id", "<id_tail>", "<expression>", "<more_args>"]},
-    "<more_args>": {")": ["null"], ",": [",", "<args>", "<more_args>"]},
+    "<args>": {},
+    "<args_operand>": {"(": ["(","<args_operand>",")"], "id": ["id", "<id_tail>"]},
+    "<more_args>": {")": ["null"], ",": [",", "<args>"]},
     "<vartype>": {"var": ["var"]},
     "<datatype>": {"str": ["str"], "bln": ["bln"], "chr": ["chr"], "dec": ["dec"], "int": ["int"]},
     "<literals>": {"str_lit": ["str_lit"], "chr_lit": ["chr_lit"], "int_lit": ["int_lit"], "dec_lit": ["dec_lit"]},
@@ -219,7 +220,7 @@ def add_all_set():
     add_set(["segm", "const", "var", "int", "dec", "chr", "str", "bln", "strc", "main"], "<program>", ["<global_dec>", "<segm>", "main", "{", "<statements>", "}"])
     add_set(["segm", "main"], "<global_dec>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc"], "<global_dec>", ["<declaration_statement>", "<global_dec>"])
-    add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "main", "}"], "<segm>", ["null"])
+    add_set(["main"], "<segm>", ["null"])
     add_set(["str", "bln", "chr", "dec", "int", "var"], "<parameter>", ["<vartype>", "<id_declare>", "<mul_parameter>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln"], "<declaration_statement>", ["<identifier_declaration>"])
     add_set(["strc"], "<declaration_statement>", ["<struct_declaration>"])
@@ -231,9 +232,11 @@ def add_all_set():
     add_set(["id", "("], "<const_declaration>", ["<id_declare>", "=", "<value>", "<cons_mul>", ";"])
     add_set([";", ","], "<init_statement>", ["null"])
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<init_statement>", ["<assignment_op>", "<value>"])
+    add_set([";", ","], "<array_init>", ["null"])
+    add_set([";", ","], "<two_array_init>", ["null"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<array_elements>", ["<literals>"])
-    add_set(["id", ",", ";"], "<struct_declaration_tail>", ["<instance_declaration>"])
-    add_set(["str", "bln", "chr", "dec", "int", "var"], "<members_declaration>", ["<vartype>", "<struct_id>", "<struct_id_tail>", ";"])
+    add_set(["id", "("], "<struct_declaration_tail>", ["<instance_declaration>"])
+    add_set(["str", "bln", "chr", "dec", "int", "var"], "<members_declaration>", ["<vartype>", "<struct_id>", ";"])
     add_set(["int", "dec", "chr", "str", "bln", "var"], "<more_members>", ["<members_declaration>", "<more_members>"])
     add_set([";", ","], "<instance>", ["null"])
     add_set(["id", "("], "<instance>", ["<id_declare>"])
@@ -248,44 +251,44 @@ def add_all_set():
     add_set(["++", "--"], "<assignment_tail>", ["<unary_op>", "<more_unary>"])
     add_set(["[", ".",  "=", "+=", "-=", "*=", "/=", "%="], "<assignment_tail>", ["<assignment_id_tail>", "<assignment_op>", "<value>", "<more_assignment>"])
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
-    add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>", "<more_value>"])
+    add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>"])
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--", "!"], 
         "<value>", ["<not_op>","<operand>", "<expression>", "<more_value>"])
     add_set([")", ";", ","], "<more_value>", ["null"])
-    add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", "=",","], "<hold_id_tail>", ["null"])
+    add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_hold_id_tail>", ["null"])
     add_set(["++", "--", "("], "<pre_unary_statement>", {"<pre_unary_paren>", "<more_unary>", ";"})
     add_set(["++", "--"], "<pre_unary_paren>", {"<pre_unary>"})
     add_set(["++", "--"], "<unary_statement>", ["<pre_unary>", "<more_unary>"])
+    add_set([")", ";" ], "<more_unary>", ["null"])
     add_set(["++", "--"], "<pre_unary>", ["<unary_op>", "<unary_id>"])
     add_set(["int_lit", "dec_lit", "true", "false"], "<return_value>", ["<expression_literals>","<ret_expression>"])
     add_set(["str_lit", "chr_lit"], "<return_value>", ["<text_format>"])
     add_set(["++", "--"], "<return_value>", ["<pre_unary>"])
     add_set([";", ")"], "<ret_expression>", ["null"])
-    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!="], "<ret_expression>", ["<operator>","<not_op>","<tail_operand>"])
-    add_set([")", ";","+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!="], "<ret_id_tail>", ["null"])
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<ret_expression>", ["<operator>","<not_op>","<tail_operand>"])
+    add_set([")", ";","+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<ret_id_tail>", ["null"])
     add_set(["++", "--"], "<ret_id_tail>", ["<unary_op>"])
-    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "id", "++", "--", ")"], "<ret_args>", ["args"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
-             "do", "foreach", "brk", "rsm", "key", "else", "}"], "<elif_statement>", ["null"])
-    add_set(["const", "var", "int", "dec", "chr", "str", "bln", "var", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", 
-             "while", "do", "foreach", "brk", "rsm", "key", "}" ], "<else_statement>", ["null"])
+             "do", "foreach", "brk", "rsm", "key", "def", "else", "(","}"], "<elif_statement>", ["null"])
+    add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", 
+             "while", "do", "foreach", "brk", "rsm", "key", "segm", "def", "(", "}" ], "<else_statement>", ["null"])
     add_set(["def", "}"], "<more_key>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
-             "do", "foreach", "segm", "brk", "def", "key", "}"], "<conditional_body>", ["<statements>", "<brk>"])
-    add_set(["def","key","rsm", "key", "}"], "<brk>", ["null"])
+             "do", "foreach", "segm", "brk", "def", "key", "(", "}"], "<conditional_body>", ["<statements>", "<brk>"])
+    add_set(["def","rsm", "key", "}"], "<brk>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", 
-        "ret", "exit", "if", "switch", "for", "while", "do", "brk", "rsm", "("], "<nested_foreach_body>", ["<foreach_body>"])
+        "ret", "exit", "if", "switch", "for", "while", "do", "brk", "rsm", "(", "}"], "<nested_foreach_body>", ["<foreach_body>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc"], "<foreach_body>", ["<declaration_statement>", "<foreach_body>"])
     add_set(["if", "switch"], "<foreach_body>", ["<conditional_statement>", "<foreach_body>"])
     add_set(["++", "--", "("], "<foreach_body>", ["<pre_unary_statement>", "<foreach_body>"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", 
-        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach", "segm", "brk", "rsm","}"], "<looping_body>", ["<statements>", "<brk>","<rsm>"])
+        "--", "ret", "exit", "if", "switch", "for", "while", "do", "foreach", "segm", "brk", "rsm","(","}"], "<looping_body>", ["<statements>", "<brk>","<rsm>"])
     add_set(["int", "dec", "chr", "var", "id"], "<initialization>", ["<for_datatype>", "id", "<hold_id_tail>", "=", "<initial_value>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<initial_value>", ["<type_conversion>", "<expression>"]) 
     add_set(["!", "(", "str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<condition>", ["<not_op>", "<con_value>"])
-    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<con_value>", ["<con_operand>", "<con_expression>"])
+    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "id", "int", "dec", "chr", "str", "++", "--"], "<con_value>", ["<con_operand>", "<con_expression>"])
     add_set(["true", "false"], "<con_value>", ["<bln>", "<con_expression>"])
     add_set([")", ";"], "<con_expression>", ["null"])
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<con_expression>", ["<comparison_operator>", "<not_op>","<con_value>"])
@@ -299,17 +302,17 @@ def add_all_set():
     add_set(["&&", "||"], "<comparison_operator>", ["<logical_op>"])
     add_set(["++", "--", "id"], "<iteration>", ["<iteration_statement>", "<more_iteration>"])
     add_set(["++", "--"], "<iteration_statement>", ["<pre_unary>"])
-    add_set([")", ","], "<iteration_value>", ["null"])
     add_set(["++", "--"],"<iteration_statement_tail>", ["<unary_op>"])
     add_set(["[", ".", "=", "+=", "-=", "*=", "/=", "%=", ")", "," ],"<iteration_statement_tail>", ["<hold_id_tail>","<iteration_expression>"])
     add_set([")", "," ],"<iteration_expression>", ["null"])
     add_set(["=", "+=", "-=", "*=", "/=", "%=" ],"<iteration_expression>", ["<assignment_op>","<iteration_id>","<iteration_value>"])
+    add_set([")", ","], "<iteration_value>", ["null"])
     add_set(["+", "-", "*", "/", "%"], "<iteration_value>", ["<arithmetic_op>", "<iteration_id>"])
-    add_set(["int_lit", "dec_lit", "id"], "<iteration_value_tail>", ["<iteration_id>", "<iteration_value>"])
+    add_set(["int_lit", "dec_lit", "id", "++", "--" ], "<iteration_value_tail>", ["<iteration_id>", "<iteration_value>"])
     add_set(["++", "--"], "<iteration_id>", ["<pre_unary>"])
     add_set([")", ";", "&", ","], "<expression>", ["null"])
-    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!="], "<expression>", ["<operator>", "<not_op>", "<tail_operand>"])
-    add_set(["int_lit", "dec_lit", "true", "false","chr_lit", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<tail_operand>", ["<operand>", "<expression>"])
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<expression>", ["<operator>", "<not_op>", "<tail_operand>"])
+    add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<tail_operand>", ["<operand>", "<expression>"])
     add_set(["int_lit", "dec_lit", "true", "false"], "<operand>", ["<expression_literals>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<operand>", ["<type_conversion>"])
     add_set(["++", "--"], "<operand>", ["<pre_unary>"])
@@ -323,7 +326,7 @@ def add_all_set():
     add_set(["str", "bln", "chr", "dec", "int"], "<concat_value>", ["<type_conversion>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<type_conversion>", ["<datatype>", "(", "<type_value>", ")"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<type_value>", ["<literals>"])
-    add_set(["int_lit", "id"], "<index>", ["<index_value>","<more_index>"])
+    add_set(["int_lit", "id", "("], "<index>", ["<index_value>","<more_index>"])
     add_set(["int_lit", "id"], "<index_value>", ["<index_operand>","<index_expression>"])
     add_set([ ")", "]", ","], "<index_expression>", ["null"])
     add_set(["+", "-", "*", "/", "%"], "<index_expression>", ["<arithmetic_op>","<index_value>"])
@@ -332,9 +335,10 @@ def add_all_set():
     add_set(["=", "+=", "-=", "*=", "/=", "%=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<id_array_tail>", ["null"])
     add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_id_tail>", ["null"])
     add_set([")", ","], "<args>", ["null"])
-    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<args>", ["<literals>", "<expression>","<more_args>"])
-    add_set(["++", "--"], "<args>", ["<pre_unary>", "<more_args>"])
-    add_set(["str", "bln", "chr", "dec", "int"], "<args>", ["<type_conversion>", "<expression>", "<more_args>"])
+    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "str", "bln", "chr", "dec", "int", "id", "(", "++", "--"], "<args>", ["<args_operand>","<expression>","<more_args>"])
+    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<args_operand>", ["<literals>"])
+    add_set(["++", "--"], "<args_operand>", ["<pre_unary>"])
+    add_set(["str", "bln", "chr", "dec", "int"], "<args_operand>", ["<type_conversion>"])
     add_set(["int", "dec", "chr", "str", "bln"], "<vartype>", ["<datatype>"])
     add_set(["true", "false"], "<literals>", ["<bln>"])
 #SEMANTIC
