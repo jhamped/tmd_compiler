@@ -6,12 +6,11 @@ def parse(console):
     current_token_index = 0
     
     def error_message(error):
-        line = rows[current_token_index]
-        column = col[current_token_index]
+        line = rows[current_token_index] if current_token_index < len(rows) else "0"
+        column = col[current_token_index] if current_token_index < len(col) else "0"
         console.insert(tk.END, "Syntax Error: ", "error")
         console.insert(tk.END, f"{error}")
         console.insert(tk.END, f"\n           line {line}, col {column}\n", "ln_col")
-
 
     add_all_set()
     if not token:  # If token list is empty
@@ -34,13 +33,13 @@ def parse(console):
     while stack:
         if len(token) > current_token_index:
             lookahead = get_lookahead()
-        else:
-            error_message("End of file")
+        #else:
+            #error_message("End of file")
         top = stack.pop()
         
         lookahead = get_lookahead()
         if lookahead is None:
-            error_message("Unexpected end of input. No main function found")
+            error_message("Unexpected End-of-File. No main function found")
             return
         if top == lookahead:
             # Terminal matches lookahead, consume the token
@@ -61,8 +60,8 @@ def parse(console):
         else:
             error_message(f"Unexpected symbol {lookahead}")
             break
-
-    #if stack or current_token_index < len(token):
-        #error_message("Input rejected")
+    
+    if stack or current_token_index < len(token):
+        error_message(f"Unexpected {get_lookahead()} after main function")
     #else:
      #   console.insert(tk.END, "Input accepted: Syntactically correct.")
