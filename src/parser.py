@@ -53,7 +53,7 @@ def parse(console):
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
                     stack.extend(reversed(rule))
             else:
-                error_message(f"No rule for {token} with lookahead {lookahead}")
+                error_message(f"Expected: {list(parsing_table.get(top, {}).keys())}")
                 break
         else:
             error_message(f"Unexpected symbol {lookahead}")
