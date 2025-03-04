@@ -55,8 +55,8 @@ def parse(console):
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
                     stack.extend(reversed(rule))
             else:
-                error_message(f"Unexpected {lookahead} after {prevlookahead}")
-                error_message(f"Expected: {list(parsing_table.get(top, {}).keys())} ")
+                error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
+                #error_message(f"Expected: {list(parsing_table.get(top, {}).keys())} ")
                 break
         else:
             error_message(f"Unexpected symbol {lookahead}")
