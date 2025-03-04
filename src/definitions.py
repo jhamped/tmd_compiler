@@ -116,7 +116,7 @@ parsing_table = {
     "<segm_statements>": {"segm": ["segm", "id", "(", "<parameter>", ")", "{", "<statements>", "}"]},
     "<assignment_statements>": {"id": ["id", "<assignment_tail>", ";"]},
     "<assignment_tail>": {"(": ["(", "<args>", ")"]},
-    "<assignment_id_tail>": {"[": ["[", "<index>", "]"], ".": [".", "id", "<id_array_tail>"]},
+    "<assignment_id_tail>": {"[": ["[", "<index>", "]", "<more_id_tail>"], ".": [".", "id", "<id_array_tail>"]},
     "<more_assignment>": {";": ["null"], ",": [",", "id", "<assignment_tail>"]},
     "<output_statement>": {"disp": ["disp", "(", "<value>", ")", ";"]},
     "<value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
