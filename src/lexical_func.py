@@ -57,7 +57,7 @@ class Lexical:
                 break
 
     def error_message(self, error, expected, expectedError):
-        self.console.insert(tk.END, "Error: ", "error")
+        self.console.insert(tk.END, "Lexical Error: ", "error")
         self.console.insert(tk.END, f"{error}")
         if expectedError:
             self.console.insert(tk.END, f"  Expected: {expected}", "expected")
@@ -932,6 +932,8 @@ class StateAndKeyManipulation:
     def append_key(self, lit):
         lexeme.append(self.lex.key) 
         token.append(lit)
+        rows.append(self.lex.line)
+        col.append(self.lex.col)
 
     def add_key(self, stateNum1, stateNum2):
         state.append(f"{self.lex.peek_next()} : {stateNum1}-{stateNum2}")
