@@ -30,13 +30,15 @@ def parse(console):
         else:
             None
     prevlookahead = None
+    recovery_nonterminal = ["<global_dec>", "<statements>", "<conditional_body>", "<nested_foreach_body>", "<foreach_body>"]
     while stack:
         if len(token) > current_token_index:
             lookahead = get_lookahead()
         #else:
             #error_message("End of file")
         top = stack.pop()
-        
+        if top in recovery_nonterminal:
+            recoverytop = top
         lookahead = get_lookahead()
         if lookahead is None:
             error_message("Unexpected End-of-File. No main function found")
@@ -56,12 +58,22 @@ def parse(console):
             else:
                 error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
                 #error_message(f"Expected: {list(parsing_table.get(top, {}).keys())} ")
-                break
+                #return
+                recovery_tokens = [";", "}", "segm"]  
+                while current_token_index < len(token) and get_lookahead() not in recovery_tokens:
+                    current_token_index += 1
+                current_token_index +=1
+                while top != recoverytop:
+                    top = stack.pop()
+                if recoverytop not in stack:
+                    stack.append(recoverytop)
+                
+                print(f"{top} {stack}")
         else:
             error_message(f"Unexpected symbol {lookahead}")
-            break
+            return
     
     if stack or current_token_index < len(token):
         error_message(f"Unexpected {get_lookahead()} after main function")
-    #else:
-     #   console.insert(tk.END, "Input accepted: Syntactically correct.")
+    else:
+        console.insert(tk.END, "Input accepted: Syntactically correct.")
