@@ -4,6 +4,8 @@ state = []
 lexeme = []
 token = []
 idens = []
+rows = []
+col = []
 
 arithmetic_operator = ['+', '-', '*', '/', '%']
 relational_operator = ['==', '!=', '<', '<=', '>', '>=']
