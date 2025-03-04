@@ -30,13 +30,14 @@ def parse(console):
             return curr_token
         else:
             None
-
+    prevlookahead = None
     while stack:
         if len(token) > current_token_index:
             lookahead = get_lookahead()
         else:
             error_message("End of file")
         top = stack.pop()
+        
         lookahead = get_lookahead()
         if lookahead is None:
             error_message("Unexpected end of input. No main function found")
@@ -44,6 +45,7 @@ def parse(console):
         if top == lookahead:
             # Terminal matches lookahead, consume the token
             print(f"Match: {lookahead}")
+            prevlookahead = lookahead
             current_token_index += 1
         elif top in parsing_table:
             # Non-terminal: use the parsing table
@@ -53,7 +55,8 @@ def parse(console):
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
                     stack.extend(reversed(rule))
             else:
-                error_message(f"Expected: {list(parsing_table.get(top, {}).keys())}")
+                error_message(f"Unexpected {lookahead} after {prevlookahead}")
+                error_message(f"Expected: {list(parsing_table.get(top, {}).keys())} ")
                 break
         else:
             error_message(f"Unexpected symbol {lookahead}")
