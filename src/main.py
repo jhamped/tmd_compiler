@@ -628,7 +628,7 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
-        parse()
+        parse(self.console)
     def semantic_click(self, event):
         #self.lexical_click
         lexeme.clear()
