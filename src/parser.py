@@ -50,10 +50,10 @@ def parse(console):
             print(f"Match: {lookahead}")
             prevlookahead = lookahead
             current_token_index += 1
-            if blockFound == True:
-                stack.append("}")
-                stack.append(recoverytop)
-                blockFound = False
+            #if blockFound == True:
+            #    stack.append("}")
+            #    stack.append(recoverytop)
+            #    blockFound = False
         elif top in parsing_table:
             # Non-terminal: use the parsing table
             rule = parsing_table[top].get(lookahead)
@@ -64,24 +64,26 @@ def parse(console):
             else:
                 error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
                 #error_message(f"Expected: {list(parsing_table.get(top, {}).keys())} ")
-                #return
-                recovery_tokens = [";", "}"]  
-                while current_token_index < len(token) and get_lookahead() not in recovery_tokens:
-                    if get_lookahead() == "{":
-                        blockFound = True
-                    current_token_index += 1
-                current_token_index +=1
-                while top != recoverytop:
-                    top = stack.pop()
-                if recoverytop not in stack:
-                    stack.append(recoverytop)
-                if top == "<global_dec>":
-                    stack.pop()
+                return
+                #ecovery_tokens = [";", "}"]  
+                #while current_token_index < len(token) and get_lookahead() not in recovery_tokens:
+                #    if get_lookahead() == "{":
+                #        blockFound = True
+                #   current_token_index += 1
+                #current_token_index +=1
+                #while top != recoverytop:
+                #    top = stack.pop()
+                #print(top)
+                #if recoverytop not in stack:
+                #    stack.append(recoverytop)
+                #if top == "<global_dec>":
+                #    stack.pop()
+                #print(f"{top} {stack}")
         else:
             error_message(f"Unexpected symbol {lookahead} after {prevlookahead} Expected: {top}")
             return
     
     if stack or current_token_index < len(token):
         error_message(f"Unexpected {get_lookahead()} after main function")
-    #else:
-        #print("Input accepted: Syntactically correct.")
+    else:
+        console.insert(tk.END,"Input accepted: Syntactically correct.")
