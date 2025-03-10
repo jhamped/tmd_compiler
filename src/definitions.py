@@ -345,5 +345,14 @@ def add_all_set():
     add_set(["true", "false"], "<literals>", ["<bln>"])
 #SEMANTIC
 datatype = ["var", "str", "chr", "int", "dec", "bln"]
-literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"]
-valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": "dec_lit","bln": ["true", "false"], "var":literals} 
+bool_lit = ["true", "false",]
+literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", bool_lit]
+valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": ["dec_lit", "int_lit"],"bln": [bool_lit], "var":literals} 
+id_type = ["strc", "const"]
+valid_conversion = {"bln": ["int_lit", "chr_lit"], "chr": ["int_lit", "str_lit"], "int": [bool_lit, "chr_lit", "dec_lit", "str_lit"],
+                    "dec": ["int_lit", "str_lit"], "str": ["chr_lit", "int_lit", "dec_lit", bool_lit]}
+semantic_logical = ["||", "&&"]
+non_terminal_check = ["<parameter>", "<args>", "<declaration_statement>", "<instance>", "<assignment_statements>", "<segm>", 
+                      "<segm_statements>", "<pre_unary>", "<return_value>", "<initialization>", "<condition>", "<iteration>",
+                      "<type_conversion>"
+                      ]
