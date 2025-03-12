@@ -272,9 +272,9 @@ def add_all_set():
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<ret_expression>", ["<operator>","<not_op>","<tail_operand>"])
     add_set([")", ";","+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<ret_id_tail>", ["null"])
     add_set(["++", "--"], "<ret_id_tail>", ["<unary_op>"])
-    add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
+    add_set(["segm", "const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
              "do", "foreach", "brk", "rsm", "key", "def", "else","}"], "<elif_statement>", ["null"])
-    add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", 
+    add_set(["segm","const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", 
              "while", "do", "foreach", "brk", "rsm", "key", "segm", "def", "}" ], "<else_statement>", ["null"])
     add_set(["def", "}"], "<more_key>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln", "strc", "id", "disp", "insp", "++", "--", "ret", "exit", "if", "switch", "for", "while", 
@@ -352,7 +352,8 @@ id_type = ["strc", "const"]
 valid_conversion = {"bln": ["int_lit", "chr_lit"], "chr": ["int_lit", "str_lit"], "int": [bool_lit, "chr_lit", "dec_lit", "str_lit"],
                     "dec": ["int_lit", "str_lit"], "str": ["chr_lit", "int_lit", "dec_lit", bool_lit]}
 semantic_logical = ["||", "&&"]
-non_terminal_check = ["<parameter>", "<args>", "<declaration_statement>", "<instance>", "<assignment_statements>", "<segm>", 
+non_terminal_check = ["<parameter>", "<args>", "<identifier_declaration>", "<instance>", "<assignment_statements>", "<segm>", 
                       "<segm_statements>", "<pre_unary>", "<return_value>", "<initialization>", "<condition>", "<iteration>",
-                      "<type_conversion>"
+                      "<type_conversion>", "<instance_declaration>", "<more_instance_declaration>"
                       ]
+codeblocks = ["if", "elif" ,"else", "for", "while", "do", "foreach", "switch"]
