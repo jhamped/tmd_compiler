@@ -623,6 +623,8 @@ class TMDCompiler:
         token.clear()
         state.clear()
         idens.clear()
+        rows.clear() # NEW!
+        col.clear() # NEW!
         for item in self.table.get_children():
             self.table.delete(item)
         self.console.delete("1.0", tk.END)
@@ -635,12 +637,14 @@ class TMDCompiler:
         token.clear()
         state.clear()
         idens.clear()
+        rows.clear() # NEW!
+        col.clear() # NEW!
         for item in self.table.get_children():
             self.table.delete(item)
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
-        semantic()
+        semantic(self.console)
 
 
     def update_line_numbers(self, event=None):
