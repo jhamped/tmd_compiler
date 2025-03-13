@@ -345,15 +345,21 @@ def add_all_set():
     add_set(["true", "false"], "<literals>", ["<bln>"])
 #SEMANTIC
 datatype = ["var", "str", "chr", "int", "dec", "bln"]
-bool_lit = ["true", "false",]
+bool_lit = ["true", "false"]
 literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", bool_lit]
 valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": ["dec_lit", "int_lit"],"bln": [bool_lit], "var":literals} 
 id_type = ["strc", "const"]
 valid_conversion = {"bln": ["int_lit", "chr_lit"], "chr": ["int_lit", "str_lit"], "int": [bool_lit, "chr_lit", "dec_lit", "str_lit"],
                     "dec": ["int_lit", "str_lit"], "str": ["chr_lit", "int_lit", "dec_lit", bool_lit]}
+literal_types = {"str": "str_lit","chr": "chr_lit","int": "int_lit","dec": "dec_lit","bln": "False"}
+reverse_literal_types = {"str_lit": "str","chr_lit": "chr","int_lit": "int","dec_lit": "dec",("true", "false"): "bln"}
 semantic_logical = ["||", "&&"]
-non_terminal_check = ["<parameter>", "<args>", "<identifier_declaration>", "<instance>", "<assignment_statements>", "<segm>", 
+non_terminal_check = ["<parameter>", "<identifier_declaration>", "<instance>", "<assignment_statements>", "<segm>", 
                       "<segm_statements>", "<pre_unary>", "<return_value>", "<initialization>", "<condition>", "<iteration>",
-                      "<type_conversion>", "<instance_declaration>", "<more_instance_declaration>"
+                      "<type_conversion>", "<instance_declaration>", "<more_instance_declaration>", "<initialization>", "<foreach_statement>",
+                      "<condition>"
                       ]
 codeblocks = ["if", "elif" ,"else", "for", "while", "do", "foreach", "switch"]
+booleanValue = ["==", "!=", "<", "<=", ">", ">=", "true", "false"]
+relate1_op = ["<", "<=", ">", ">="]
+str_logical_operator = ["&&", "||",]
