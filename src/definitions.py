@@ -255,7 +255,7 @@ def add_all_set():
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
     add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>"])
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--", "!"], 
-        "<value>", ["<not_op>","<operand>", "<expression>", "<more_value>"])
+        "<value>", ["<not_op>","<operand>", "<expression>"])
     add_set([")", ";", ","], "<more_value>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
@@ -351,7 +351,7 @@ valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": ["d
 id_type = ["strc", "const"]
 valid_conversion = {"bln": ["int_lit", "chr_lit"], "chr": ["int_lit", "str_lit"], "int": [bool_lit, "chr_lit", "dec_lit", "str_lit"],
                     "dec": ["int_lit", "str_lit"], "str": ["chr_lit", "int_lit", "dec_lit", bool_lit]}
-literal_types = {"str": "str_lit","chr": "chr_lit","int": "int_lit","dec": "dec_lit","bln": "False"}
+literal_types = {"str": "str_lit","chr": "chr_lit","int": "int_lit","dec": "dec_lit","bln": "false"}
 reverse_literal_types = {"str_lit": "str","chr_lit": "chr","int_lit": "int","dec_lit": "dec",("true", "false"): "bln"}
 semantic_logical = ["||", "&&"]
 non_terminal_check = ["<parameter>", "<identifier_declaration>", "<instance>", "<assignment_statements>", "<segm>", 
@@ -362,4 +362,5 @@ non_terminal_check = ["<parameter>", "<identifier_declaration>", "<instance>", "
 codeblocks = ["if", "elif" ,"else", "for", "while", "do", "foreach", "switch"]
 booleanValue = ["==", "!=", "<", "<=", ">", ">=", "true", "false"]
 relate1_op = ["<", "<=", ">", ">="]
-str_logical_operator = ["&&", "||",]
+str_logical_operator = ["&&", "||"]
+logicalValue = ["+", "-", "*", "/", "%","str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false", "(",")"]
