@@ -113,7 +113,7 @@ class Semantic:
         self.more_instance = False
         self.isInstance = False
         
-        
+        self.isPassed = True #For boolean
         self.operator = ""
         self.isBoolean = False
         self.logicalOp = False
@@ -223,9 +223,6 @@ class Semantic:
             self.process_strcElement()
         elif self.lookahead == "ret" or self.is_return:
             self.handle_return()
-        #elif lookahead in id_type : #constant and strc
-        #    print("ID type")
-        #    self.type_value = lookahead
         elif self.top == "<identifier_declaration>" or self.top == "<initialization>" or self.top == "<foreach_statement>":
             self.handle_declaration()
         elif self.lookahead == "id" and not self.is_assignment : #Assignment and ID declaration
@@ -240,8 +237,8 @@ class Semantic:
             self.handle_IDarray()
             self.process_IDarray()
             self.hasIDBeenDeclared()
-        #Division by zero
         
+        #Division by zero
         if self.lookahead == "/" or self.lookahead == "%":
             self.operator = self.lookahead
         elif lexeme[self.current_token_index] == "0":
@@ -251,7 +248,9 @@ class Semantic:
                 self.error_message(f"Modulo by Zero is not allowed")
         else:
             self.operator = ""
-        if self.lookahead in booleanValue:
+            
+        #Operator
+        """if self.lookahead in booleanValue:
             self.tempOperator = self.lookahead
             self.findLiterals()
             self.tempOperandLit = self.literal_value
@@ -265,6 +264,7 @@ class Semantic:
             else:
                 self.datatypeOperand = self.literal_value
         elif self.lookahead in str_logical_operator:
+            self.findLiterals()
             print(f"logical boolean {self.identifier_value}/{self.lookahead}/{self.literal_value}")
             self.datatypeOperand = self.literal_value
             self.leftOperand = self.isBoolean
@@ -272,7 +272,39 @@ class Semantic:
         elif self.top == "<condition>":
             if self.lookahead == ";" or self.lookahead == ")":
                 self.checkBoolean()
-                self.top = ""
+                self.top = """""
+        if self.lookahead in relate1_op:
+            leftOperand = self.getLeftOperand()
+            rightOperand = self.getRightOperand()
+            if leftOperand == "int_lit" and rightOperand == "dec_lit":
+                pass
+            elif leftOperand == "dec_lit" and rightOperand == "int_lit":
+                pass
+            elif leftOperand != rightOperand:
+                self.error_message(f"Operands of a logical operator must be of comparable types.")
+                return
+        elif self.lookahead in str_logical_operator:
+            leftLogic = self.checkLeftLogic()
+            rightLogic = self.checkRightLogic()
+            if not(leftLogic and rightLogic):
+                self.error_message(f"Logical operators (&&, ||) require boolean operands.")
+        elif self.lookahead == "!":
+            if self.current_token_index < len(token) and self.current_token_index > 0:
+                
+                if token[self.current_token_index + 1].startswith("id"): #check if id is boolean
+                    unary_temp = lexeme[self.current_token_index+1]
+                    self.identifier_value = unary_temp
+                    literal_temp =self.literal_value
+                    self.findLiterals()
+                    if self.literal_value not in {"true", "false"}:
+                        self.error_message(f"Invalid use of not operator")
+                    self.literal_value = literal_temp
+                    self.identifier_value = unary_temp
+                elif token[self.current_token_index+1] not in {"true", "false", "("}:
+                    self.error_message(f"Invalid use of not operator")
+        elif self.lookahead in {"++", "--"}:
+            print(f"Unary")
+            self.checkUnary()
         elif self.lookahead == ";":
             print("Reset operator")
             self.datatypeOperand = ""
@@ -349,7 +381,6 @@ class Semantic:
             self.is_param = False
             
     def handle_struct(self):
-        #self.console.insert(tk.END, f" lexem {lexeme[self.current_token_index]} STRC {self.strcID} Element {self.isStructElementDec} \n")
         if self.lookahead == "id" and self.strcID == "" :
            self.strcID = lexeme[self.current_token_index]
         elif self.lookahead == "{":
@@ -368,7 +399,6 @@ class Semantic:
             self.identifier_value = lexeme[self.current_token_index]
             if self.isStructElementDec:
                 print("element")
-                #self.console.insert(tk.END, f"ELEMENT: {self.parent} {self.identifier_value} {self.datatype_value } \n")
                 self.type_value = "strc element"
                 self.hasIDBeenDeclared()
                 self.add_symbol_table()
@@ -434,7 +464,6 @@ class Semantic:
             self.is_assignment = False
             if self.identifier_value == "":
                 self.identifier_value = self.temporary_variable
-            #self.console.insert(tk.END, f"B{self.datatype_value}{self.identifier_value}{self.temporary_variable}\n")
             if self.literal_value == "":
                 self.literal_value = literal_types.get(self.datatype_value, "")
             self.add_symbol_table()
@@ -464,6 +493,7 @@ class Semantic:
             print(f"Declaration -> datatype")
             if self.is_typeconversion:
                 self.datatype_conversion = self.lookahead
+                print(f"datatype -> datatype_conversion {self.datatype_conversion}/{self.datatype_value}")
             else:
                 self.datatype_value = self.lookahead
                 self.variable_declaration = True
@@ -484,7 +514,6 @@ class Semantic:
         elif self.lookahead == "id":
             print(f"Declaration -> id")
             self.identifier_value = lexeme[self.current_token_index]
-            self.findDatatype
             if self.datatype_value == "":
                 print(f"Identifier {self.identifier_value} not declared")
                 self.error_message(f"Identifier {self.identifier_value} not declared")
@@ -509,7 +538,7 @@ class Semantic:
             if self.is_assignment and not self.is_string:
                 #self.identifier_value = self.temporary_variable
                 if self.datatype_value == "bln":
-                    self.findLiterals()
+                    self.isPassed = self.checkIfBooleanValue()
                     return
                 self.findLiterals()
                 if self.is_var:
@@ -519,6 +548,7 @@ class Semantic:
         elif self.lookahead in literals:
             self.literal_value = self.lookahead
             if self.datatype_value == "bln":
+                self.isPassed = self.checkIfBooleanValue()
                 return
             if self.is_typeconversion:
                 self.checkTypeConversion()
@@ -532,7 +562,9 @@ class Semantic:
             self.is_assignment = True
         elif self.lookahead == ",":
             if self.datatype_value == "bln":
-                self.checkBoolean()
+                if not self.isPassed:
+                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    self.isPassed = False
             self.is_assignment = False
             self.identifier_value = self.temporary_variable
             self.idStore= False
@@ -541,11 +573,12 @@ class Semantic:
         elif self.lookahead == ";":
             print(f"adding dec {self.is_assignment}")
             if self.datatype_value == "bln" and self.is_assignment:
-                self.checkBoolean()
+                if not self.isPassed:
+                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    self.isPassed = False
             self.is_assignment = False
             self.identifier_value = self.temporary_variable
             self.idStore = False
-            #self.console.insert(tk.END, f"B{self.datatype_value}{self.identifier_value}{self.temporary_variable}\n")
             self.literal_value = literal_types.get(self.datatype_value, "")
             self.add_symbol_table()
             self.isVariableDefinition = False
@@ -614,7 +647,6 @@ class Semantic:
         print(f"Handle assignment")
         self.is_assignment = True
         self.findDatatype()
-        #self.console.insert(tk.END, f"ASSIGNMENT {self.lookahead}")
         self.isVariableDefinition = True
         self.findType()
         if self.type_value == "const":
@@ -642,6 +674,7 @@ class Semantic:
             self.identifier_value = lexeme[self.current_token_index]
             self.findType()
             if self.datatype_value == "bln":
+                self.isPassed = self.checkIfBooleanValue()
                 return
             if self.type_value == "array":
                 self.check_idarray = True
@@ -660,6 +693,7 @@ class Semantic:
             self.literal_value = self.lookahead
             self.findDatatype()
             if self.datatype_value == "bln":
+                self.isPassed = self.checkIfBooleanValue()
                 return
             self.literal_value = self.lookahead
             if self.is_var:
@@ -670,7 +704,9 @@ class Semantic:
             print(f"assignment -> end ; ,")
             self.top = ""
             if self.datatype_value == "bln":
-                self.checkBoolean()
+                if not self.isPassed:
+                    self.error_message(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
+                    self.isPassed = False
             if self.type_value == "array":
                 self.handle_IDarray()
             self.is_assignment = False
@@ -934,12 +970,6 @@ class Semantic:
                 self.error_message(f"Identifier {lexeme[self.current_token_index]} not declared")"""
                 
     def checkLiterals(self):
-        #self.console.insert(tk.END, f"a {self.identifier_value}{self.datatype_value}\n")
-        identifier_exists = any(
-                entry["identifier"].split("[")[0] == self.identifier_value and #Check if id exist
-                entry["level"]["parent"] == self.parent #Check if same scope
-                for entry in self.symbol_table
-            )
         if not(self.datatype_value in valid_literals and self.literal_value in valid_literals[self.datatype_value]):
             #if not identifier_exists:
             #    self.error_message(f"Identifier {lexeme[self.current_token_index]} not declared")
@@ -955,6 +985,8 @@ class Semantic:
     
     def checkTypeConversion(self):
         if self.lookahead == "id":
+            print(f"Type conversion -> id")
+            temp = self.datatype_value
             self.identifier_value = lexeme[self.current_token_index]
             self.findDatatype()
             self.findLiterals()
@@ -963,10 +995,11 @@ class Semantic:
             return
         if not(self.literal_value in valid_conversion[self.datatype_conversion]):
             self.error_message(f"Type Mismatch: {self.literal_value} cannot be converted to {self.datatype_conversion}") 
-        elif self.datatype_conversion != self.datatype_value:\
-            self.error_message(f"Type Mismatch: datatype conversion {self.datatype_conversion} cannot be assign to {self.datatype_value}") 
+        elif self.datatype_conversion != temp:
+            print(f"Type Mismatch: datatype conversion {self.datatype_conversion} cannot be assign to {self.datatype_value}/{temp}") 
+            self.error_message(f"Type Mismatch: datatype conversion {self.datatype_conversion} cannot be assign to {temp}") 
     
-    def checkBoolean(self):
+    """def checkBoolean(self):
         
         if self.lookahead == id:
             self.findLiterals()
@@ -975,7 +1008,7 @@ class Semantic:
         if self.top == "<condition>":
             if self.logicalOp and (not self.leftOperand or not self.rightOperand):
                 if self.top == "<condition>":
-                    print(f"1 Condition must result to a boolean value")
+                    print(f"1 Condition must result to a boolean value {self.leftOperand}/{self.rightOperand}")
                     self.error_message(f"Condition must result to a boolean value")
                     return
                 print(f"{self.temporary_variable} must be initialize to a boolean value")
@@ -988,7 +1021,7 @@ class Semantic:
                 print(f"{self.temporary_variable} must be initialize to a boolean value")
                 self.error_message(f"{self.temporary_variable} must be initialize to a boolean value")
         else:
-            if self.is_assignment and self.datatypeOperand == "":
+            if self.is_assignment and self.datatypeOperand == "" and self.literal_value not in {"true", "false"}:
                 print(f"{self.temporary_variable} cannot be initialized as {self.literal_value}")
                 self.error_message(f"{self.temporary_variable} cannot be initialized as {self.literal_value}")
             elif self.tempOperator in relate1_op:
@@ -998,7 +1031,34 @@ class Semantic:
             elif self.datatypeOperand != self.literal_value:
                 print(f"Logical Operator cannot be applied to different datatype{self.datatypeOperand}/{self.literal_value}")
                 self.error_message(f"Logical Operator cannot be applied to different datatype")
-           
+    """
+    def checkUnary(self):
+        print(f"Unary: {self.current_token_index < len(token) and self.current_token_index > 0}")
+        if self.current_token_index < len(token) and self.current_token_index > 0:
+            print(f"{token[self.current_token_index-1]}/{token[self.current_token_index+1]}")
+            if token[self.current_token_index-1].startswith("id"): #Check if pre unary
+                print(f"unary -> preunary")
+                unary_temp = lexeme[self.current_token_index-1]
+                self.identifier_value = unary_temp
+                datatype_temp =self.datatype_value
+                self.findDatatype()
+                if not self.datatype_value in {"dec","int","var"}:
+                    self.error_message(f"Unary operators (++, --) only apply to numeric type")
+                self.datatype_value = datatype_temp
+                self.identifier_value = unary_temp
+            elif token[self.current_token_index + 1].startswith("id"): #check if post unary
+                print(f"unary -> postunary")
+                unary_temp = lexeme[self.current_token_index+1]
+                self.identifier_value = unary_temp
+                datatype_temp =self.datatype_value
+                self.findDatatype()
+                if not self.datatype_value in {"dec","int","var"}:
+                    self.error_message(f"Unary operators (++, --) only apply to numeric type")
+                self.datatype_value = datatype_temp
+                self.identifier_value = unary_temp
+        else:
+            return
+    
     #Nested Function
     def isDeclaredInParent(self, variable_id, current_scope):
         while current_scope is not None:
@@ -1074,6 +1134,115 @@ class Semantic:
             self.isInstance = False
         else:
             self.isInstance = True
+            
+    
+    def checkIfBooleanValue(self):
+        temporary_index = self.current_token_index
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            boolean = False
+            while temp_token != ";":
+                temp_token = token[temporary_index]
+                if temp_token.startswith("id"):
+                    id = lexeme[temporary_index]
+                    temp = self.getLiteral(id)
+                    if temp in {"true", "false"}:
+                        return True
+                elif temp_token in booleanValue:
+                    return True
+                temporary_index +=1
+    def getLeftOperand(self):
+        print(f"getting left operand")
+        temporary_index = self.current_token_index + 1
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            leftLiteral = ""
+            while temp_token in logicalValue or temp_token.startswith("id"):
+                temp_token = token[temporary_index]
+                if temp_token in literals:
+                    prevLiteral = leftLiteral
+                    leftLiteral = temp_token
+                    if prevLiteral == "":
+                        prevLiteral = leftLiteral
+                elif temp_token.startswith("id"):
+                    id = lexeme[temporary_index]
+                    prevLiteral = leftLiteral
+                    leftLiteral = self.getLiteral(id)
+                    if prevLiteral == "":
+                        prevLiteral = leftLiteral
+                if prevLiteral != leftLiteral:
+                    if prevLiteral == "int_lit" and leftLiteral == "dec_lit":
+                        pass
+                    elif prevLiteral == "dec_lit" and leftLiteral == "int_lit":
+                        pass
+                    elif prevLiteral != leftLiteral:
+                        self.error_message(f"Operands of a logical operator must be of comparable types.")
+                        return
+                temporary_index += 1
+            return leftLiteral
+        
+    def getRightOperand(self):
+        print(f"getting right operand {token[self.current_token_index+1]}/{len(token)}/{self.current_token_index}")
+        temporary_index = self.current_token_index - 1
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            rightLiteral = ""
+            while temp_token in logicalValue or temp_token.startswith("id"):
+                print(f"aym running{temp_token}")
+                temp_token = token[temporary_index]
+                if temp_token in literals:
+                    prevLiteral = rightLiteral
+                    rightLiteral = temp_token
+                    if prevLiteral == "":
+                        prevLiteral = rightLiteral
+                    
+                elif temp_token.startswith("id"):
+                    id = lexeme[temporary_index]
+                    prevLiteral = rightLiteral
+                    rightLiteral = self.getLiteral(id)
+                    if prevLiteral == "":
+                        prevLiteral = rightLiteral
+                if prevLiteral != rightLiteral:
+                    if prevLiteral == "int_lit" and rightLiteral == "dec_lit":
+                        pass
+                    elif prevLiteral == "dec_lit" and rightLiteral == "int_lit":
+                        pass
+                    elif prevLiteral != rightLiteral:
+                        self.error_message(f"Operands of a logical operator must be of comparable types.")
+                        return
+                temporary_index -= 1
+            return rightLiteral
+    def checkRightLogic(self):
+        temporary_index = self.current_token_index - 1
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            while temp_token in logicalValue or temp_token in booleanValue:
+                temp_token = token[temporary_index]
+                if temp_token not in booleanValue:
+                    continue
+                else:
+                    return True
+            return False
+    def checkLeftLogic(self):
+        temporary_index = self.current_token_index - 1
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            while temp_token in logicalValue or temp_token in booleanValue:
+                temp_token = token[temporary_index]
+                if temp_token not in booleanValue:
+                    continue
+                else:
+                    return True
+            return False
+    
+    def getLiteral(self, id):
+        print("Getting literals")
+        for entry in self.symbol_table:
+            if entry["identifier"].split("[")[0] == id:
+                literal_value = entry["literals"] 
+                return literal_value
+        return "None"
+    
     def add_symbol_table(self):
         if self.error_flag:
             self.error_flag = False
