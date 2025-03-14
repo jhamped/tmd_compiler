@@ -3,6 +3,8 @@ import tkinter as tk
 
 # Parsing table based on the provided grammar
 def parse(console):    
+    if errorflag[0] == True:  
+        return
     current_token_index = 0
     
     def error_message(error):
@@ -86,4 +88,6 @@ def parse(console):
     if stack or current_token_index < len(token):
         error_message(f"Unexpected {get_lookahead()} after main function")
     else:
-        console.insert(tk.END,"Input accepted: Syntactically correct.")
+        console.tag_config("accepted", foreground="#00FFFF", font=("Arial", 12, "bold"))
+        console.insert(tk.END,"Input accepted: ", "accepted")
+        console.insert(tk.END,"Syntactically correct.")
