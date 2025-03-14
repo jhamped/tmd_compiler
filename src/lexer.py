@@ -2,6 +2,7 @@ from definitions import *
 from lexical_func import *
 
 def lexer(code, console, table):
+    
     lex = Lexical(code, console)
     get = GetLitAndIden(lex)
 
@@ -26,7 +27,10 @@ def lexer(code, console, table):
             pass
         else:
             lex.error_message(f"Invalid character: {char}", "", False)
-
+    if errorflag[0] == False:
+        console.tag_config("accepted", foreground="#00FFFF", font=("Arial", 12, "bold"))
+        console.insert(tk.END,"Input accepted: ", "accepted")
+        console.insert(tk.END,"Token recognized.\n")
     for i in range(len(lexeme)):
         table.insert("", "end", values=(lexeme[i], token[i])) 
     #print(state)
