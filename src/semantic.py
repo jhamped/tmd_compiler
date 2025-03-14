@@ -301,7 +301,7 @@ class Semantic:
                     self.literal_value = literal_temp
                     self.identifier_value = unary_temp
                 elif token[self.current_token_index+1] not in {"true", "false", "("}:
-                    self.error_message(f"Invalid use of not operator")
+                    self.error_message(f"Invalid use of NOT operator (!)")
         elif self.lookahead in {"++", "--"}:
             print(f"Unary")
             self.checkUnary()
@@ -554,9 +554,6 @@ class Semantic:
                 self.checkTypeConversion()
                 self.is_typeconversion = False
                 return
-            if self.is_var:
-                self.findVarKey()
-                self.is_var = False
             self.checkLiterals()
         elif self.lookahead == "=":
             self.is_assignment = True
