@@ -603,6 +603,7 @@ class TMDCompiler:
     def on_leave_lexical(self,event):
         self.lexicalBtn.config(fg="black")
     def lexical_click(self, event):
+        errorflag[0] = False
         lexeme.clear()
         token.clear()
         state.clear()
@@ -618,6 +619,7 @@ class TMDCompiler:
     def on_leave_syntax(self,event):
         self.syntaxBtn.config(fg="black")
     def syntax_click(self, event):
+        errorflag[0] = False
         #self.lexical_click
         lexeme.clear()
         token.clear()
@@ -632,6 +634,7 @@ class TMDCompiler:
         lexer(code, self.console, self.table)
         parse(self.console)
     def semantic_click(self, event):
+        errorflag[0] = False
         #self.lexical_click
         lexeme.clear()
         token.clear()
