@@ -62,7 +62,7 @@ class Lexical:
         if expectedError:
             self.console.insert(tk.END, f"  Expected: {expected}", "expected")
         self.console.insert(tk.END, f"\n       line {self.line}, column {self.col}\n", "ln_col")
-
+        errorflag[0] = True
 class GetLitAndIden: 
     def __init__(self, lex):
         self.lex = lex
