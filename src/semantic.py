@@ -38,7 +38,7 @@ def semantic(console):
     
     while stack:
         if errorflag[0] == True:
-            console.insert(tk.END, "Parsing interrupted", "error")
+            console.insert(tk.END, "Parsing interrupted...", "error")
             return
         if len(token) > current_token_index:
             lookahead = get_lookahead()
@@ -328,6 +328,8 @@ class Semantic:
         elif self.lookahead in {"++", "--"}:
             print(f"Unary")
             self.checkUnary()
+        elif self.lookahead in assignment_number:
+            self.checkAssignment()
         elif self.lookahead == ";":
             print("Reset operator")
             self.datatypeOperand = ""
@@ -1124,7 +1126,21 @@ class Semantic:
                 self.identifier_value = unary_temp
         else:
             return
-    
+    def checkAssignment(self):
+        if self.current_token_index < len(token) and self.current_token_index > 0:
+            if token[self.current_token_index-1].startswith("id"): #Check if pre unary
+                print(f"check assignment")
+                id_temp = lexeme[self.current_token_index+1]
+                primary_temp = self.identifier_value
+                self.identifier_value = id_temp
+                typeTemp = self.findLiterals
+                self.findLiterals()
+                if self.literal_value in {"int_lit", "dec_lit"}:
+                    self.error_message(f"Assignment operator (+=, -=, *=, /=, %=) must be assign to a number")
+                self.identifier_value = primary_temp
+                self.literal_value = typeTemp
+        else:
+            return
     #Nested Function
     def isDeclaredInParent(self, variable_id, current_scope):
         while current_scope is not None:
