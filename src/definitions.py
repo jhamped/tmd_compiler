@@ -122,6 +122,7 @@ parsing_table = {
     "<more_assignment>": {";": ["null"], ",": [",", "id", "<assignment_tail>"]},
     "<output_statement>": {"disp": ["disp", "(", "<value>", ")", ";"]},
     "<value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
+    "<init_value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
     "<more_value>": {"&": ["&", "<value>"]},
     "<input_statement>": {"insp": ["insp", "(", "<id_holder>", ")", ";"]},
     "<id_holder>": {"id": ["id", "<hold_id_tail>"]},
@@ -193,7 +194,7 @@ parsing_table = {
     "<not_op>": {"!": ["!"]},
     "<text_format>": {"str_lit": ["str_lit", "<concat_string>"], "chr_lit": ["chr_lit", "<concat_string>"]},
     "<concat_string>": {"&": ["&", "<concat_value>"]},
-    "<concat_value>": {"id": ["id", "<id_tail>","<expression>","<concat_string>"], "(": ["(","<concat_value>",")","<concat_string>"]},
+    "<concat_value>": {"id": ["id", "<id_tail>","<concat_string>"], "(": ["(","<concat_value>",")","<concat_string>"]},
     "<type_conversion>": {},
     "<type_value>": {"(": ["(","type_value>",")"], "id": ["id", "<id_tail>"], "none": ["none"]},
     "<index>": {}, 
@@ -257,7 +258,7 @@ def add_all_set():
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
     add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>"])
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--", "!"], 
-        "<value>", ["<not_op>","<operand>", "<expression>", "<more_value>"])
+        "<value>", ["<not_op>","<operand>","<expression>","<more_value>"])
     add_set([")", ";", ","], "<more_value>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
