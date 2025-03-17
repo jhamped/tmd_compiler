@@ -1,6 +1,7 @@
 from lexer import *
 from parser import *
 from semantic import *
+from codegen import *
 import tkinter as tk
 from tkinter import ttk, PhotoImage, filedialog, messagebox
 import ctypes as ct
@@ -603,7 +604,6 @@ class TMDCompiler:
     def on_leave_lexical(self,event):
         self.lexicalBtn.config(fg="black")
     def lexical_click(self, event):
-        errorflag[0] = False
         lexeme.clear()
         token.clear()
         state.clear()
@@ -613,13 +613,13 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
+        generate_code(self.console)
 
     def on_enter_syntax(self, event):
         self.syntaxBtn.config(fg="white")
     def on_leave_syntax(self,event):
         self.syntaxBtn.config(fg="black")
     def syntax_click(self, event):
-        errorflag[0] = False
         #self.lexical_click
         lexeme.clear()
         token.clear()
@@ -634,7 +634,6 @@ class TMDCompiler:
         lexer(code, self.console, self.table)
         parse(self.console)
     def semantic_click(self, event):
-        errorflag[0] = False
         #self.lexical_click
         lexeme.clear()
         token.clear()
