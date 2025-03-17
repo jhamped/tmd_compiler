@@ -9,6 +9,7 @@ def generate_code(console):
     isString = False
     isInt = False
     isDec = False
+    isBln = False
 
     while current_token_index < len(token):
         curr = token[current_token_index]
@@ -20,37 +21,56 @@ def generate_code(console):
                 exp = 'f"'
             elif curr == "int":
                 isInt = True
+            elif curr == "dec":
+                isDec = True
+            elif curr == "bln":
+                isBln = True
             iden = lexeme[current_token_index + 1]  
-            current_token_index += 3 
-            curr = token[current_token_index]
-
-            while token[current_token_index] != ";":
-                if curr == "&":
-                    pass
-                elif curr == "str_lit":
-                    exp += lexeme[current_token_index].strip('"')
-                elif curr == "chr_lit":
-                    exp += lexeme[current_token_index].strip("'")
-                else:
-                    if curr.startswith("id"):
-                        exp += f"{{{lexeme[current_token_index]}}}"
-                    else: 
-                        exp += lexeme[current_token_index] + " "
-
+            current_token_index += 2 
+            
+            if token[current_token_index] == "=":
                 current_token_index += 1
                 curr = token[current_token_index]
-            
-            if isString:
-                exp += '"'
-                isString = False
-            if isInt:
-                exp = f"int(eval('{exp}'))" 
-                isInt = False
+                while token[current_token_index] != ";":
+                    if curr == "&":
+                        pass
+                    elif curr == "str_lit":
+                        exp += lexeme[current_token_index].strip('"')
+                    elif curr == "chr_lit":
+                        exp += lexeme[current_token_index].strip("'")
+                    else:
+                        if curr.startswith("id"):
+                            exp += f"{{{lexeme[current_token_index]}}}"
+                        else: 
+                            exp += lexeme[current_token_index] + " "
 
-            exec_code.append(f"{iden} = {exp.strip()}") 
+                    current_token_index += 1
+                    curr = token[current_token_index]
+                
+                if isString:
+                    exp += '"'
+                    isString = False
+                if isInt:
+                    exp = f"int(eval(f'{exp}'))" 
+                    isInt = False
+ 
+                exec_code.append(f"{iden} = {exp.strip()}")
 
+            elif token[current_token_index] in [",", ";"]:
+                curr = token[current_token_index]
+                if isString:
+                    exp = "none"
+                elif isInt:
+                    exp = "0"
+                elif isDec:
+                    exp = "0.0"
+                elif isBln:
+                    exp = "false"
+             
+                exec_code.append(f"{iden} = {exp}")
 
         elif curr == "disp":
+            exp = ""
             output_val += 'f"'
             current_token_index += 2
             curr = token[current_token_index]
@@ -61,10 +81,12 @@ def generate_code(console):
                 elif curr == "str_lit":
                     output_val += lexeme[current_token_index].strip('"')
                 else:
+                    print(f"curr {curr} {current_token_index}")
                     if curr.startswith("id"):
+                        print(f"exp1 {exp} 1")
                         output_val += f"{{{lexeme[current_token_index]}}}"
-                    else:
-                        exp = ""
+                        print(f"exp2 {exp} 2")
+                    else:                    
                         parens = 0  
 
                         while True:
@@ -92,10 +114,15 @@ def generate_code(console):
                             current_token_index += 1
                             curr = token[current_token_index]
 
+                        
                         if isInt:
-                            exp = f"int(eval('{exp}'))" 
+                            exp = f"int(eval(f'{exp}'))" 
                             isInt = False
+                        elif isDec:
+                            exp = f"eval(f'{exp}')" 
+                            isDec = False
                         output_val += f"{{{exp.strip()}}}"  
+                        print(f"output {output_val}")
 
                 current_token_index += 1
                 curr = token[current_token_index]
