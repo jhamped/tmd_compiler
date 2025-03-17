@@ -82,10 +82,8 @@ def generate_code(console):
                     output_val += lexeme[current_token_index].strip('"')
                 else:
                     print(f"curr {curr} {current_token_index}")
-                    if curr.startswith("id"):
-                        print(f"exp1 {exp} 1")
+                    if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
                         output_val += f"{{{lexeme[current_token_index]}}}"
-                        print(f"exp2 {exp} 2")
                     else:                    
                         parens = 0  
 
@@ -122,12 +120,12 @@ def generate_code(console):
                             exp = f"eval(f'{exp}')" 
                             isDec = False
                         output_val += f"{{{exp.strip()}}}"  
-                        print(f"output {output_val}")
 
                 current_token_index += 1
                 curr = token[current_token_index]
 
             output_val += '"'
+            print(f"output {output_val}")
             exec_code.append(output_val)
 
         current_token_index += 1
