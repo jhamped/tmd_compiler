@@ -47,7 +47,7 @@ key1_delims = {
     'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.', '~'],
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
     'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.'],
-    'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.'],
+    'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.', ','],
     'concat_delim' : whitespace + alpha + ['(', '"', "'", '#'],
     'data_delim' : whitespace + ['[', '('],
     'val_delim' : whitespace + [';', ',', ')', '}', '!', '&', '=', '|'],
@@ -108,11 +108,11 @@ parsing_table = {
     "<members_declaration>": {},
     "<more_members>": {"}": ["null"]},
     "<instance>": {},
-    "<more_instance>": {";": ["null"], ",": [",", "<id_declare>", "<more_instance>"]},
+    "<more_instance>": {";": ["null"], ",": [",", "<struct_id>", "<more_instance>"]},
     "<instance_declaration>": {},
     "<more_instance_declaration>": {";": ["null"], ",": [",", "<struct_id>", "<more_instance_declaration>"]},
     "<struct_id>": {},
-    "<struct_id_tail>": {"[": ["[", "<index>", "]"]}, 
+    "<struct_id_tail>": {"[": ["[", "]"]}, 
     "<statements>": {"id": ["<assignment_statements>", "<statements>"], "disp": ["<output_statement>", "<statements>"],
         "insp": ["<input_statement>", "<statements>"], "ret": ["<return_statement>", "<statements>"], "exit": ["exit", ";", "<statements>"], "segm": ["<segm_statements>","<statements>"]},
     "<segm_statements>": {"segm": ["segm", "id", "(", "<parameter>", ")", "{", "<statements>", "}"]},
@@ -241,11 +241,11 @@ def add_all_set():
     add_set([";", ","], "<two_array_init>", ["null"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<array_elements>", ["<literals>"])
     add_set(["id", "("], "<struct_declaration_tail>", ["<instance_declaration>"])
-    add_set(["str", "bln", "chr", "dec", "int", "var"], "<members_declaration>", ["<vartype>", "<struct_id>", ";"])
+    add_set(["str", "bln", "chr", "dec", "int", "var"], "<members_declaration>", ["<vartype>", "<id_declare>", ";"])
     add_set(["int", "dec", "chr", "str", "bln", "var"], "<more_members>", ["<members_declaration>", "<more_members>"])
     add_set([";", ","], "<instance>", ["null"])
-    add_set(["id", "("], "<instance>", ["<id_declare>"])
-    add_set(["id", "("], "<instance_declaration>", ["<struct_id>", "<more_instance_declaration>", ";"])
+    add_set(["id", "("], "<instance>", ["<struct_id>"])
+    add_set(["id", "("], "<instance_declaration>", ["<struct_id>", ";"])
     add_set(["id", "("], "<struct_id>", ["<id_declare>","<struct_id_tail>"])
     add_set([",", ";"], "<struct_id_tail>", ["null"])
     add_set(["brk", "rsm", "key", "def","}"], "<statements>", ["null"])
