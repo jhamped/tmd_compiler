@@ -196,6 +196,15 @@ class TMDCompiler:
         self.save_button.bind("<Enter>", lambda e: self.save_button.config(image=self.save_hover_icon, fg="white"))
         self.save_button.bind("<Leave>", lambda e: self.save_button.config(image=self.save_icon, fg="black"))
 
+        # Run button
+        self.runBtn = tk.Label(
+            navFrame, text="Run", font=("Helvetica", 11, "bold"),
+            bg="#a6b3f1", borderwidth=1, relief="solid", width=5
+        )
+        self.runBtn.pack(side="right", pady=5, padx=(0, 15))
+        self.runBtn.bind("<Enter>", lambda e: self.runBtn.config(fg="white"))
+        self.runBtn.bind("<Leave>", lambda e: self.runBtn.config(fg="black"))
+
         # Semantic button
         self.semanticBtn = tk.Label(
             navFrame, text="Semantic", font=("Helvetica", 11, "bold"),
@@ -593,6 +602,11 @@ class TMDCompiler:
                 text_widget.insert(current_pos, closing_marker)
                 text_widget.mark_set(tk.INSERT, current_pos)
             return "break"
+
+    def on_enter_run(self, event):
+        self.runBtn.config(fg="white")
+    def on_leave_run(self,event):
+        self.runBtn.config(fg="black")
 
     def on_enter_semantic(self, event):
         self.semanticBtn.config(fg="white")
