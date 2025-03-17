@@ -204,6 +204,7 @@ class TMDCompiler:
         self.runBtn.pack(side="right", pady=5, padx=(0, 15))
         self.runBtn.bind("<Enter>", lambda e: self.runBtn.config(fg="white"))
         self.runBtn.bind("<Leave>", lambda e: self.runBtn.config(fg="black"))
+        self.runBtn.bind("<Button-1>", self.run_click)
 
         # Semantic button
         self.semanticBtn = tk.Label(
@@ -627,7 +628,6 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
-        generate_code(self.console)
 
     def on_enter_syntax(self, event):
         self.syntaxBtn.config(fg="white")
@@ -661,6 +661,17 @@ class TMDCompiler:
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
         semantic(self.console)
+    def run_click(self, event):
+        lexeme.clear()
+        token.clear()
+        state.clear()
+        idens.clear()
+        for item in self.table.get_children():
+            self.table.delete(item)
+        self.console.delete("1.0", tk.END)
+        code = self.textFrame.get("1.0", "end")
+        lexer(code, self.console, self.table)
+        generate_code(self.console)
 
 
     def update_line_numbers(self, event=None):
