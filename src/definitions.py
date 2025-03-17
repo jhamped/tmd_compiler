@@ -48,7 +48,7 @@ key1_delims = {
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
     'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.'],
     'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.', ','],
-    'concat_delim' : whitespace + alpha + ['(', '"', "'", '#'],
+    'concat_delim' : whitespace + alphanumeric + ['(', '"', "'", '#', '~'],
     'data_delim' : whitespace + ['[', '('],
     'val_delim' : whitespace + [';', ',', ')', '}', '!', '&', '=', '|'],
     'colon_delim' : whitespace + alphanumeric + ['(', '+', '-'],
@@ -194,7 +194,7 @@ parsing_table = {
     "<not_op>": {"!": ["!"]},
     "<text_format>": {"str_lit": ["str_lit", "<concat_string>"], "chr_lit": ["chr_lit", "<concat_string>"]},
     "<concat_string>": {"&": ["&", "<concat_value>"]},
-    "<concat_value>": {"id": ["id", "<id_tail>","<concat_string>"], "(": ["(","<concat_value>",")","<concat_string>"]},
+    "<concat_value>": {"(": ["(","<concat_value>",")","<concat_string>"]},
     "<type_conversion>": {},
     "<type_value>": {"(": ["(","type_value>",")"], "id": ["id", "<id_tail>"], "none": ["none"]},
     "<index>": {}, 
@@ -329,6 +329,7 @@ def add_all_set():
     add_set([";", ")", ","], "<concat_string>", ["null"])
     add_set(["str_lit", "chr_lit"], "<concat_value>", ["<text_format>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<concat_value>", ["<type_conversion>"])
+    add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<concat_value>", ["<operand>", "<expression>", "<concat_string>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<type_conversion>", ["<datatype>", "(", "<type_value>", ")"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<type_value>", ["<literals>"])
     add_set(["int_lit", "id", "("], "<index>", ["<index_value>","<more_index>"])
