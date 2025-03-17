@@ -6,22 +6,51 @@ def generate_code(console):
     output_val = "result = "
     exec_code = []
     locals_dict = {}
+    isString = False
+    isInt = False
+    isDec = False
 
     while current_token_index < len(token):
         curr = token[current_token_index]
 
         if curr in ["int", "str", "var", "chr", "bln", "dec"]: 
-            iden = lexeme[current_token_index + 1]
-            current_token_index += 3 
-
             exp = ""
+            if curr in ["str", "chr"]:
+                isString = True
+                exp = 'f"'
+            elif curr == "int":
+                isInt = True
+            iden = lexeme[current_token_index + 1]  
+            current_token_index += 3 
+            curr = token[current_token_index]
+
             while token[current_token_index] != ";":
-                exp += lexeme[current_token_index] + " "
+                if curr == "&":
+                    pass
+                elif curr == "str_lit":
+                    exp += lexeme[current_token_index].strip('"')
+                elif curr == "chr_lit":
+                    exp += lexeme[current_token_index].strip("'")
+                else:
+                    if curr.startswith("id"):
+                        exp += f"{{{lexeme[current_token_index]}}}"
+                    else: 
+                        exp += lexeme[current_token_index] + " "
+
                 current_token_index += 1
+                curr = token[current_token_index]
+            
+            if isString:
+                exp += '"'
+                isString = False
+            if isInt:
+                exp = f"int(eval('{exp}'))" 
+                isInt = False
 
-            exec_code.append(f"{iden} = {exp.strip()}")
+            exec_code.append(f"{iden} = {exp.strip()}") 
 
-        if curr == "disp":
+
+        elif curr == "disp":
             output_val += 'f"'
             current_token_index += 2
             curr = token[current_token_index]
@@ -36,14 +65,37 @@ def generate_code(console):
                         output_val += f"{{{lexeme[current_token_index]}}}"
                     else:
                         exp = ""
-                        while curr != ")" and curr != "&":
+                        parens = 0  
+
+                        while True:
+                            if curr == "(":
+                                parens += 1
+                            elif curr == ")":
+                                if parens == 0:
+                                    break  
+                                parens -= 1
+
+                            if curr == "int_lit" and not isDec:
+                                isInt = True
+                            elif curr == "dec_lit":
+                                isInt = False
+                                isDec = True
                             exp += lexeme[current_token_index]
-                            if token[current_token_index+1] == ")" or token[current_token_index+1] == "&":
-                                break
+
+                            if current_token_index + 1 < len(token):
+                                next_token = token[current_token_index + 1]
+                                if next_token == ")" and parens == 0:
+                                    break  
+                                if next_token == "&":
+                                    break  
+
                             current_token_index += 1
                             curr = token[current_token_index]
 
-                        output_val += f"{{{exp}}}"
+                        if isInt:
+                            exp = f"int(eval('{exp}'))" 
+                            isInt = False
+                        output_val += f"{{{exp.strip()}}}"  
 
                 current_token_index += 1
                 curr = token[current_token_index]
