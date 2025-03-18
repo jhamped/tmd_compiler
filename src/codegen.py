@@ -42,7 +42,10 @@ def generate_code(console):
                         if curr.startswith("id"):
                             exp += f"{{{lexeme[current_token_index]}}}"
                         else: 
-                            exp += lexeme[current_token_index] + " "
+                            if curr in ["int_lit", "dec_lit"]:
+                                exp += check_num_lit(current_token_index)
+                            else:
+                                exp += lexeme[current_token_index] + " "
 
                     current_token_index += 1
                     curr = token[current_token_index]
@@ -81,7 +84,6 @@ def generate_code(console):
                 elif curr == "str_lit":
                     output_val += lexeme[current_token_index].strip('"')
                 else:
-                    print(f"curr {curr} {current_token_index}")
                     if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
                         output_val += f"{{{lexeme[current_token_index]}}}"
                     else:                    
@@ -100,7 +102,10 @@ def generate_code(console):
                             elif curr == "dec_lit":
                                 isInt = False
                                 isDec = True
-                            exp += lexeme[current_token_index]
+                            if curr in ["int_lit", "dec_lit"]:
+                                exp += check_num_lit(current_token_index)
+                            else:
+                                exp += lexeme[current_token_index]
 
                             if current_token_index + 1 < len(token):
                                 next_token = token[current_token_index + 1]
@@ -125,7 +130,6 @@ def generate_code(console):
                 curr = token[current_token_index]
 
             output_val += '"'
-            print(f"output {output_val}")
             exec_code.append(output_val)
 
         current_token_index += 1
@@ -134,4 +138,11 @@ def generate_code(console):
         exec(code, {}, locals_dict)
 
     if "result" in locals_dict:
-        console.insert(tk.END, locals_dict["result"] + "\n")                     
+        console.insert(tk.END, locals_dict["result"] + "\n")           
+
+def check_num_lit(token):
+    lit = lexeme[token]
+    if lit.startswith("~"):
+        return lit.replace("~", "-")
+    else:
+        return lit
