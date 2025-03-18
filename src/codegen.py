@@ -32,12 +32,18 @@ def generate_code(console):
             elif curr == "bln":
                 isBln = True
             if token[current_token_index+1] == "[":
-                isDeclared = True
                 list = declareArray(current_token_index)
                 exp += list[1]
                 current_token_index = list[0]
                 print(f"curr {current_token_index} {lexeme[current_token_index]}")
                 exec_code.append(f"{exp}")
+                while lexeme[current_token_index] != ";":
+                    exp = ""
+                    list = declareMulArray(current_token_index)
+                    exp += list[1]
+                    current_token_index = list[0]
+                    print(f"curr {current_token_index} {lexeme[current_token_index]}")
+                    exec_code.append(f"{exp}")
                 continue
 
             while True:
@@ -212,4 +218,15 @@ def initArray(token_index):
     elif token[token_index] in [",", ";"]:
         exp = "[]"
 
+    print(f"exp {exp}")
     return [token_index, exp]
+
+def declareMulArray(token_index):
+    iden = lexeme[token_index + 1]
+    token_index += 2
+
+    list = initArray(token_index)
+    exp = list[1]
+
+    exp = f"{iden} = {exp.replace("{", "[").replace("}", "]")}"
+    return [list[0], exp]
