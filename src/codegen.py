@@ -1,5 +1,6 @@
 from definitions import *
 import tkinter as tk
+import re
 
 def generate_code(console):
     current_token_index = 0
@@ -138,6 +139,7 @@ def generate_code(console):
         exec(code, {}, locals_dict)
 
     if "result" in locals_dict:
+        locals_dict["result"] = re.sub(r'(?<=\s)-(\d+)', r'~\1', locals_dict["result"])
         console.insert(tk.END, locals_dict["result"] + "\n")           
 
 def check_num_lit(token):
@@ -146,3 +148,4 @@ def check_num_lit(token):
         return lit.replace("~", "-")
     else:
         return lit
+    
