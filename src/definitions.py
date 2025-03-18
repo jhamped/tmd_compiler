@@ -97,10 +97,10 @@ parsing_table = {
     "<array_dimension>": {"]": ["]", "<id_declare>", "<array_init>", "<more_array_init>"], ",": [",", "]", "<id_declare>", "<two_array_init>", "<more_two_array_init>"]},
     "<array_init>": {"=": ["=", "{", "<array_elements>", "<more_lit>","}"]},
     "<more_lit>": {"}": ["null"], ",": [",", "<array_elements>", "<more_lit>"]},
-    "<more_array_init>": {";": ["null"], ",": [",", "id", "<array_init>"]},
+    "<more_array_init>": {";": ["null"], ",": [",", "id", "<array_init>", "<more_array_init>"]},
     "<two_array_init>": {"=": ["=", "{", "{", "<array_elements>", "<more_lit>", "}", "<two_more_lit>", "}"]},
     "<two_more_lit>": {"}": ["null"], ",": [",", "{", "<array_elements>", "<more_lit>", "}", "<two_more_lit>"]},
-    "<more_two_array_init>": {";": ["null"], ",": [",", "id", "<two_array_init>"]},
+    "<more_two_array_init>": {";": ["null"], ",": [",", "id", "<two_array_init>", "<more_two_array_init>"]},
     "<array_elements>": {"(":["(","<array_elements>",")"],"none": ["none"]},
     "<struct_declaration>": {"strc": ["strc", "id", "<struct_declaration_tail>"]},
     "<struct_declaration_tail>": {"{": ["<struct_define>"]},
@@ -350,12 +350,12 @@ def add_all_set():
 #SEMANTIC
 datatype = ["var", "str", "chr", "int", "dec", "bln"]
 bool_lit = ["true", "false"]
-literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", bool_lit]
-valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": ["dec_lit", "int_lit"],"bln": [bool_lit], "var":literals} 
+literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"]
+valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": ["dec_lit", "int_lit"],"bln": ["true", "false"], "var":literals} 
 var_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": "dec_lit"} 
 id_type = ["strc", "const"]
-valid_conversion = {"bln": ["int_lit", "chr_lit"], "chr": ["int_lit", "str_lit"], "int": [bool_lit, "chr_lit", "dec_lit", "str_lit"],
-                    "dec": ["int_lit", "str_lit"], "str": ["chr_lit", "int_lit", "dec_lit", bool_lit]}
+valid_conversion = {"bln": ["int_lit", "chr_lit"], "chr": ["int_lit", "str_lit"], "int": ["true", "false", "chr_lit", "dec_lit", "str_lit"],
+                    "dec": ["int_lit", "str_lit"], "str": ["chr_lit", "int_lit", "dec_lit", "true", "false"]}
 literal_types = {"str": "str_lit","chr": "chr_lit","int": "int_lit","dec": "dec_lit","bln": "false"}
 reverse_literal_types = {"str_lit": "str", "chr_lit": "chr", "int_lit": "int", "dec_lit": "dec", ("true", "false"): "bln"}
 semantic_logical = ["||", "&&"]
