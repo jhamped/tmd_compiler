@@ -14,6 +14,10 @@ def generate_code(console):
 
     while current_token_index < len(token):
         curr = token[current_token_index]
+        isString = False
+        isInt = False
+        isDec = False
+        isBln = False
 
         if curr in ["int", "str", "var", "chr", "bln", "dec"]: 
             exp = ""
@@ -34,53 +38,59 @@ def generate_code(console):
                 exec_code.append(f"{exp}")
                 continue
 
-            iden = lexeme[current_token_index + 1]  
-            current_token_index += 2 
-            
-            if token[current_token_index] == "=":
-                current_token_index += 1
-                curr = token[current_token_index]
-                while token[current_token_index] != ";":
-                    if curr == "&":
-                        pass
-                    elif curr == "str_lit":
-                        exp += lexeme[current_token_index].strip('"')
-                    elif curr == "chr_lit":
-                        exp += lexeme[current_token_index].strip("'")
-                    else:
-                        if curr.startswith("id"):
+            while True:
+                iden = lexeme[current_token_index + 1]  
+                print(f"curr1 {current_token_index} {lexeme[current_token_index]}")
+                current_token_index += 2 
+                
+                if token[current_token_index] == "=":
+                    current_token_index += 1
+                    curr = token[current_token_index]
+                    while token[current_token_index] not in [",", ";"]:
+                        if curr == "&":
+                            pass
+                        elif curr == "str_lit":
+                            exp += lexeme[current_token_index].strip('"')
+                        elif curr == "chr_lit":
+                            exp += lexeme[current_token_index].strip("'")
+                        elif curr.startswith("id"):
                             exp += f"{{{lexeme[current_token_index]}}}"
-                        else: 
+                        else:
                             if curr in ["int_lit", "dec_lit"]:
                                 exp += checkNumLit(current_token_index)
                             else:
                                 exp += lexeme[current_token_index] + " "
 
-                    current_token_index += 1
+                        current_token_index += 1
+                        curr = token[current_token_index]
+                    
+                    if isString:
+                        exp += '"'
+                    if isInt:
+                        exp = f"int(eval(f'{exp}'))" 
+    
+                    exec_code.append(f"{iden} = {exp.strip()}")
+
+                elif token[current_token_index] in [",", ";"]:
                     curr = token[current_token_index]
+                    if isString:
+                        exp = "none"
+                    elif isInt:
+                        exp = "0"
+                    elif isDec:
+                        exp = "0.0"
+                    elif isBln:
+                        exp = "false"
                 
+                    exec_code.append(f"{iden} = {exp}")
+                    
                 if isString:
-                    exp += '"'
-                    isString = False
-                if isInt:
-                    exp = f"int(eval(f'{exp}'))" 
-                    isInt = False
- 
-                exec_code.append(f"{iden} = {exp.strip()}")
+                    exp = 'f"'
+                else: exp = ""
 
-            elif token[current_token_index] in [",", ";"]:
-                curr = token[current_token_index]
-                if isString:
-                    exp = "none"
-                elif isInt:
-                    exp = "0"
-                elif isDec:
-                    exp = "0.0"
-                elif isBln:
-                    exp = "false"
-             
-                exec_code.append(f"{iden} = {exp}")
-
+                if curr == ";":
+                    break
+            
         elif curr == "disp":
             exp = ""
             output_val += 'f"'
@@ -184,7 +194,7 @@ def declareArray(token_index):
 
             exp += curr
             token_index += 1
-        elif token[token_index] == ";":
+        elif token[token_index] in [",", ";"]:
             exp = "[]"
     else:
         iden = lexeme[token_index+1]
@@ -200,13 +210,8 @@ def declareArray(token_index):
 
             exp += curr
             token_index += 1
-        elif token[token_index] == ";":
+        elif token[token_index] in [",", ";"]:
             exp = "[]"
 
     exp = f"{iden} = {exp.replace("{", "[").replace("}", "]")}"
     return [token_index, exp]
-
-
-        
-
-    
