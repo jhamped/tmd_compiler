@@ -170,6 +170,11 @@ def declareArray(token_index):
             curr = lexeme[token_index]
             braces = 0
             while True:
+                exp += curr
+                token_index += 1
+                curr = lexeme[token_index]
+
+                print(f"curr {curr} {braces}")
                 if curr == "{":
                     braces += 1
                 elif curr == "}":
@@ -177,8 +182,8 @@ def declareArray(token_index):
                         break  
                     braces -= 1
 
-                exp += curr
-                token_index += 1
+            exp += curr
+            token_index += 1
         elif token[token_index] == ";":
             exp = "[]"
     else:
@@ -199,7 +204,6 @@ def declareArray(token_index):
             exp = "[]"
 
     exp = f"{iden} = {exp.replace("{", "[").replace("}", "]")}"
-    print(f"exp {exp}")
     return [token_index, exp]
 
 
