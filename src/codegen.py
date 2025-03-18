@@ -26,6 +26,14 @@ def generate_code(console):
                 isDec = True
             elif curr == "bln":
                 isBln = True
+            if token[current_token_index+1] == "[":
+                list = declareArray(current_token_index)
+                exp += list[1]
+                current_token_index = list[0]
+                print(f"curr {current_token_index} {lexeme[current_token_index]}")
+                exec_code.append(f"{exp}")
+                continue
+
             iden = lexeme[current_token_index + 1]  
             current_token_index += 2 
             
@@ -44,7 +52,7 @@ def generate_code(console):
                             exp += f"{{{lexeme[current_token_index]}}}"
                         else: 
                             if curr in ["int_lit", "dec_lit"]:
-                                exp += check_num_lit(current_token_index)
+                                exp += checkNumLit(current_token_index)
                             else:
                                 exp += lexeme[current_token_index] + " "
 
@@ -104,7 +112,7 @@ def generate_code(console):
                                 isInt = False
                                 isDec = True
                             if curr in ["int_lit", "dec_lit"]:
-                                exp += check_num_lit(current_token_index)
+                                exp += checkNumLit(current_token_index)
                             else:
                                 exp += lexeme[current_token_index]
 
@@ -142,10 +150,59 @@ def generate_code(console):
         locals_dict["result"] = re.sub(r'(?<=\s)-(\d+)', r'~\1', locals_dict["result"])
         console.insert(tk.END, locals_dict["result"] + "\n")           
 
-def check_num_lit(token):
-    lit = lexeme[token]
+def checkNumLit(token_index):
+    lit = lexeme[token_index]
     if lit.startswith("~"):
         return lit.replace("~", "-")
     else:
         return lit
+    
+def declareArray(token_index):
+    token_index += 2
+    exp = ""
+
+    if token[token_index] == ",":
+        iden = lexeme[token_index+2]
+        token_index += 3
+
+        if token[token_index] == "=":
+            token_index += 1
+            curr = lexeme[token_index]
+            braces = 0
+            while True:
+                if curr == "{":
+                    braces += 1
+                elif curr == "}":
+                    if braces == 0:
+                        break  
+                    braces -= 1
+
+                exp += curr
+                token_index += 1
+        elif token[token_index] == ";":
+            exp = "[]"
+    else:
+        iden = lexeme[token_index+1]
+        token_index += 2
+
+        if token[token_index] == "=":
+            token_index += 1
+            curr = lexeme[token_index]
+            while curr != "}":
+                exp += curr 
+                token_index += 1
+                curr = lexeme[token_index]
+
+            exp += curr
+            token_index += 1
+        elif token[token_index] == ";":
+            exp = "[]"
+
+    exp = f"{iden} = {exp.replace("{", "[").replace("}", "]")}"
+    print(f"exp {exp}")
+    return [token_index, exp]
+
+
+        
+
     
