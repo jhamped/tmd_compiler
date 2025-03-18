@@ -11,6 +11,7 @@ def generate_code(console):
     isInt = False
     isDec = False
     isBln = False
+    isDeclared = False
 
     while current_token_index < len(token):
         curr = token[current_token_index]
@@ -31,6 +32,7 @@ def generate_code(console):
             elif curr == "bln":
                 isBln = True
             if token[current_token_index+1] == "[":
+                isDeclared = True
                 list = declareArray(current_token_index)
                 exp += list[1]
                 current_token_index = list[0]
@@ -169,49 +171,45 @@ def checkNumLit(token_index):
     
 def declareArray(token_index):
     token_index += 2
-    exp = ""
-
+    
     if token[token_index] == ",":
         iden = lexeme[token_index+2]
         token_index += 3
 
-        if token[token_index] == "=":
-            token_index += 1
-            curr = lexeme[token_index]
-            braces = 0
-            while True:
-                exp += curr
-                token_index += 1
-                curr = lexeme[token_index]
-
-                print(f"curr {curr} {braces}")
-                if curr == "{":
-                    braces += 1
-                elif curr == "}":
-                    if braces == 0:
-                        break  
-                    braces -= 1
-
-            exp += curr
-            token_index += 1
-        elif token[token_index] in [",", ";"]:
-            exp = "[]"
+        list = initArray(token_index)
+        exp = list[1]
     else:
         iden = lexeme[token_index+1]
         token_index += 2
 
-        if token[token_index] == "=":
-            token_index += 1
-            curr = lexeme[token_index]
-            while curr != "}":
-                exp += curr 
-                token_index += 1
-                curr = lexeme[token_index]
-
-            exp += curr
-            token_index += 1
-        elif token[token_index] in [",", ";"]:
-            exp = "[]"
+        list = initArray(token_index)
+        exp = list[1]
 
     exp = f"{iden} = {exp.replace("{", "[").replace("}", "]")}"
+    return [list[0], exp]
+        
+def initArray(token_index):
+    exp = ""
+    if token[token_index] == "=":
+        token_index += 1
+        curr = lexeme[token_index]
+        braces = 0
+        while True:
+            exp += curr
+            token_index += 1
+            curr = lexeme[token_index]
+
+            print(f"curr {curr} {braces}")
+            if curr == "{":
+                braces += 1
+            elif curr == "}":
+                if braces == 0:
+                    break  
+                braces -= 1
+
+        exp += curr
+        token_index += 1
+    elif token[token_index] in [",", ";"]:
+        exp = "[]"
+
     return [token_index, exp]
