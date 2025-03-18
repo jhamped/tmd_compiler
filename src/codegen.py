@@ -191,8 +191,8 @@ def generate_code(console):
                         exp += f"{{{lexeme[current_token_index]}}}"
                     else:
                         if curr in ["int_lit", "dec_lit"]:
-                            if curr == "int_lit":
-                                isInt = True
+                            if curr == "dec_lit":
+                                isDec = True
                             exp += checkNumLit(current_token_index)
                         else:
                             exp += lexeme[current_token_index] + " "
@@ -200,10 +200,8 @@ def generate_code(console):
                     current_token_index += 1
                     curr = token[current_token_index]
                 
-                if isInt:
-                    exp = f"int(eval(f'{exp}'))" 
+                exp = f"eval(f'{exp}')" 
 
-                print("pass id5")
                 exec_code.append(f"{assign}{exp.strip()}")
                 print(f"{assign}{exp.strip()}")
 
