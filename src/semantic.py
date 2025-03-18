@@ -175,26 +175,7 @@ class Semantic:
             
         #Handle Identifier
         if self.lookahead == "id" or self.isID:
-            print("IDENTIFIER HANDLING")
-            #next = self.getNextLookahead()
-            #if not self.isProcessing:
             self.variable_name = lexeme[self.current_token_index]
-            """if next == "[" or self.id_type == "array":
-                self.id_type = "array"
-                self.isProcessing = True
-                self.process_array()
-                return
-            elif next == "(" or self.id_type == "function_call":
-                if self.statement != "parameter" and self.statement != "segm":
-                    self.id_type = "function_call"
-                    self.isProcessing = True
-                    self.handleFunctionCall()
-                    return
-            elif next == ".":
-                self.isID = False
-                pass #handle structure
-            else:
-                self.isID = False"""  
         
         #Statement Semantic
         if self.statement == "segm":
@@ -209,14 +190,8 @@ class Semantic:
         #Check operator
         if self.lookahead in assignment_number:
             self.checkAssignmentOperator()
-        #Semantic For Zero Value
-        if self.lookahead == "/" or self.lookahead == "%":
-            self.operator = self.lookahead
-        elif lexeme[self.current_token_index] == "0":
-            if self.operator == "/":
-                self.error_message(f"Division by Zero is not allowed")
-            elif self.operator == "%":
-                self.error_message(f"Modulo by Zero is not allowed")
+        if self.lookahead in arithmetic_operator:
+            self.checkOperand()
         elif lexeme[self.current_token_index] == "~0":
             self.error_message("Invalid negative value")
         elif self.lookahead in {"++", "--"}:
@@ -608,6 +583,43 @@ class Semantic:
         datatype = self.getDatatype(self.identifier_value)
         if datatype not in {"int", "dec", "var"}:
             self.error_message(f"Compount Assignment is only allowed for number identifier. ")
+    
+    def checkOperand(self):
+        print("checking operand")
+        #Semantic For Zero Value
+        prev = next = prev4 = ""
+        if self.current_token_index < len(token) and self.current_token_index > 0:
+            prev = token[self.current_token_index-1]
+            next = token [self.current_token_index+1]
+            if self.current_token_index > 4:
+                prev4 = token[self.current_token_index-4]
+        elif lexeme[self.current_token_index] == "0":
+            if self.operator == "/" and next == "0":
+                self.error_message(f"Division by Zero is not allowed")
+            elif self.operator == "%" and next == "0":
+                self.error_message(f"Modulo by Zero is not allowed")
+        if prev.startswith("id"):
+            identifier = lexeme[self.current_token_index-1]
+            datatype = self.getDatatype(identifier)
+            prev = self.getLiteralTypeconversion(datatype)
+        if next.startswith("id"):
+            identifier = lexeme[self.current_token_index+1]
+            datatype = self.getDatatype(identifier)
+            next = self.getLiteralTypeconversion(datatype)
+        if prev4.startswith("id"):
+            identifier = lexeme[self.current_token_index-4]
+            datatype = self.getDatatype(identifier)
+            prev4 = self.getLiteralTypeconversion(datatype)
+        print(f"TANGINA {prev}/{next}/{prev4}")
+        if self.lookahead in arithmetic_operator:
+            if next in {"str_lit", "chr_lit", "true", "false"}:
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for {next}. Use type proper conversion")
+            elif prev in {"str_lit", "chr_lit", "true", "false"}:
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for {prev}. Use type proper conversion")
+            elif prev4 in {"str", "chr", "bln"}:
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for type conversion {prev4}. Use type proper conversion")
+            elif next in {"str", "chr", "bln"}:
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for type conversion {next} . Use type proper conversion")
     #Parent Checker
     def isDeclaredInParent(self, variable_id, current_scope):
         while current_scope is not None:
