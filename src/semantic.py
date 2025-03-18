@@ -98,6 +98,7 @@ class Semantic:
         self.statement = ""
         self.current_token_index = 0
         self.lookahead = ""
+        self.top = ""
         
         self.variable_name = ""
         
