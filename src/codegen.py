@@ -4,14 +4,14 @@ import re
 
 def generate_code(console):
     current_token_index = 0
-    output_val = "result = "
+    output_val = ""
     exec_code = []
     locals_dict = {}
+    results = []
     isString = False
     isInt = False
     isDec = False
     isBln = False
-    isDeclared = False
 
     while current_token_index < len(token):
         curr = token[current_token_index]
@@ -78,6 +78,7 @@ def generate_code(console):
                         exp = f"int(eval(f'{exp}'))" 
     
                     exec_code.append(f"{iden} = {exp.strip()}")
+                    print(f"dec {iden} = {exp.strip()}")
 
                 elif token[current_token_index] in [",", ";"]:
                     curr = token[current_token_index]
@@ -101,7 +102,7 @@ def generate_code(console):
             
         elif curr == "disp":
             exp = ""
-            output_val += 'f"'
+            output_val = 'result = f"'
             current_token_index += 2
             curr = token[current_token_index]
 
@@ -159,14 +160,70 @@ def generate_code(console):
             output_val += '"'
             exec_code.append(output_val)
 
+        elif curr.startswith("id"):
+            print("pass id")
+            print(f"next {token[current_token_index + 1]}")
+            if token[current_token_index + 1] in assignment_operator:
+                print("pass id2")
+                assign = f"{lexeme[current_token_index]}"
+                current_token_index += 1
+                curr = lexeme[current_token_index]
+
+                while curr not in assignment_operator:
+                    print("pass id3")
+                    assign += lexeme[current_token_index]
+                    current_token_index += 1
+                    curr = lexeme[current_token_index]
+
+                assign += lexeme[current_token_index]
+                current_token_index += 1
+                curr = token[current_token_index]
+                exp = ""
+                while curr != ";":
+                    print("pass id4")
+                    if curr == "&":
+                        pass
+                    elif curr == "str_lit":
+                        exp += lexeme[current_token_index].strip('"')
+                    elif curr == "chr_lit":
+                        exp += lexeme[current_token_index].strip("'")
+                    elif curr.startswith("id"):
+                        exp += f"{{{lexeme[current_token_index]}}}"
+                    else:
+                        if curr in ["int_lit", "dec_lit"]:
+                            if curr == "int_lit":
+                                isInt = True
+                            exp += checkNumLit(current_token_index)
+                        else:
+                            exp += lexeme[current_token_index] + " "
+
+                    current_token_index += 1
+                    curr = token[current_token_index]
+                
+                if isInt:
+                    exp = f"int(eval(f'{exp}'))" 
+
+                print("pass id5")
+                exec_code.append(f"{assign}{exp.strip()}")
+                print(f"{assign}{exp.strip()}")
+
+        #--------------------------------------
         current_token_index += 1
 
+
+    print(exec_code)
     for code in exec_code:
         exec(code, {}, locals_dict)
+        print(locals_dict)
+        if "result" in locals_dict:
+            results.append(locals_dict["result"])
+        locals_dict.pop("result", None)
 
-    if "result" in locals_dict:
-        locals_dict["result"] = re.sub(r'(?<=\s)-(\d+)', r'~\1', locals_dict["result"])
-        console.insert(tk.END, locals_dict["result"] + "\n")           
+    results = [re.sub(r'(?<=\s)-(\d+)', r'~\1', res) for res in results]
+
+    for res in results:
+        console.insert(tk.END, res)           
+
 
 def checkNumLit(token_index):
     lit = lexeme[token_index]
