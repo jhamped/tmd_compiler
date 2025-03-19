@@ -163,7 +163,7 @@ def generate_code(console):
         elif curr.startswith("id"):
             print("pass id")
             print(f"next {token[current_token_index + 1]}")
-            if token[current_token_index + 1] in assignment_operator:
+            if token[current_token_index + 1] in assignment_operator or token[current_token_index + 1] == "[":
                 print("pass id2")
                 assign = f"{lexeme[current_token_index]}"
                 current_token_index += 1
@@ -195,7 +195,7 @@ def generate_code(console):
                                 isDec = True
                             exp += checkNumLit(current_token_index)
                         else:
-                            exp += lexeme[current_token_index] + " "
+                            exp += lexeme[current_token_index]
 
                     current_token_index += 1
                     curr = token[current_token_index]
