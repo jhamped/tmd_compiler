@@ -19,8 +19,9 @@ def generate_code(console):
         isInt = False
         isDec = False
         isBln = False
+        isVar = False
 
-        if curr in ["int", "str", "var", "chr", "bln", "dec"]: 
+        if curr in ["int", "str", "chr", "bln", "dec", "var"]: 
             exp = ""
             if curr in ["str", "chr"]:
                 isString = True
@@ -31,6 +32,8 @@ def generate_code(console):
                 isDec = True
             elif curr == "bln":
                 isBln = True
+            elif curr == "var":
+                isVar = True
             if token[current_token_index+1] == "[":
                 exp = ""
                 list = declareArray(current_token_index)
@@ -59,9 +62,15 @@ def generate_code(console):
                         if curr == "&":
                             pass
                         elif curr == "str_lit":
-                            exp += lexeme[current_token_index].strip('"')
+                            if not isVar:
+                                exp += lexeme[current_token_index].strip('"')
+                            else:
+                                exp += lexeme[current_token_index]
                         elif curr == "chr_lit":
-                            exp += lexeme[current_token_index].strip("'")
+                            if not isVar:
+                                exp += lexeme[current_token_index].strip("'")
+                            else:
+                                exp += lexeme[current_token_index]
                         elif curr.startswith("id"):
                             exp += f"{{{lexeme[current_token_index]}}}"
                         else:
@@ -99,8 +108,8 @@ def generate_code(console):
                 else: exp = ""
 
                 if curr == ";":
-                    break
-            
+                    break 
+
         elif curr == "disp":
             exp = ""
             output_val = 'result = f"'
