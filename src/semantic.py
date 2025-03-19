@@ -146,7 +146,6 @@ class Semantic:
     def semantic_process(self, lookahead, current_token_index):
         self.current_token_index = current_token_index
         self.lookahead = lookahead
-        print(f"{self.top}")
         #Scope handling
         if lookahead == "{" and self.top != "<identifier_declaration>":
             self.level_value +=1
@@ -181,6 +180,7 @@ class Semantic:
         
         #Handle Identifier
         if self.lookahead == "id" or self.isID:
+            print("handle_id")
             self.variable_name = lexeme[self.current_token_index]
         
         #Statement Semantic
@@ -199,6 +199,8 @@ class Semantic:
             self.handle_foreachstatement()
         elif self.top == "<initialization>" or self.statement == "<initialization>":
             self.handle_initialization()
+        elif self.lookahead == "id" or self.statement == "identifier":
+            self.handle_identifier()
         #Check operator
         if self.lookahead in assignment_number:
             self.checkAssignmentOperator()
@@ -209,8 +211,6 @@ class Semantic:
         elif self.lookahead in {"++", "--"}:
             print(f"Unary")
             self.checkUnary()
-        else:
-            self.operator = ""
     def clearIdentifier(self):
         self.datatype_value = ""
         self.identifier_value = ""
@@ -465,9 +465,9 @@ class Semantic:
         elif self.lookahead == "id":
             self.variable_name = lexeme[self.current_token_index]
             self.checkIfIDNotDeclared(self.variable_name)
-            type = self.getType(self.variable_name)
+            dimension = self.getDimension(self.variable_name)
             datatype_value = self.getDatatype(self.variable_name)
-            if type != "array" and datatype_value != "str":
+            if dimension not in {"1", "2"} and datatype_value != "str":
                 self.error_message(f"The foreach statement cannot operate on {self.variable_name}. Expected an array or a string.")
             self.clearIdentifier()
     
@@ -489,6 +489,15 @@ class Semantic:
                 self.add_symbol_table()
             self.clearIdentifier()
     
+    def handle_identifier(self):
+        self.statement = "identifier"
+        self.handle_identifierType()
+        self.checkIfIDNotDeclared(self.variable_name)
+        if self.id_type != "": #Handle Array and Function Call
+            self.processIDType()
+        elif self.id_type == "":
+            self.statement = ""
+            
     #Processing
     def processIDType(self):
         print(f"Process ID Type")
@@ -496,6 +505,7 @@ class Semantic:
             self.process_array()
         elif self.id_type == "function_call":
             self.handleFunctionCall()
+        
     
     def processVar(self, lookahead):
         if self.is_var:
@@ -644,16 +654,18 @@ class Semantic:
     def checkOperand(self):
         print("checking operand")
         #Semantic For Zero Value
-        prev = next = prev4 = ""
+        prev = next = nextLexeme = prev4 = ""
         if self.current_token_index < len(token) and self.current_token_index > 0:
             prev = token[self.current_token_index-1]
             next = token [self.current_token_index+1]
+            nextLexeme = lexeme[self.current_token_index+1]
             if self.current_token_index > 4:
                 prev4 = token[self.current_token_index-4]
-        elif lexeme[self.current_token_index] == "0":
-            if self.operator == "/" and next == "0":
+        if nextLexeme == "0":
+            print("0")
+            if self.lookahead == "/":
                 self.error_message(f"Division by Zero is not allowed")
-            elif self.operator == "%" and next == "0":
+            elif self.lookahead == "%":
                 self.error_message(f"Modulo by Zero is not allowed")
         if prev.startswith("id"):
             identifier = lexeme[self.current_token_index-1]
@@ -667,16 +679,16 @@ class Semantic:
             identifier = lexeme[self.current_token_index-4]
             datatype = self.getDatatype(identifier)
             prev4 = self.getLiteralTypeconversion(datatype)
-        print(f"TANGINA {prev}/{next}/{prev4}")
+        print(f"check operand {prev}/{next}/{prev4}")
         if self.lookahead in arithmetic_operator:
             if next in {"str_lit", "chr_lit", "true", "false"}:
-                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for {next}. Use type proper conversion")
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for {next}. Use proper type conversion")
             elif prev in {"str_lit", "chr_lit", "true", "false"}:
-                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for {prev}. Use type proper conversion")
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for {prev}. Use proper type conversion")
             elif prev4 in {"str", "chr", "bln"}:
-                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for type conversion {prev4}. Use type proper conversion")
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for type conversion {prev4}. Use proper type conversion")
             elif next in {"str", "chr", "bln"}:
-                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for type conversion {next} . Use type proper conversion")
+                self.error_message(f"Use of arithmetic operation '{self.lookahead}' is not valid for type conversion {next} . Use proper type conversion")
     #Parent Checker
     def isDeclaredInParent(self, variable_id, current_scope):
         while current_scope is not None:
