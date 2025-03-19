@@ -100,6 +100,9 @@ class Semantic:
         self.lookahead = ""
         self.top = ""
         
+        self.isBoolean = False
+        self.isPassed = False
+        
         self.variable_name = ""
         self.is_var =False
         self.is_typeconversion = False
@@ -220,6 +223,8 @@ class Semantic:
         self.top = ""
         self.isArray = False
         self.segmentID = ""
+        self.isPassed = False
+        self.isBoolean = False
     
     def handle_main(self):
         self.scope_value = self.lookahead
@@ -254,6 +259,11 @@ class Semantic:
                 self.is_var = True
         elif self.lookahead == "id":
             self.handle_identifierType()
+            if self.datatype_value == "bln":
+                if not self.isBoolean:
+                    self.isPassed = self.checkIfBooleanValue()
+                    self.isBoolean = True
+                return
             if self.identifier_value == "":
                 self.identifier_value = self.variable_name
                 self.checkIfIDAlreadyDeclared(self.variable_name)
@@ -261,14 +271,27 @@ class Semantic:
                 self.processVar(self.lookahead)
                 self.check_identifier()
         elif self.lookahead in literals:
+            if self.datatype_value == "bln":
+                if not self.isBoolean:
+                    self.isPassed = self.checkIfBooleanValue()
+                    self.isBoolean = True
+                return
             self.processVar(self.lookahead)
             self.checkIfAssignmentIsValid(self.lookahead)
         elif self.lookahead == ",":
+            if self.datatype_value == "bln":
+                if not self.isPassed:
+                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
             self.add_symbol_table()
             if self.is_var:
                 self.datatype_value = "var"
             self.identifier_value = ""
         elif self.lookahead == ";":
+            if self.datatype_value == "bln":
+                if not self.isPassed:
+                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
             self.add_symbol_table()
             self.clearIdentifier()
     
@@ -276,42 +299,64 @@ class Semantic:
         print(f"Assignment")
         self.statement = "assignment"
         
-        if self.id_type != "null": #Handle Array and Function Call
-            self.processIDType()
+        
             
         if self.identifier_value == "": #get assignment variable #leftest
             self.identifier_value = self.variable_name
             self.datatype_value = self.getDatatype(self.variable_name)
+            self.handle_identifierType()
+            if self.id_type == "array":
+                return
             if self.getType(self.variable_name) == "const":
                 self.error_message(f"Constant '{self.variable_name}' cannot be assigned a new value")
             if self.datatype_value == "var":
                 self.is_var = True
             self.checkIfIDNotDeclared(self.variable_name)
-            
+        if self.id_type != "null": #Handle Array and Function Call
+            self.processIDType()  
         elif self.is_typeconversion:
             self.handle_typeconversion()
             return
         elif self.lookahead == "id":
             self.handle_identifierType()
+            if self.datatype_value == "bln":
+                if not self.isBoolean:
+                    self.isPassed = self.checkIfBooleanValue()
+                    self.isBoolean = True
             if self.is_var:
                 self.processVar(self.lookahead)
                 self.updateDatatype(self.identifier_value, self.datatype_value)
             self.check_identifier()
         elif self.lookahead in literals:
+            if self.datatype_value == "bln":
+                if not self.isBoolean:
+                    self.isPassed = self.checkIfBooleanValue()
+                    self.isBoolean = True
+            if not self.isBoolean and self.datatype_value == "bln":
+                self.isPassed = self.checkIfBooleanValue()
+                self.isBoolean = True
             if self.is_var:
                 self.processVar(self.lookahead)
                 self.updateDatatype(self.identifier_value, self.datatype_value)
             self.checkIfAssignmentIsValid(self.lookahead)
         elif self.lookahead == ",":
+            if self.datatype_value == "bln":
+                if not self.isPassed:
+                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
             self.identifier_value == ""
         elif self.lookahead == ";":
+            if self.datatype_value == "bln":
+                if not self.isPassed:
+                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
             self.clearIdentifier()
     
     def handle_identifierType(self):
         type = self.getType(self.variable_name)
         dimension = self.getDimension(self.variable_name)
         print(f"handle identifier {type}/{dimension}")
-        if dimension == "array":
+        if dimension in {"1", "2"}:
             self.id_type = "array"
             return
         elif type == "segm":
@@ -341,6 +386,8 @@ class Semantic:
         elif self.lookahead == ";":
             print(f"-------{self.identifier_value}")
             #self.processArrayValue()
+            if self.identifier_value == "":
+                self.identifier_value =  f"{self.array_id}[0]"
             print(f"1-------{self.identifier_value}")
             self.add_symbol_table()
             self.clearIdentifier()
@@ -413,7 +460,8 @@ class Semantic:
             self.temp_literal = literal_value
     
     def handleFunctionCall(self):
-        if self.functionID == "" and self.lookahead == "id":
+        print(f"function call {self.lookahead}/{self.functionID}/{self.variable_name}")
+        if self.functionID == "":
             self.functionID = self.variable_name
             return
         elif self.lookahead == "id":
@@ -447,6 +495,7 @@ class Semantic:
             self.id_type = ""
             self.isProcessing = False
             self.isID = False
+            
         else:
             return
 
@@ -498,16 +547,16 @@ class Semantic:
     def handle_identifier(self):
         self.statement = "identifier"
         self.handle_identifierType()
-        self.checkIfIDNotDeclared(self.variable_name)
+        
         if self.id_type != "": #Handle Array and Function Call
             self.processIDType()
         elif self.id_type == "":
             self.statement = ""
-            
+            self.checkIfIDNotDeclared(self.variable_name)
     #Processing
     def processIDType(self):
         print(f"Process ID Type")
-        if self.id_type in {"1", "2"}:
+        if self.id_type == "array":
             self.process_array()
         elif self.id_type == "function_call":
             self.handleFunctionCall()
@@ -548,7 +597,8 @@ class Semantic:
             self.variable_name = f"{self.variable_name}0"
             return
         elif self.lookahead in literals:     
-            self.variable_name = f"{self.variable_name}0"
+            index = lexeme[self.current_token_index]
+            self.variable_name = f"{self.variable_name}{index}"
             return
         elif self.lookahead == ",":
             self.variable_name = f"{self.variable_name},"
@@ -556,6 +606,7 @@ class Semantic:
         elif self.lookahead == "]":
             self.variable_name = f"{self.variable_name}]"
             self.checkIfIDNotDeclared(self.variable_name)
+            
             self.isID = False
             self.id_type = ""
             self.isProcessing = False
@@ -597,7 +648,7 @@ class Semantic:
     def checkIfIDNotDeclared(self, id):
         print(f"Check if id not declared {id}/{self.isDeclaredInParent(id, self.parent)}")
         identifier_not_found = not any(
-            entry["identifier"].split("[")[0] == id and #Check if id exist
+            entry["identifier"] == id and #Check if id exist
             self.isDeclaredInParent(id, self.parent) #Check if id already declared in parent scope
             for entry in self.symbol_table
         )
@@ -651,6 +702,60 @@ class Semantic:
                     return
         else:
             return
+    
+    def checkIfBooleanValue(self):
+        print("checkBooleanValue")
+        temporary_index = self.current_token_index
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            while temp_token not in {";", ","}:
+                temp_token = token[temporary_index]
+                if temp_token.startswith("id"):
+                    id = lexeme[temporary_index]
+                    temp = self.getLiteralTypeconversion(id)
+                    if temp in {"true", "false"}:
+                        print(f"checkifBoolean -> True id")
+                        if self.checkBooleanLiteral():
+                            return True
+                        else:
+                            return False
+                elif temp_token in booleanValue:
+                    print(f"checkifBoolean -> True temp_token")
+                    if self.checkBooleanLiteral():
+                        return True
+                    else:
+                        return False
+                temporary_index +=1
+    def checkBooleanLiteral(self):
+        print(f"checkBooleanLiteral")
+        temporary_index = self.current_token_index
+        if temporary_index < len(token) and temporary_index > 0:
+            temp_token = token[temporary_index]
+            Literal = ""
+            prevLiteral = ""
+            while temp_token not in {";", ","}:
+                temp_token = token[temporary_index]
+                
+                if temp_token in literals:
+                    prevLiteral = Literal
+                    Literal = temp_token
+                    if prevLiteral == "" or prevLiteral == None:
+                        prevLiteral = Literal
+                elif temp_token.startswith("id"):
+                    id = lexeme[temporary_index]
+                    prevLiteral = Literal
+                    Literal = self.getLiteralTypeconversion(id)
+                    if prevLiteral == "":
+                        prevLiteral = Literal
+                if prevLiteral != Literal:
+                    print(f"{prevLiteral}/{Literal}")
+                    if {prevLiteral, Literal} == {"int_lit", "dec_lit"}:
+                        pass
+                    elif prevLiteral != Literal:
+                        self.error_message(f"Logical Operator cannot be applied to different datatype.")
+                        return
+                temporary_index += 1
+            return True
     #Operator Checker
     def checkAssignmentOperator(self):
         datatype = self.getDatatype(self.identifier_value)
@@ -699,11 +804,11 @@ class Semantic:
     def isDeclaredInParent(self, variable_id, current_scope):
         while current_scope is not None:
             for symbol in self.symbol_table:
-                if symbol["identifier"].split("[")[0] == variable_id and symbol["level"]["parent"] == current_scope:
+                if symbol["identifier"] == variable_id and symbol["level"]["parent"] == current_scope:
                     return True  # Variable is already declared parent node
             # Traverse parent scope
             for symbol in self.symbol_table:
-                if symbol["identifier"].split("[")[0] == current_scope:
+                if symbol["identifier"] == current_scope:
                     current_scope = symbol["level"]["parent"]
                     break
             else:
