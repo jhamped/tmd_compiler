@@ -32,6 +32,7 @@ def generate_code(console):
             elif curr == "bln":
                 isBln = True
             if token[current_token_index+1] == "[":
+                exp = ""
                 list = declareArray(current_token_index)
                 exp += list[1]
                 current_token_index = list[0]
@@ -145,13 +146,7 @@ def generate_code(console):
                             current_token_index += 1
                             curr = token[current_token_index]
 
-                        
-                        if isInt:
-                            exp = f"int(eval(f'{exp}'))" 
-                            isInt = False
-                        elif isDec:
-                            exp = f"eval(f'{exp}')" 
-                            isDec = False
+                        exp = f"eval(f'{exp}')"
                         output_val += f"{{{exp.strip()}}}"  
 
                 current_token_index += 1
@@ -213,16 +208,21 @@ def generate_code(console):
     for code in exec_code:
         exec(code, {}, locals_dict)
         print(locals_dict)
+
+        for key, value in locals_dict.items():
+            if isinstance(value, bool):
+                locals_dict[key] = str(value).lower()
+
         if "result" in locals_dict:
             results.append(locals_dict["result"])
         locals_dict.pop("result", None)
 
-    results = [re.sub(r'(?<=\s)-(\d+)', r'~\1', res) for res in results]
+    results = [re.sub(r'(?<=\s)-(\d+)', r'~\1', str(res).replace("True", "true").replace("False", "false")) for res in results]
 
     for res in results:
         console.insert(tk.END, res)           
 
-
+#--------------FUNCTIONS--------------------
 def checkNumLit(token_index):
     lit = lexeme[token_index]
     if lit.startswith("~"):
@@ -256,6 +256,9 @@ def initArray(token_index):
         curr = lexeme[token_index]
         braces = 0
         while True:
+            if curr in ["true", "false"]:
+                curr = curr.capitalize()
+
             exp += curr
             token_index += 1
             curr = lexeme[token_index]
