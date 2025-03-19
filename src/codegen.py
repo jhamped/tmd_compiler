@@ -20,6 +20,7 @@ def generate_code(console):
         isDec = False
         isBln = False
         isVar = False
+        isConversion = False
 
         if curr in ["int", "str", "chr", "bln", "dec", "var"]: 
             exp = ""
@@ -71,13 +72,23 @@ def generate_code(console):
                                 exp += lexeme[current_token_index].strip("'")
                             else:
                                 exp += lexeme[current_token_index]
+                        elif curr in ["true", "false"]:
+                            exp += lexeme[current_token_index].capitalize()
                         elif curr.startswith("id"):
                             exp += f"{{{lexeme[current_token_index]}}}"
+                        elif curr in ["int", "str", "chr", "bln", "dec"]:
+                            isConversion = True
+                            print("conversion")
+                        elif curr == "(" and isConversion:
+                            pass
+                        elif curr == ")" and isConversion:
+                            isConversion = False
+                            pass
                         else:
                             if curr in ["int_lit", "dec_lit"]:
                                 exp += checkNumLit(current_token_index)
                             else:
-                                exp += lexeme[current_token_index] + " "
+                                exp += lexeme[current_token_index]
 
                         current_token_index += 1
                         curr = token[current_token_index]
@@ -85,8 +96,10 @@ def generate_code(console):
                     if isString:
                         exp += '"'
                     if isInt:
+                        print(f"int {isInt} {exp}")
                         exp = f"int(eval(f'{exp}'))" 
-    
+
+
                     exec_code.append(f"{iden} = {exp.strip()}")
                     print(f"dec {iden} = {exp.strip()}")
 
@@ -121,6 +134,8 @@ def generate_code(console):
                     pass
                 elif curr == "str_lit":
                     output_val += lexeme[current_token_index].strip('"')
+                elif curr in ["true", "false"]:
+                    output_val += lexeme[current_token_index].capitalize()
                 else:
                     if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
                         output_val += f"{{{lexeme[current_token_index]}}}"
