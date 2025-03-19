@@ -326,6 +326,7 @@ class Semantic:
             self.is_typeconversion = False
     
     def handle_array(self):
+        print("ARRAY==")
         if self.lookahead in literals:
             self.checkIfAssignmentIsValid(self.lookahead)
             self.processArrayValue()
@@ -333,17 +334,20 @@ class Semantic:
             identifier = lexeme[self.current_token_index]
             self.array_id = identifier
             self.checkIfIDAlreadyDeclared(identifier)
-        elif self.lookahead == "}":
+        elif self.lookahead == "}" and self.dimension_value == "2":
             self.processArrayValueEnd()
         elif self.lookahead == "," and self.dimension_value != "":
             self.add_symbol_table()
         elif self.lookahead == ";":
-            self.processArrayValue()
+            print(f"-------{self.identifier_value}")
+            #self.processArrayValue()
+            print(f"1-------{self.identifier_value}")
             self.add_symbol_table()
             self.clearIdentifier()
             return
         else: #Get array dimension
             self.handle_array_dimension()
+        
     def handle_array_dimension(self):
         print("Array Dimension")
         if self.lookahead == "]":
@@ -390,8 +394,10 @@ class Semantic:
             self.retCheckValue(literal_value)
                 
         elif self.lookahead == "id":
+            
             datatype = self.getDatatype(self.variable_name)
-            literal_value = self.getLiterals(datatype)
+            literal_value = self.getLiteralTypeconversion(datatype)
+            print(f"---return id {datatype}/{self.variable_name}/{literal_value} ")
             self.retCheckValue(literal_value)
         elif self.lookahead == ";":
             datatype_value = reverse_literal_types.get(self.temp_literal, "")
