@@ -146,7 +146,7 @@ class Semantic:
     def semantic_process(self, lookahead, current_token_index):
         self.current_token_index = current_token_index
         self.lookahead = lookahead
-        
+        print(f"{self.top}")
         #Scope handling
         if lookahead == "{" and self.top != "<identifier_declaration>":
             self.level_value +=1
@@ -158,6 +158,11 @@ class Semantic:
             self.identifier_value = temp2
             self.parent = temp
             self.add_symbol_table()
+            temp_top = ""
+            if self.top == "<foreach_statement>":
+                temp_top = self.top
+            self.clearIdentifier()
+            self.top = temp_top
             self.parent = temp2
         elif lookahead == "}" and self.top != "<identifier_declaration>" and not self.statement != "structure":
             self.parentStack.pop()
@@ -173,7 +178,7 @@ class Semantic:
             self.statement = "segm"
         elif self.lookahead == "ret" or self.is_return:
             self.handle_return()
-            
+        
         #Handle Identifier
         if self.lookahead == "id" or self.isID:
             self.variable_name = lexeme[self.current_token_index]
@@ -187,7 +192,11 @@ class Semantic:
             self.handle_declaration()
         elif self.top == "<assignment_statements>" or self.statement == "assignment":
             self.handle_assignment()
-            
+        elif lookahead == "strc":
+            self.type_value = lookahead
+            self.statement = "structure"
+        elif self.top == "<foreach_statement>" or self.statement == "foreach_statement":
+            self.handle_foreachstatement()
         #Check operator
         if self.lookahead in assignment_number:
             self.checkAssignmentOperator()
@@ -300,10 +309,10 @@ class Semantic:
         type = self.getType(self.variable_name)
         dimension = self.getDimension(self.variable_name)
         print(f"handle identifier {type}/{dimension}")
-        if dimension is "array":
+        if dimension == "array":
             self.id_type = "array"
             return
-        elif type is "segm":
+        elif type == "segm":
             self.id_type = "function_call"
             return
     
@@ -432,7 +441,33 @@ class Semantic:
             self.isID = False
         else:
             return
-    
+
+    def handle_foreachstatement(self):
+        print(f"Foreach statement {self.identifier_value}")
+        self.statement = "foreach_statement"
+        if self.lookahead in datatype:
+            if self.is_typeconversion:
+                self.datatype_conversion = self.lookahead
+            else:
+                self.datatype_value = self.lookahead
+                self.variable_declaration = True
+                if self.datatype_value == "var":
+                    self.is_var = True
+        elif self.lookahead == "id" and self.identifier_value == "":
+            self.identifier_value = self.variable_name
+            if self.datatype_value == "":
+                self.checkIfIDNotDeclared(self.identifier_value)
+            else:
+                self.checkIfIDAlreadyDeclared(self.identifier_value)
+                self.add_symbol_table()
+        elif self.lookahead == "id":
+            self.variable_name = lexeme[self.current_token_index]
+            self.checkIfIDNotDeclared(self.variable_name)
+            type = self.getType(self.variable_name)
+            datatype_value = self.getDatatype(self.variable_name)
+            if type != "array" and datatype_value != "str":
+                self.error_message(f"The foreach statement cannot operate on {self.variable_name}. Expected an array or a string.")
+            self.clearIdentifier()
     #Processing
     def processIDType(self):
         print(f"Process ID Type")
