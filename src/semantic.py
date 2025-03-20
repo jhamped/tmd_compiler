@@ -259,14 +259,15 @@ class Semantic:
                 self.is_var = True
         elif self.lookahead == "id":
             self.handle_identifierType()
-            if self.datatype_value == "bln":
+            
+            if self.identifier_value == "":
+                self.identifier_value = self.variable_name
+                self.checkIfIDAlreadyDeclared(self.variable_name)
+            elif self.datatype_value == "bln":
                 if not self.isBoolean:
                     self.isPassed = self.checkIfBooleanValue()
                     self.isBoolean = True
                 return
-            if self.identifier_value == "":
-                self.identifier_value = self.variable_name
-                self.checkIfIDAlreadyDeclared(self.variable_name)
             else:
                 self.processVar(self.lookahead)
                 self.check_identifier()
@@ -281,8 +282,11 @@ class Semantic:
         elif self.lookahead == ",":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                else:
+                    self.add_symbol_table()
+                    self.clearIdentifier()
             self.add_symbol_table()
             if self.is_var:
                 self.datatype_value = "var"
@@ -290,8 +294,12 @@ class Semantic:
         elif self.lookahead == ";":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                else:
+                    print(f"TANGINAAA {self.identifier_value}/{self.variable_name}")
+                    self.add_symbol_table()
+                    self.clearIdentifier()
             self.add_symbol_table()
             self.clearIdentifier()
     
@@ -299,7 +307,8 @@ class Semantic:
         print(f"Assignment")
         self.statement = "assignment"
         
-        
+        if self.id_type != "null": #Handle Array and Function Call
+            self.processIDType() 
             
         if self.identifier_value == "": #get assignment variable #leftest
             self.identifier_value = self.variable_name
@@ -312,8 +321,7 @@ class Semantic:
             if self.datatype_value == "var":
                 self.is_var = True
             self.checkIfIDNotDeclared(self.variable_name)
-        if self.id_type != "null": #Handle Array and Function Call
-            self.processIDType()  
+         
         elif self.is_typeconversion:
             self.handle_typeconversion()
             return
@@ -342,14 +350,14 @@ class Semantic:
         elif self.lookahead == ",":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
             self.identifier_value == ""
         elif self.lookahead == ";":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.temporary_variable} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
             self.clearIdentifier()
     
     def handle_identifierType(self):
