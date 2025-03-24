@@ -282,8 +282,8 @@ class Semantic:
         elif self.lookahead == ",":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
                 else:
                     self.add_symbol_table()
                     self.clearIdentifier()
@@ -294,8 +294,8 @@ class Semantic:
         elif self.lookahead == ";":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
                 else:
                     print(f"TANGINAAA {self.identifier_value}/{self.variable_name}")
                     self.add_symbol_table()
@@ -350,14 +350,14 @@ class Semantic:
         elif self.lookahead == ",":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
             self.identifier_value == ""
         elif self.lookahead == ";":
             if self.datatype_value == "bln":
                 if not self.isPassed:
-                    print(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
-                    self.error_message(f"{self.variable_name} must be initialized with an expression that evaluates to a boolean value.")
+                    print(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
+                    self.error_message(f"{self.identifier_value} must be initialized with an expression that evaluates to a boolean value.")
             self.clearIdentifier()
     
     def handle_identifierType(self):
@@ -527,11 +527,15 @@ class Semantic:
                 self.add_symbol_table()
         elif self.lookahead == "id":
             self.variable_name = lexeme[self.current_token_index]
-            self.checkIfIDNotDeclared(self.variable_name)
             dimension = self.getDimension(self.variable_name)
             datatype_value = self.getDatatype(self.variable_name)
             if dimension not in {"1", "2"} and datatype_value != "str":
                 self.error_message(f"The foreach statement cannot operate on {self.variable_name}. Expected an array or a string.")
+            elif dimension in {"1", "2"}:
+                self.variable_name = f"{self.variable_name}[0]"
+                self.checkIfIDNotDeclared(self.variable_name)
+            else:
+                self.checkIfIDNotDeclared(self.variable_name)
             self.clearIdentifier()
     
     def handle_initialization(self):
@@ -662,7 +666,10 @@ class Semantic:
         )
         if identifier_not_found:
             print(f"Identifier {id} not declared")
-            self.error_message(f"Identifier {id} not declared")
+            if self.statement == "identifier" and self.id_type == "array":
+                self.error_message(f"Array identifier {id} index is not initialized.")
+            else:
+                self.error_message(f"Identifier {id} not declared")
     
     def checkTypeConversion(self, type_value):
         if type_value == "id":
