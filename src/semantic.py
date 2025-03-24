@@ -668,6 +668,8 @@ class Semantic:
             print(f"Identifier {id} not declared")
             if self.statement == "identifier" and self.id_type == "array":
                 self.error_message(f"Array identifier {id} index is not initialized.")
+            elif self.statement == "assignment" and self.id_type == "array":
+                pass
             else:
                 self.error_message(f"Identifier {id} not declared")
     
