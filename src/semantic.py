@@ -257,7 +257,7 @@ class Semantic:
             self.datatype_value = self.lookahead
             if self.datatype_value == "var":
                 self.is_var = True
-        elif self.lookahead == "id":
+        elif self.lookahead == "id" and self.id_type != "function_call":
             self.handle_identifierType()
             
             if self.identifier_value == "":
@@ -271,7 +271,7 @@ class Semantic:
             else:
                 self.processVar(self.lookahead)
                 self.check_identifier()
-        elif self.lookahead in literals:
+        elif self.lookahead in literals and self.id_type != "function_call":
             if self.datatype_value == "bln":
                 if not self.isBoolean:
                     self.isPassed = self.checkIfBooleanValue()
@@ -307,7 +307,7 @@ class Semantic:
         print(f"Assignment")
         self.statement = "assignment"
         
-        if self.id_type != "null": #Handle Array and Function Call
+        if self.id_type != "": #Handle Array and Function Call
             self.processIDType() 
             
         if self.identifier_value == "": #get assignment variable #leftest
@@ -321,6 +321,9 @@ class Semantic:
                 return
             if self.getType(self.variable_name) == "const":
                 self.error_message(f"Constant '{self.variable_name}' cannot be assigned a new value")
+            #elif self.getType(self.variable_name) == "segm":
+            #    self.id_type = "function_call"
+            #    self.procces
             if self.datatype_value == "var":
                 self.is_var = True
             self.checkIfIDNotDeclared(self.variable_name)
@@ -328,7 +331,7 @@ class Semantic:
         elif self.is_typeconversion:
             self.handle_typeconversion()
             return
-        elif self.lookahead == "id":
+        elif self.lookahead == "id" and self.id_type != "function_call":
             self.handle_identifierType()
             if self.datatype_value == "bln":
                 if not self.isBoolean:
@@ -338,7 +341,7 @@ class Semantic:
                 self.processVar(self.lookahead)
                 self.updateDatatype(self.identifier_value, self.datatype_value)
             self.check_identifier()
-        elif self.lookahead in literals:
+        elif self.lookahead in literals and self.id_type != "function_call":
             if self.datatype_value == "bln":
                 if not self.isBoolean:
                     self.isPassed = self.checkIfBooleanValue()
@@ -366,7 +369,7 @@ class Semantic:
     def handle_identifierType(self):
         type = self.getType(self.variable_name)
         dimension = self.getDimension(self.variable_name)
-        print(f"handle identifier {type}/{dimension}")
+        print(f"handle identifier Type {type}/{dimension}")
         if dimension in {"1", "2"}:
             self.id_type = "array"
             return
@@ -560,6 +563,7 @@ class Semantic:
             self.clearIdentifier()
     
     def handle_identifier(self):
+        print(f"handle identifier")
         self.statement = "identifier"
         self.handle_identifierType()
         
@@ -570,7 +574,7 @@ class Semantic:
             self.checkIfIDNotDeclared(self.variable_name)
     #Processing
     def processIDType(self):
-        print(f"Process ID Type")
+        print(f"Process ID Type {self.id_type}")
         if self.id_type == "array":
             self.process_array()
         elif self.id_type == "function_call":
