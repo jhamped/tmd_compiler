@@ -225,6 +225,7 @@ class Semantic:
         self.segmentID = ""
         self.isPassed = False
         self.isBoolean = False
+        self.dimension_value = ""
     
     def handle_main(self):
         self.scope_value = self.lookahead
