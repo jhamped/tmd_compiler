@@ -311,10 +311,13 @@ class Semantic:
             self.processIDType() 
             
         if self.identifier_value == "": #get assignment variable #leftest
+            print("get the identifier id")
             self.identifier_value = self.variable_name
             self.datatype_value = self.getDatatype(self.variable_name)
             self.handle_identifierType()
             if self.id_type == "array":
+                if token[self.current_token_index+1] != "[":
+                    self.error_message(f"{self.identifier_value} is declared as an array. Use [index] after {self.identifier_value}.")
                 return
             if self.getType(self.variable_name) == "const":
                 self.error_message(f"Constant '{self.variable_name}' cannot be assigned a new value")
