@@ -24,7 +24,6 @@ class CustomNotebook(ttk.Notebook):
         self.bind("<ButtonPress-1>", self.on_close_press, True)
         self.bind("<ButtonRelease-1>", self.on_close_release)
         
-
     def on_close_press(self, event):
         """Called when the button is pressed over the close button"""
 
@@ -114,6 +113,14 @@ class TMDCompiler:
         self.opened_files = {}  
         self.create_ui()
         self.keyboard_shortcut()
+        self.input_var = tk.StringVar()  # Stores console input
+        self.console.bind("<Return>", self._submit_input)  # Bind Enter key
+        
+    def _submit_input(self, event):
+        """Captures input when Enter is pressed."""
+        input_text = self.console.get("input_start", tk.END).strip()
+        self.input_var.set(input_text)  # Store input
+        self.console.insert(tk.END, "\n")
 
     def dark_title_bar(self):
         self.window.update()
@@ -675,8 +682,17 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
-        generate_code(self.console)
+        semantic(self.console)
 
+        generate_code(self.console)
+        
+    def get_input(self, prompt=""):
+        """Reads input from the console widget."""
+        self.console.insert(tk.END, prompt)  # Show prompt
+        self.console.mark_set("input_start", tk.END)  # Track input start
+        self.console.focus_set()  # Focus on console
+        self.window.wait_variable(self.input_var)  # Wait for input
+        return self.input_var.get()  # Return the input
 
     def update_line_numbers(self, event=None):
         line_numbers = ""
