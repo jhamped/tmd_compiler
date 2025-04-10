@@ -7,21 +7,19 @@ import re
 index = 0
 code = ""
 from tkinter import simpledialog
-var_name = ""
-def setVarName(new_name):
-    global var_name
-    var_name = new_name
+var_nameList = []
+
+
 def get_input_from_tkinter():
     # Create a hidden Tkinter root window
-    global var_name
+    global var_nameList
+    input_name = var_nameList.pop(0)
     root = tk.Tk()
     root.withdraw()  # Hide the root window
     
     # Ask for input using a simple dialog box
-    user_input = simpledialog.askstring("", f"Please enter a {var_name}:")
+    user_input = simpledialog.askstring("", f"Please enter a {input_name}:")
     root.attributes('-topmost', 1)  # This ensures the window is always on top
-    
-
     
     root.destroy()  # Destroy the root window after input is given
     if user_input is None:
@@ -192,7 +190,9 @@ def generate_code(console):
                 elif curr == "str_lit":
                     output_val += lexeme[current_token_index].strip('"')
                 elif curr in ["true", "false"]:
-                    output_val += lexeme[current_token_index].capitalize()
+                    trans_code += lexeme[current_token_index].capitalize()
+                elif curr in ["&&", "||", "!"]:
+                    trans_code += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
                 else:
                     if curr.startswith("id"):
                         exp += f"{{{lexeme[current_token_index]}}}"
@@ -465,8 +465,16 @@ def generate_code(console):
                             exp += f"{lexeme[current_token_index]}"
                         elif curr in ["int", "str", "chr", "bln", "dec"]:
                             isConversion = True
+                            #if curr == "dec":
+                            #    exp += float
+                            #else:
+                            #    exp += curr
                             print("conversion")
                         elif curr == "(" and isConversion:
+                            #lexemetoken = lexeme[current_token_index+1]
+                            #exp += f"({lexemetoken})"
+                            #current_token_index += 2
+                            #curr = token[current_token_index]
                             pass
                         elif curr == ")" and isConversion:
                             isConversion = False
@@ -616,7 +624,8 @@ def generate_code(console):
                     variable_insp += f"{lexeme[current_token_index]}"
                 current_token_index += 1
                 curr = token[current_token_index]
-            setVarName(variable_insp)
+            global var_nameList
+            var_nameList.append(variable_insp)
             trans_code += f"{variable_insp} = get_input_from_tkinter()\n" + indent_level(indent)
             #trans_code += f"{variable_insp} = console.get_input1()\n" + indent_level(indent)
         elif curr in ["++", "--"] or getNextToken(current_token_index) in ["++", "--"]:
@@ -789,7 +798,7 @@ def generate_code(console):
     # Redirect stdout to our buffer
     old_stdout = sys.stdout
     sys.stdout = output_buffer
-    
+    """
     try:
     # Execute the code
         trans_code += "\n__main__()"
@@ -805,16 +814,29 @@ def generate_code(console):
         traceback.print_exc(file=output_buffer)
         # Restore stdout
         sys.stdout = old_stdout
-    
+    """
+    try:
+    # Execute the code
+        trans_code += "\n__main__()"
+        exec(trans_code, globals())
+    except NameError as e:
+        console.insert(tk.END, f"{e}\n", "error")
+    except Exception as e:
+        import traceback
+        last_line = traceback.format_exception_only(type(e), e)[-1].strip()
+        console.insert(tk.END, f"{last_line}\n", "error")
+
     # Get the captured output
     captured_output = output_buffer.getvalue()
     #Also insert the generated code for reference
-    #console.insert(tk.END, "\n=== Generated Code ===\n")
-    #console.insert(tk.END, trans_code)
-    #console.insert(tk.END, "\n=== End of Code ===\n")
+    """
+    console.insert(tk.END, "\n=== Generated Code ===\n")
+    console.insert(tk.END, trans_code)
+    console.insert(tk.END, "\n=== End of Code ===\n")
+    """
     
     # Insert the output into the console widget
-    #console.insert(tk.END, "=== Execution Output ===\n")
+    console.insert(tk.END, "\n=== Execution Output ===\n")
     console.insert(tk.END, captured_output)
     #console.insert(tk.END, "\n=== End of Output ===\n")
     
