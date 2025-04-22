@@ -149,6 +149,7 @@ class Semantic:
     def semantic_process(self, lookahead, current_token_index):
         self.current_token_index = current_token_index
         self.lookahead = lookahead
+        print(f"---{lexeme[self.current_token_index]}")
         #Scope handling
         if lookahead == "{" and self.top != "<identifier_declaration>":
             self.level_value +=1
@@ -166,7 +167,7 @@ class Semantic:
             self.clearIdentifier()
             self.top = temp_top
             self.parent = temp2
-        elif lookahead == "}" and self.top != "<identifier_declaration>" and not self.statement != "structure":
+        elif lookahead == "}" and self.top != "<identifier_declaration>":
             self.parentStack.pop()
             if self.parentStack:
                 self.parent = self.parentStack[-1]
@@ -482,6 +483,8 @@ class Semantic:
         elif self.lookahead == "id":
             identifier = lexeme[self.current_token_index]
             datatype_value = self.getDatatype(identifier)
+            self.tempint = 0
+            print(f"datatype1 {datatype_value}, segment {self.segmentID}/{self.functionID}/{self.tempint}")
             argsCompatible = any(
                 entry["Segment ID"] == self.functionID and
                 entry["args"][self.tempint]["datatype"] == datatype_value
@@ -493,7 +496,8 @@ class Semantic:
             return
         elif self.lookahead in literals:
             datatype_value = self.getDatatypeOnLiterals(self.lookahead)
-            print(f"datatype {datatype_value}, segment {self.segmentID}")
+            print(f"datatype {datatype_value}, segment {self.segmentID}/{self.functionID}/{self.tempint}")
+            self.tempint = 0
             argsCompatible = any(
                 entry["Segment ID"] == self.functionID and
                 entry["args"][self.tempint]["datatype"] == datatype_value
