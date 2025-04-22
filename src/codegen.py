@@ -1,3 +1,4 @@
+
 from definitions import *
 import sys
 import io
@@ -105,6 +106,8 @@ def getNextToken(current_token_index):
     else:
         return ""
 def generate_code(console):
+    if errorflag[0] == True:  
+        return
     console1 = console
     print(token)
     current_token_index = 0
@@ -112,7 +115,9 @@ def generate_code(console):
     indent = 0
     exec_code = []
     #locals_dict = {'console': console}
+    symbol_table = {}
     
+    scope_stack = ["global"]
 
     output_val = ""
     exp = ""
@@ -127,7 +132,16 @@ def generate_code(console):
     unary_statement = {}
     unary_dict = {}
     unary_dict = {}
-
+    
+    def current_scope():
+        return scope_stack[-1] if scope_stack else "global"
+    
+    def enter_scope(scope_type):
+        scope_stack.append(f"{scope_type}:{len(scope_stack)}")
+    
+    def exit_scope():
+        if len(scope_stack) > 1:  # Don't pop global scope
+            scope_stack.pop()
     # Dynamically populate the unary_statement and unary_indent one by one
     def add_statement(stmt, indent):
         if indent not in unary_dict:
@@ -155,20 +169,30 @@ def generate_code(console):
         isBln = False
         isVar = False
         isConversion = False
+        #indexing
         if curr == "main":
-            trans_code += "def __main__():" 
-        elif curr == "{" and (prev == ")" or prev == "main"):
-            indent += 1 
+            trans_code += "def __main__():"
+            enter_scope("function:main")
+            indent += 2
             trans_code += "\n" + indent_level(indent)
-        elif curr == "}" and (prev == ";" or prev == "}"):
-            statements = get_statements_by_indent(indent)
-            if statements:
-                for stmt in statements:
-                    trans_code += f"{stmt}"
-                    statements.remove(stmt)
-
-            indent -= 1 
-            trans_code += "\n" + indent_level(indent)
+            current_token_index += 1
+            curr = token[current_token_index]
+        elif curr == "{":
+            if prev == ")" or prev == "main":
+                indent += 1
+                trans_code += "\n" + indent_level(indent)
+                enter_scope(f"block:{indent}")
+        
+        elif curr == "}":
+            if prev == ";" or prev == "}":
+                statements = get_statements_by_indent(indent)
+                if statements:
+                    for stmt in statements:
+                        trans_code += f"{stmt}"
+                        statements.remove(stmt)
+                indent -= 1
+                trans_code += "\n" + indent_level(indent)
+                exit_scope() 
         elif curr == ";":
             trans_code += "\n" + indent_level(indent)
         #for ( int i = 0; i < 5; i = i + 1)
@@ -408,6 +432,7 @@ def generate_code(console):
                     
         elif curr in ["int", "str", "chr", "bln", "dec", "var"]: 
             exp = ""
+            var_type = curr
             if curr in ["str", "chr"]:
                 isString = True
                 exp = 'f"'
@@ -435,34 +460,73 @@ def generate_code(console):
                     print(f"curr {current_token_index} {lexeme[current_token_index]}")
                     exec_code.append(f"{exp}")
                     trans_code += f"{exp}"
+                    # Add type enforcement for arrays
+                var_name = exp.split('=')[0].strip()
+                if var_type == "int":
+                    trans_code += f"\n{indent_level(indent)}{var_name} = [int(x) for x in {var_name}]"
+                elif var_type == "dec":
+                    trans_code += f"\n{indent_level(indent)}{var_name} = [float(x) for x in {var_name}]"
+                while lexeme[current_token_index] != ";":
+                    exp = ""
+                    list = declareMulArray(current_token_index)
+                    exp += list[1]
+                    current_token_index = list[0]
+                    print(f"curr {current_token_index} {lexeme[current_token_index]}")
+                    exec_code.append(f"{exp}")
+                    trans_code += f"{exp}"
+                    # Add type enforcement for arrays
+                    var_name = exp.split('=')[0].strip()
+                    if var_type == "int":
+                        trans_code += f"\n{indent_level(indent)}{var_name} = [int(x) for x in {var_name}]"
+                    elif var_type == "dec":
+                        trans_code += f"\n{indent_level(indent)}{var_name} = [float(x) for x in {var_name}]"
                 continue
 
             while True:
-                iden = lexeme[current_token_index + 1]  
+                iden = lexeme[current_token_index + 1]
+                # Add variable to symbol table with scope info
+                symbol_table[iden] = {
+                    "type": var_type,
+                    "scope": current_scope(),
+                    "line": current_token_index  # Approximate line number
+                }
                 print(f"curr1 {current_token_index} {lexeme[current_token_index]}")
                 current_token_index += 2 
                 
                 if token[current_token_index] == "=":
                     current_token_index += 1
                     curr = token[current_token_index]
+                    exp_parts = []
+                    
                     while token[current_token_index] not in [",", ";"]:
                         if curr == "&":
                             pass
                         elif curr == "str_lit":
-                            if not isVar:
-                                exp += lexeme[current_token_index].strip('"')
-                            else:
-                                exp += lexeme[current_token_index]
+                            exp_parts.append(lexeme[current_token_index].strip('"') if not isVar else lexeme[current_token_index])
+                            #if not isVar:
+                            #    exp += lexeme[current_token_index].strip('"')
+                            #else:
+                            #    exp += lexeme[current_token_index]
                         elif curr == "chr_lit":
-                            if not isVar:
-                                exp += lexeme[current_token_index].strip("'")
-                            else:
-                                exp += lexeme[current_token_index]
+                            exp_parts.append(lexeme[current_token_index].strip("'") if not isVar else lexeme[current_token_index])
+                            #if not isVar:
+                            #    exp += lexeme[current_token_index].strip("'")
+                            #else:
+                            #    exp += lexeme[current_token_index]
                         elif curr in ["true", "false"]:
-                            exp += lexeme[current_token_index].capitalize()
+                            exp_parts.append(lexeme[current_token_index].capitalize())
+                            #exp += lexeme[current_token_index].capitalize()
                         elif curr.startswith("id"):
                             #exp += f"{{{lexeme[current_token_index]}}}"
-                            exp += f"{lexeme[current_token_index]}"
+                            ##exp += f"{lexeme[current_token_index]}"
+                            if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
+                                if(var_type == "dec"):
+                                    var_type = "float"
+                                exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                                if(var_type == "float"):
+                                    var_type = "dec"
+                            else:
+                                exp_parts.append(lexeme[current_token_index])
                         elif curr in ["int", "str", "chr", "bln", "dec"]:
                             isConversion = True
                             #if curr == "dec":
@@ -482,26 +546,46 @@ def generate_code(console):
                         
                         else:
                             if curr in ["int_lit", "dec_lit"]:
-                                exp += checkNumLit(current_token_index)
+                                exp_parts.append(checkNumLit(current_token_index))
                             else:
-                                exp += lexeme[current_token_index]
+                                exp_parts.append(lexeme[current_token_index])
+                            #if curr in ["int_lit", "dec_lit"]:
+                            #    exp += checkNumLit(current_token_index)
+                            #else:
+                            #    exp += lexeme[current_token_index]
 
                         current_token_index += 1
                         curr = token[current_token_index]
-
+                    
+                    exp = " ".join(exp_parts)
                     if isString:
                         exp += '"'
-                    if isInt:
-                        print(f"int {isInt} {exp}")
-                        exp = f"int(eval(f'{exp}'))" 
-
-
+                    # Handle explicit type conversion based on requirements
+                    if var_type == "int":
+                        trans_code += f"{iden} = int({exp.strip()})\n{indent_level(indent)}{iden} = int({iden})\n{indent_level(indent)}"
+                    elif var_type == "dec":
+                        trans_code += f"{iden} = float({exp.strip()})\n{indent_level(indent)}{iden} = float({iden})\n{indent_level(indent)}"
+                    else:
+                        trans_code += f"{iden} = {exp.strip()}"
+                    
                     exec_code.append(f"{iden} = {exp.strip()}")
-                    trans_code += f"{iden} = {exp.strip()}\n" + indent_level(indent)
                     print(f"dec {iden} = {exp.strip()}")
+
+
+                    #exec_code.append(f"{iden} = {exp.strip()}")
+                    #trans_code += f"{iden} = {exp.strip()}\n" + indent_level(indent)
+                    #print(f"dec {iden} = {exp.strip()}")
 
                 elif token[current_token_index] in [",", ";"]:
                     curr = token[current_token_index]
+                    default_values = {
+                        "int": "0",
+                        "dec": "0.0",
+                        "str": '""',
+                        "chr": "''",
+                        "bln": "False",
+                        "var": "None"
+                    }
                     if isString:
                         exp = "None"
                         if curr != ";":
@@ -519,9 +603,24 @@ def generate_code(console):
                         if curr != ";":
                             exp+="\\n"+indent_level(indent)
                 
+                    #if var_type == "int":
+                    #    trans_code += f"{iden} = int({exp})\n{indent_level(indent)}{iden} = int({iden})"
+                    #elif var_type == "dec":
+                    #    trans_code += f"{iden} = float({exp})\n{indent_level(indent)}{iden} = float({iden})"
+                    #else:
+                    #    trans_code += f"{iden} = {exp}"
+                    if var_type == "int":
+                        trans_code += f"{iden} = int({default_values[var_type]})\n{indent_level(indent)}{iden} = int({iden})\n{indent_level(indent)}"
+                    elif var_type == "dec":
+                        trans_code += f"{iden} = float({default_values[var_type]})\n{indent_level(indent)}{iden} = float({iden})\n{indent_level(indent)}"
+                    else:
+                        trans_code += f"{iden} = {default_values[var_type]}"
+                    
+                    exec_code.append(f"{iden} = {default_values[var_type]}")
+                    
                     exec_code.append(f"{iden} = {exp}")
-                    trans_code += f"{iden} = {exp}"
                     print(exec_code)
+                
                 if isString:
                     exp = 'f"'
                 else: 
@@ -659,6 +758,7 @@ def generate_code(console):
             print(f"next {token[current_token_index + 1]}")
             exp = ""
             output_val = ""
+            var_name = lexeme[current_token_index] 
             if token[current_token_index+1] == "(":
                 print("function call ID")
                 trans_code += f"{lexeme[current_token_index]}("
@@ -752,10 +852,22 @@ def generate_code(console):
                     curr = token[current_token_index]
                 
                 exp = f"eval(f'{exp}')" 
-                #if assign not in exec_code
+                # Get variable type from symbol table
+                var_type = symbol_table.get(var_name, {}).get("type", None)
+                # Generate the assignment with type enforcement if type is known
+                if var_type == "int":
+                    trans_code += f"{var_name} = int({exp.strip()})\n{indent_level(indent)}{var_name} = int({var_name})\n{indent_level(indent)}"
+                elif var_type == "dec":
+                    trans_code += f"{var_name} = float({exp.strip()})\n{indent_level(indent)}{var_name} = float({var_name})\n{indent_level(indent)}"
+                else:
+                    trans_code += f"{var_name} = {exp.strip()}"
+                
                 exec_code.append(f"{assign}{exp.strip()}")
-                trans_code += f"{assign}{exp.strip()}" + "\n" + indent_level(indent)
                 print(f"assign {assign}{exp.strip()}")
+                #if assign not in exec_code
+                #exec_code.append(f"{assign}{exp.strip()}")
+                #trans_code += f"{assign}{exp.strip()}" + "\n" + indent_level(indent)
+                #print(f"assign {assign}{exp.strip()}")
         
         elif curr == "ret":
             trans_code += "return "
@@ -790,7 +902,10 @@ def generate_code(console):
     print(f"---trans code---")
     print(trans_code)
     print(f"run")
-    
+    print("\n=== Symbol Table with Scope ===")
+    for var, info in symbol_table.items():
+        print(f"{var}: type={info['type']}, scope={info['scope']}, line={info['line']}")
+    print("===============================")
     #exec(trans_code, globals(), locals_dict)
     #console.insert(tk.END,"run the exec.")
     output_buffer = io.StringIO()
@@ -829,11 +944,11 @@ def generate_code(console):
     # Get the captured output
     captured_output = output_buffer.getvalue()
     #Also insert the generated code for reference
-    """
-    console.insert(tk.END, "\n=== Generated Code ===\n")
-    console.insert(tk.END, trans_code)
-    console.insert(tk.END, "\n=== End of Code ===\n")
-    """
+    
+    #console.insert(tk.END, "\n=== Generated Code ===\n")
+    #console.insert(tk.END, trans_code)
+    #console.insert(tk.END, "\n=== End of Code ===\n")
+    
     
     # Insert the output into the console widget
     console.insert(tk.END, "\n=== Execution Output ===\n")
@@ -841,4 +956,3 @@ def generate_code(console):
     #console.insert(tk.END, "\n=== End of Output ===\n")
     
 
-              
