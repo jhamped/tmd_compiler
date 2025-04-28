@@ -1028,7 +1028,7 @@ class DynamicArray:
                 while curr != ";":
                     print(f"pass id4 {curr}")
                     if curr == "&":
-                        pass
+                        exp_parts.append("+")
                     elif curr == "str_lit":
                         exp_parts.append(lexeme[current_token_index])
                     elif curr == "chr_lit":
@@ -1348,6 +1348,6 @@ class DynamicArray:
         pass
 
     # Show generated code
-    #console.insert(tk.END, "\n=== Generated Code ===\n")
-    #console.insert(tk.END, trans_code)
+    console.insert(tk.END, "\n=== Generated Code ===\n")
+    console.insert(tk.END, trans_code)
     #console.insert(tk.END, "\n=== End of Code ===\n")
