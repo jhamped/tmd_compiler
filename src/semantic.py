@@ -483,34 +483,37 @@ class Semantic:
         elif self.lookahead == "id":
             identifier = lexeme[self.current_token_index]
             datatype_value = self.getDatatype(identifier)
-            self.tempint = 0
-            print(f"datatype1 {datatype_value}, segment {self.segmentID}/{self.functionID}/{self.tempint}")
+            #self.tempint = 0
+            print(f"datatype1 {datatype_value}, segment {self.segmentID}/{self.functionID}/{self.tempint}/{identifier}")
             argsCompatible = any(
                 entry["Segment ID"] == self.functionID and
                 entry["args"][self.tempint]["datatype"] == datatype_value
                 for entry in self.parameterList
             )
             if not argsCompatible:
-                print(f"Arguments incompatible")
+                print(f"Arguments incompatible1")
                 self.error_message(f"Arguments incompatible")
             return
         elif self.lookahead in literals:
             datatype_value = self.getDatatypeOnLiterals(self.lookahead)
             print(f"datatype {datatype_value}, segment {self.segmentID}/{self.functionID}/{self.tempint}")
-            self.tempint = 0
+            #self.tempint = 0
             argsCompatible = any(
                 entry["Segment ID"] == self.functionID and
                 entry["args"][self.tempint]["datatype"] == datatype_value
                 for entry in self.parameterList
             )
             if not argsCompatible:
-                print(f"Arguments incompatible")
+                print(f"Arguments incompatible2")
                 self.error_message(f"Arguments incompatible")
             return
         elif self.lookahead == ",":
             self.tempint += 1
         elif self.lookahead == ")":
+            
             self.tempint = 0
+            print(f"================={self.tempint}")
+            self.functionID = ""
             self.id_type = ""
             self.isProcessing = False
             self.isID = False
@@ -612,6 +615,10 @@ class Semantic:
         
     def process_array(self):
         print("Processing Array")
+        if self.current_token_index-2 < 0:
+            prev_token = token[self.current_token_index-2]
+        else:
+            prev_token = token[self.current_token_index-2]
         if self.lookahead == "[":
             self.variable_name = f"{self.variable_name}["
             return
@@ -620,20 +627,20 @@ class Semantic:
             self.checkIfIDNotDeclared(identifier)
             self.variable_name = f"{self.variable_name}0"
             return
-        elif self.lookahead in literals:     
+        elif self.lookahead in literals and not prev_token.startswith("id"):     
             index = lexeme[self.current_token_index]
-            self.variable_name = f"{self.variable_name}{index}"
+            self.variable_name = f"{self.variable_name}{index}/{prev_token}"
             return
         elif self.lookahead == ",":
             self.variable_name = f"{self.variable_name},"
             return
         elif self.lookahead == "]":
-            self.variable_name = f"{self.variable_name}]"
             self.checkIfIDNotDeclared(self.variable_name)
-            
+            self.variable_name = f"{self.variable_name}]"
             self.isID = False
             self.id_type = ""
             self.isProcessing = False
+            self.statement = ""
             print(f"Array done {self.variable_name}")
         else:
             return
@@ -790,8 +797,10 @@ class Semantic:
     #Operator Checker
     def checkAssignmentOperator(self):
         datatype = self.getDatatype(self.identifier_value)
+        if datatype == "":
+            datatype = self.getDatatype(lexeme[self.current_token_index-1])
         if datatype not in {"int", "dec", "var"}:
-            self.error_message(f"Compound Assignment is only allowed for number identifier. ")
+            self.error_message(f"Compound Assignment is only allowed for number identifier. {datatype}/{token[self.current_token_index-1]}")
     
     def checkOperand(self):
         print("checking operand")
