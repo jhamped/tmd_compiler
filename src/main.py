@@ -655,6 +655,7 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
+        
         parse(self.console)
     def semantic_click(self, event):
         #self.lexical_click
@@ -684,15 +685,34 @@ class TMDCompiler:
         lexer(code, self.console, self.table)
         semantic(self.console)
 
-        generate_code(self.console)
+        import threading
+        threading.Thread(target=generate_code, args=(self.console,), daemon=True).start()
         
-    def get_input(self, prompt=""):
-        """Reads input from the console widget."""
-        self.console.insert(tk.END, prompt)  # Show prompt
-        self.console.mark_set("input_start", tk.END)  # Track input start
-        self.console.focus_set()  # Focus on console
-        self.window.wait_variable(self.input_var)  # Wait for input
-        return self.input_var.get()  # Return the input
+    def get_input(self, prompt=None):
+        """Get input from the console widget."""
+        if prompt:
+            self.insert(tk.END, prompt)
+        
+        # Mark the start of input
+        self.mark_set("input_start", tk.END)
+        self.mark_gravity("input_start", "left")
+        
+        # Create an entry widget for input
+        input_entry = tk.Entry(self, bg="#202020", fg="white", insertbackground="white",
+                            relief="flat", font=("Consolas", 12))
+        
+        # Place the entry at the end of the console
+        self.window_create("input_start", window=input_entry)
+        input_entry.focus_set()
+        
+        # Wait for the input to be completed
+        self.wait_variable(self.input_var)
+        
+        # Get the input and clean up
+        user_input = self.input_var.get()
+        self.input_var.set("")  # Reset for next input
+        
+        return user_input
 
     def update_line_numbers(self, event=None):
         line_numbers = ""
