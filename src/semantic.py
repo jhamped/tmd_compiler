@@ -656,6 +656,8 @@ class Semantic:
         if Expected != Found:
             if Expected == "decimal number" and Found == "integer":
                 pass
+            elif Expected == "string" and Found == "character":
+                pass
             else:
                 self.error_message(f"Assignment type mismatch. Expected {Expected} but found {Found}.")
             
