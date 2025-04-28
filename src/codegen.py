@@ -1320,12 +1320,14 @@ class DynamicArray:
             
         # Inject console_disp and console_insp into the exec environment
         def console_disp(val):
-            #console.insert(tk.END, f"[DEBUG DISP] val={repr(val)}\n")
-            if isinstance(val, (int, float, str)) and str(val).lstrip().startswith("-") and str(val).lstrip()[1:].replace('.', '', 1).isdigit():
-                val = "~" + str(val).lstrip()[1:]
-            else:
-                val = str(val)
-            console.insert(tk.END, str(val))
+            #val = str(val).lstrip()
+            def replace_negative(match):
+                number = match.group(0)
+                return "~" + number[1:] 
+
+            val = re.sub(r'-\d+(\.\d+)?', replace_negative, val)
+
+            console.insert(tk.END, val)
             console.see(tk.END)
         def console_insp(varname):
             val = handle_input()
@@ -1348,6 +1350,6 @@ class DynamicArray:
         pass
 
     # Show generated code
-    console.insert(tk.END, "\n=== Generated Code ===\n")
-    console.insert(tk.END, trans_code)
+    #console.insert(tk.END, "\n=== Generated Code ===\n")
+    #console.insert(tk.END, trans_code)
     #console.insert(tk.END, "\n=== End of Code ===\n")
