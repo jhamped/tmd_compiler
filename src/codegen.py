@@ -1026,7 +1026,7 @@ class DynamicArray:
                 current_token_index += 1
                 curr = token[current_token_index]
                 while curr != ";":
-                    print("pass id4")
+                    print(f"pass id4 {curr}")
                     if curr == "&":
                         pass
                     elif curr == "str_lit":
@@ -1043,11 +1043,13 @@ class DynamicArray:
                         if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
                             if(var_type == "dec"):
                                 var_type = "float"
-                            exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                            
                             if(var_type == "float"):
                                 var_type = "dec"
+                            exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
                         elif var_type in ["str", "chr"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["str", "chr"]:
                             var_type = "str"
+                            exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
                         else:
                             exp_parts.append(lexeme[current_token_index])
                     elif curr in ["int", "str", "chr", "bln", "dec"]:
@@ -1090,6 +1092,9 @@ class DynamicArray:
                             if curr == "dec_lit":
                                 isDec = True
                             exp_parts.append(checkNumLit(current_token_index))
+                        elif curr in arithmetic_operator:
+                            exp_parts.append(lexeme[current_token_index])
+                            print(f"==========={exp_parts}")
                         elif getPrevToken(current_token_index) in ["str_lit", "chr_lit"] or getPrevToken(current_token_index).startswith('id'):
                             prevToken = getPrevToken(current_token_index)
                             if prevToken.startswith('id'):
@@ -1102,6 +1107,7 @@ class DynamicArray:
                                 exp_parts.append(" ")
                         else:
                             exp_parts.append(lexeme[current_token_index])
+                            print(f"==========={exp_parts}")
 
                     current_token_index += 1
                     curr = token[current_token_index]
@@ -1302,7 +1308,7 @@ class DynamicArray:
                     if lowered == "true" or lowered == "false":
                         processed_input = lowered.capitalize()
                     else:
-                        processed_input = f'"{processed_input}"'
+                        processed_input = f'{processed_input}'
 
             input_entry.destroy()
             # Re-enable mouse clicks after input
