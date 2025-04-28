@@ -1322,7 +1322,7 @@ class DynamicArray:
         # Inject console_disp and console_insp into the exec environment
         def console_disp(val):
             #console.insert(tk.END, f"[DEBUG DISP] val={repr(val)}\n")
-            val = str(val).replace("~", "-")
+            val = str(val).replace("-", "~")
             console.insert(tk.END, str(val))
             console.see(tk.END)
         def console_insp(varname):
@@ -1346,6 +1346,6 @@ class DynamicArray:
         pass
 
     # Show generated code
-    console.insert(tk.END, "\n=== Generated Code ===\n")
-    console.insert(tk.END, trans_code)
-    console.insert(tk.END, "\n=== End of Code ===\n")
+    #console.insert(tk.END, "\n=== Generated Code ===\n")
+    #console.insert(tk.END, trans_code)
+    #console.insert(tk.END, "\n=== End of Code ===\n")
