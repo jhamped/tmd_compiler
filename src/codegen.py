@@ -1041,12 +1041,11 @@ class DynamicArray:
                         #Translation Type Conversion
                         print(f"-------------------------{lexeme[current_token_index]}")
                         if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
-                            if(var_type == "dec"):
+                            if var_type == "dec":
                                 var_type = "float"
-                            
-                            if(var_type == "float"):
-                                var_type = "dec"
                             exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                            if var_type == "float":
+                                var_type = "dec"
                         elif var_type in ["str", "chr"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["str", "chr"]:
                             var_type = "str"
                             exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
@@ -1322,7 +1321,10 @@ class DynamicArray:
         # Inject console_disp and console_insp into the exec environment
         def console_disp(val):
             #console.insert(tk.END, f"[DEBUG DISP] val={repr(val)}\n")
-            val = str(val).replace("-", "~")
+            if isinstance(val, (int, float, str)) and str(val).lstrip().startswith("-") and str(val).lstrip()[1:].replace('.', '', 1).isdigit():
+                val = "~" + str(val).lstrip()[1:]
+            else:
+                val = str(val)
             console.insert(tk.END, str(val))
             console.see(tk.END)
         def console_insp(varname):
