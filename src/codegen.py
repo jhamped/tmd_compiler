@@ -260,8 +260,13 @@ def getPrevToken(current_token_index):
     else:
         return ""
 def generate_code(console):
-    #if errorflag[0] == True:  
-    #    return
+    if errorflag[0] == True:  
+        return
+    else:
+        console.delete("1.0", tk.END)
+    global scope_stack
+    # Start with global scope
+    scope_stack = ["global"]
     console1 = console
     print(token)
     current_token_index = 0
@@ -376,9 +381,11 @@ class DynamicArray:
 
     switch_statement = False
     function_name = ""
-    
+    isSwitchStatement = False
     print("running")
     while current_token_index < len(token):
+        if errorflag[0] == True:  
+            return
         curr = token[current_token_index]
         print(f"-current {curr}")
         prev = ""
@@ -400,19 +407,29 @@ class DynamicArray:
             current_token_index += 1
             curr = token[current_token_index]
         elif curr == "{":
+            
             if prev == ")" or prev == "main":
-                indent += 1
-                trans_code += "\n" + indent_level(indent)
-                enter_scope(f"block:{indent}")
+                if getNextToken(current_token_index) == "}":
+                    trans_code += "\n" + indent_level(indent+1) +"pass\n" + indent_level(indent)
+                    enter_scope(f"block:{indent+1}")
+                else:
+                    indent += 1
+                    trans_code += "\n" + indent_level(indent)
+                    enter_scope(f"block:{indent}")
         
         elif curr == "}":
+            print(f"THIS IS FUUKING RUNNING {prev}/{isSwitchStatement}")
             if prev == ";" or prev == "}":
                 statements = get_statements_by_indent(indent)
                 if statements:
                     for stmt in statements:
                         trans_code += f"{stmt}"
                         statements.remove(stmt)
-                indent -= 1
+                if prev == ";" and isSwitchStatement:
+                    indent -=2
+                    isSwitchStatement = False
+                else:
+                    indent -= 1
                 trans_code += "\n" + indent_level(indent)
                 exit_scope() 
         elif curr == ";":
@@ -622,6 +639,7 @@ class DynamicArray:
             current_token_index+=1
             curr = token[current_token_index]
         elif curr == "switch":
+            isSwitchStatement = True
             trans_code += f"match "
             current_token_index += 2
             curr = token[current_token_index]
@@ -645,6 +663,34 @@ class DynamicArray:
                 indent -= 1 
                 trans_code += "\n" + indent_level(indent)
             trans_code += f"case _"
+        #Unary Statement
+        elif curr in ["++", "--"] or getNextToken(current_token_index) in ["++", "--"]:
+            # Case 1: x++
+            if curr.startswith("id") and token[current_token_index + 1] in ["++", "--"]:
+                var_name = lexeme[current_token_index]
+                op = token[current_token_index + 1]
+                if op == "++":
+                    #trans_code += f"{var_name}\n" + indent_level(indent)
+                    trans_code += f"{var_name} += 1\n" + indent_level(indent)
+                else:
+                    exec_code.append(f"{var_name} -= 1")
+                    #trans_code += f"{var_name}\n" + indent_level(indent)
+                    trans_code += f"{var_name} -= 1\n" + indent_level(indent)
+                current_token_index += 1
+                curr = token[current_token_index]  
+
+            # Case 2: ++x
+            elif curr in ["++", "--"] and token[current_token_index + 1].startswith("id"):
+                op = curr
+                var_name = lexeme[current_token_index + 1]
+                if op == "++":
+                    exec_code.append(f"{var_name} += 1")
+                    trans_code += f"{var_name} += 1\n" + indent_level(indent)
+                else:
+                    exec_code.append(f"{var_name} -= 1")
+                    trans_code += f"{var_name} -= 1\n" + indent_level(indent)
+                current_token_index += 1
+                curr = token[current_token_index] 
         #Function
         elif curr == "segm":
             trans_code += "def "
@@ -672,6 +718,7 @@ class DynamicArray:
         elif curr in ["int", "str", "chr", "bln", "dec", "var"]: 
             exp = ""
             var_type = curr
+            
             isString = False
             exp_parts = []
             if curr in ["str", "chr"]:
@@ -742,9 +789,9 @@ class DynamicArray:
                                 exp_parts.append(lexeme[current_token_index])
                         elif curr == "chr_lit":
                             if not isVar:
-                                exp_parts.append(lexeme[current_token_index][1:-1])
+                                exp_parts.append(f"\"{lexeme[current_token_index][1:-1]}")
                             else:
-                                exp_parts.append(lexeme[current_token_index])
+                                exp_parts.append(f"\"{lexeme[current_token_index][1:-1]}")
                         elif curr in ["true", "false"]:
                             exp_parts.append(lexeme[current_token_index].capitalize())
                         elif curr.startswith("id"):
@@ -877,6 +924,25 @@ class DynamicArray:
             output_val = ""
             var_name = lexeme[current_token_index] 
             var_info = symbol_table.get(var_name, {})
+            # Check variable scope
+            current_scope1 = scope_stack[-1] if scope_stack else "global"
+            var_info = symbol_table.get(var_name, {})
+            
+            # Determine if we need to declare as global
+            global_declaration = ""
+            if var_info:  # If variable exists in symbol table
+                if var_info.get("scope") == "global" and current_scope1 != "global":
+                    # Only add global if we're in a function scope (not block scope)
+                    if current_scope1.startswith("function:"):
+                        # Check if it's being modified (assignment) not just accessed
+                        if token[current_token_index + 1] in assignment_operator:
+                            global_declaration = f"global {var_name}\n{indent_level(indent)}"
+            elif current_scope1 != "global":
+                global_declaration = f"global {var_name}\n{indent_level(indent)}"
+
+            if global_declaration:
+                trans_code += global_declaration
+                
             if token[current_token_index+1] == "(":
                 print("function call ID")
                 trans_code += f"{lexeme[current_token_index]}("
@@ -1037,20 +1103,30 @@ class DynamicArray:
                     #    exp += f"{{{lexeme[current_token_index]}}}"
                     elif curr in ["true", "false"]:
                         exp_parts.append(lexeme[current_token_index].capitalize())
-                    elif curr.startswith("id"):
+                    elif curr.startswith("id"):#here
                         #Translation Type Conversion
                         print(f"-------------------------{lexeme[current_token_index]}")
+                        curr_identifier = lexeme[current_token_index]
+                        if getNextToken(current_token_index) == "[":
+                            current_token_index+=1
+                            curr = token[current_token_index]
+                            arr_identifier = ""
+                            while curr != "]":
+                                arr_identifier += lexeme[current_token_index]
+                                current_token_index+=1
+                                curr = token[current_token_index]
+                            curr_identifier += f"{arr_identifier}]"
                         if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
                             if var_type == "dec":
                                 var_type = "float"
-                            exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                            exp_parts.append(f"{var_type}({curr_identifier})")
                             if var_type == "float":
                                 var_type = "dec"
                         elif var_type in ["str", "chr"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["str", "chr"]:
                             var_type = "str"
-                            exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                            exp_parts.append(f"{var_type}({curr_identifier})")
                         else:
-                            exp_parts.append(lexeme[current_token_index])
+                            exp_parts.append(f"{curr_identifier}")
                     elif curr in ["int", "str", "chr", "bln", "dec"]:
                         isConversion = True
                         if curr == "bln":
@@ -1194,33 +1270,8 @@ class DynamicArray:
                 curr = token[current_token_index]
             global var_nameList
             var_nameList.append(variable_insp)
-            trans_code += f"{variable_insp} = console_insp({variable_insp})\n" + indent_level(indent)
-        #Unary Statement
-        elif curr in ["++", "--"] or getNextToken(current_token_index) in ["++", "--"]:
-            # Case 1: x++
-            if curr.startswith("id") and token[current_token_index + 1] in ["++", "--"]:
-                var_name = lexeme[current_token_index]
-                op = token[current_token_index + 1]
-                if op == "++":
-                    trans_code += f"{var_name}\n" + indent_level(indent)
-                    trans_code += f"{var_name} += 1\n" + indent_level(indent)
-                else:
-                    exec_code.append(f"{var_name} -= 1")
-                    trans_code += f"{var_name}\n" + indent_level(indent)
-                    rans_code += f"{var_name} -= 1\n" + indent_level(indent)
-                current_token_index += 1  
-
-            # Case 2: ++x
-            elif curr in ["++", "--"] and token[current_token_index + 1].startswith("id"):
-                op = curr
-                var_name = lexeme[current_token_index + 1]
-                if op == "++":
-                    exec_code.append(f"{var_name} += 1")
-                    trans_code += f"{var_name} += 1\n" + indent_level(indent)
-                else:
-                    exec_code.append(f"{var_name} -= 1")
-                    trans_code += f"{var_name} -= 1\n" + indent_level(indent)
-                current_token_index += 1 
+            trans_code += f"{variable_insp} = console_insp('{variable_insp}')\n" + indent_level(indent)
+        
         
         #Other Statement
         elif curr == "ret":
@@ -1240,6 +1291,10 @@ class DynamicArray:
             curr = token[current_token_index]
             
         elif curr == "brk":
+            if isSwitchStatement:
+                console.insert(tk.END, "\nSemantic Error: Break not allowed inside switch statement\n", "error")
+                errorflag[0] = True  # Assuming you have an error flag
+                return
             trans_code += "break"
             current_token_index += 1
             curr = token[current_token_index]
@@ -1263,7 +1318,7 @@ class DynamicArray:
     print("===============================")
     
     try:
-        console.insert(tk.END, "\n=== Program Output ===\n")
+        #console.insert(tk.END, "\n=== Program Output ===\n")
         # Execute the generated code in the current process so console_disp and console_insp work
         # Custom function to handle input requests
         def handle_input(prompt=""):
@@ -1296,7 +1351,7 @@ class DynamicArray:
             user_input = input_var.get()
             user_input = user_input.replace("~", "-")
             processed_input = user_input.strip()
-
+            """
             if processed_input.isdigit():  # Integer
                 processed_input = int(processed_input)
             else:
@@ -1308,7 +1363,7 @@ class DynamicArray:
                         processed_input = lowered.capitalize()
                     else:
                         processed_input = f'{processed_input}'
-
+            """
             input_entry.destroy()
             # Re-enable mouse clicks after input
             console.unbind("<Button-1>")
@@ -1329,8 +1384,40 @@ class DynamicArray:
 
             console.insert(tk.END, val)
             console.see(tk.END)
-        def console_insp(varname):
+        def console_insp(variable_insp):
             val = handle_input()
+            val = val.replace("~", "-")
+            dataType = symbol_table.get(variable_insp, {}).get("type", None)
+            if dataType == "str":
+                val = str(val)
+                
+            elif dataType == "int":
+                if not (val.isdigit() or (val.startswith('-') and val[1:].isdigit())):
+                    raise ValueError(f"Semantic Error: Input rejected. Expected an integer number.\n{val}")
+                else:
+                    val = int(val)
+                
+            elif dataType == "dec":
+                try:
+                    val = float(val)
+                except ValueError:
+                    raise ValueError("Semantic Error: Input rejected. Expected a decimal number.\n")
+                    return None
+                
+            elif dataType == "chr":
+                if len(val) != 1:
+                    raise ValueError("Semantic Error: Input rejected. Expected a single character.\n")
+                    return None
+                
+            elif dataType == "bln":
+                if val.lower() in ["true", "1"]:
+                    val = True
+                elif val.lower() in ["false", "0"]:
+                    val = False
+                else:
+                    raise ValueError("Semantic Error: Input rejected. Expected a boolean value (True/False).\n")
+                    return None
+            #console.insert(tk.END, f"DEBUG {dataType}/{variable_insp}/{symbol_table}")
             #console.insert(tk.END, f"[DEBUG INSP] returning: {repr(val)}\n")
             return val
 
@@ -1344,6 +1431,8 @@ class DynamicArray:
         }
         try:
             exec(trans_code, exec_env, exec_env)
+        except ValueError as ve:
+            console.insert(tk.END, f"\n{str(ve)}\n", "error")
         except Exception as e:
             console.insert(tk.END, f"\nExecution failed: {str(e)}\n", "error")
     finally:
