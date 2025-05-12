@@ -349,6 +349,7 @@ def add_all_set():
     add_set(["true", "false"], "<literals>", ["<bln>"])
 #SEMANTIC
 datatype = ["var", "str", "chr", "int", "dec", "bln"]
+semantic_datatype = ["var", "str", "chr", "int", "dec", "bln"]
 bool_lit = ["true", "false"]
 literals = ["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"]
 valid_literals = {"str": "str_lit","chr": "chr_lit", "int": "int_lit","dec": ["dec_lit", "int_lit"],"bln": ["true", "false"], "var":literals} 
