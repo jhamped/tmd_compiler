@@ -84,8 +84,6 @@ def semantic(console):
     else:
         console.tag_config("accepted", foreground="#00FFFF", font=("Arial", 12, "bold"))
         console.insert(tk.END,"Input accepted: ", "accepted")
-        console.insert(tk.END,"Syntactically correct.\n")
-        console.insert(tk.END,"Input accepted: ", "accepted")
         console.insert(tk.END,"Semantically correct.")
         semantic_checker.printSymbolTable()
         

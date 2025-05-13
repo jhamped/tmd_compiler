@@ -73,6 +73,7 @@ def parse(console):
             # Non-terminal: use the parsing table
             rule = parsing_table[top].get(lookahead)
             #rule = ["null"]
+            print(f"rule: {rule}/{lookahead}/{top}")
             if rule:
                 print(f"Apply rule: {top} -> {' '.join(rule)}")
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
@@ -95,5 +96,3 @@ def parse(console):
         console.tag_config("accepted", foreground="#00FFFF", font=("Arial", 12, "bold"))
         console.insert(tk.END,"Input accepted: ", "accepted")
         console.insert(tk.END,"Syntactically correct.\n")
-        console.insert(tk.END,"Input accepted: ", "accepted")
-        console.insert(tk.END,"Semantically correct.")
