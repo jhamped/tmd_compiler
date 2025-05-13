@@ -120,26 +120,6 @@ def declareArray(token_index):
         print(f"Surrounding tokens: {token[max(0,token_index-3):min(len(token),token_index+3)]}")
         raise
 
-
-"""
-def declareArray(token_index):
-    token_index += 2
-    
-    if token[token_index] == ",":
-        iden = lexeme[token_index+2]
-        token_index += 3
-        list = initArray(token_index)
-        exp = list[1]
-    else:
-        iden = lexeme[token_index+1]
-        token_index += 2
-        list = initArray(token_index)
-        exp = list[1]
-
-    # Convert to Python list and make it dynamic
-    exp = f"{iden} = list({exp.replace('{', '[').replace('}', ']')})"
-    return [list[0], exp]
-"""
 def initArray(token_index):
     exp = ""
     if token[token_index] == "=":
@@ -170,14 +150,7 @@ def initArray(token_index):
     return [token_index, exp]
 
 def handleArrayOperations(var_name, operation, value=None):
-    """
-    Handle dynamic array operations:
-    - push: append to array
-    - pop: remove from end
-    - insert: add at index
-    - remove: delete by value
-    - resize: change size
-    """
+
     if operation == "push":
         return f"{var_name}.append({value})"
     elif operation == "pop":
@@ -188,56 +161,7 @@ def handleArrayOperations(var_name, operation, value=None):
         return f"{var_name}.remove({value})"
     elif operation == "resize":
         return f"{var_name} = {var_name}[:{value}] + [None]*({value}-len({var_name}))"
-"""
-def declareArray(token_index):
-    token_index += 2
-    
-    if token[token_index] == ",":
-        iden = lexeme[token_index+2]
-        token_index += 3
 
-        list = initArray(token_index)
-        exp = list[1]
-    else:
-        iden = lexeme[token_index+1]
-        token_index += 2
-
-        list = initArray(token_index)
-        exp = list[1]
-
-    exp = f"{iden} = {exp.replace("{", "[").replace("}", "]")}"
-    return [list[0], exp]
-        
-def initArray(token_index):
-    exp = ""
-    if token[token_index] == "=":
-        token_index += 1
-        curr = lexeme[token_index]
-        braces = 0
-        while True:
-            if curr in ["true", "false"]:
-                curr = curr.capitalize()
-
-            exp += curr
-            token_index += 1
-            curr = lexeme[token_index]
-
-            print(f"curr {curr} {braces}")
-            if curr == "{":
-                braces += 1
-            elif curr == "}":
-                if braces == 0:
-                    break  
-                braces -= 1
-
-        exp += curr
-        token_index += 1
-    elif token[token_index] in [",", ";"]:
-        exp = "[]"
-
-    print(f"exp {exp}")
-    return [token_index, exp]
-"""
 def declareMulArray(token_index):
     iden = lexeme[token_index + 1]
     token_index += 2
@@ -301,7 +225,8 @@ class DynamicArray:
                         else:
                             new_row.append(val)
                     self.data.append(new_row)
-    
+    def __len__(self):
+        return len(self.data)
     def __getitem__(self, index):
         if isinstance(index, tuple):  # Handle comma syntax (1,2)
             row, col = index
@@ -342,6 +267,7 @@ class DynamicArray:
         return str(self.data)
 """
     indent = 0
+    linelevel = 0
     exec_code = []
     #locals_dict = {'console': console}
     symbol_table = {}
@@ -359,23 +285,51 @@ class DynamicArray:
     unary_statement = {}
     unary_dict = {}
     unary_dict = {}
-    
+    declared_globals_in_functions = {} 
+    current_function_scope = None
+    isDoWhile = False
     def current_scope():
+        print(f"Current Scope: {scope_stack[-1] if scope_stack else "global"}")
         return scope_stack[-1] if scope_stack else "global"
     
     def enter_scope(scope_type):
+        nonlocal current_function_scope, declared_globals_in_functions
+        print(f"Enter Scope: {scope_type}:{len(scope_stack)}")
         scope_stack.append(f"{scope_type}:{len(scope_stack)}")
+        if scope_type:
+            current_function_scope = scope_stack[-1]
+            declared_globals_in_functions[current_function_scope] = set()
     
     def exit_scope():
-        if len(scope_stack) > 1:  # Don't pop global scope
-            scope_stack.pop()
-    # Dynamically populate the unary_statement and unary_indent one by one
+        nonlocal current_function_scope
+        print(f"Exit Scope: {current_function_scope}/{scope_stack[-1]}/{len(scope_stack)}")
+        if len(scope_stack) > 1:  
+            popped_scope = scope_stack.pop()
+            if popped_scope:
+                current_function_scope = scope_stack[-1] if len(scope_stack) > 1 else None
+    def emit_global(var_name, indent):
+        nonlocal current_function_scope, declared_globals_in_functions
+        
+        if current_function_scope is None:
+            return ""  
+        
+        var_info = symbol_table.get(var_name, {})
+        is_global_var = var_info.get("scope", "") == "global"
+        
+        if not is_global_var:
+            return "" 
+        
+        if var_name in declared_globals_in_functions.get(current_function_scope, set()):
+            return ""  
+        
+        declared_globals_in_functions[current_function_scope].add(var_name)
+        
+        return f"global {var_name}\n{indent_level(indent)}"
     def add_statement(stmt, indent):
         if indent not in unary_dict:
             unary_dict[indent] = []
         unary_dict[indent].append(stmt)
 
-    # Function to get all unary statements for a specific unary_indent, one by one
     def get_statements_by_indent(indent_value):
         return unary_dict.get(indent_value, [])
 
@@ -411,11 +365,12 @@ class DynamicArray:
             if prev == ")" or prev == "main":
                 if getNextToken(current_token_index) == "}":
                     trans_code += "\n" + indent_level(indent+1) +"pass\n" + indent_level(indent)
-                    enter_scope(f"block:{indent+1}")
+                    enter_scope(f"block:{linelevel+1}")
                 else:
                     indent += 1
                     trans_code += "\n" + indent_level(indent)
-                    enter_scope(f"block:{indent}")
+                    enter_scope(f"block:{linelevel}")
+                linelevel += 1
         
         elif curr == "}":
             print(f"THIS IS FUUKING RUNNING {prev}/{isSwitchStatement}")
@@ -436,77 +391,152 @@ class DynamicArray:
             trans_code += "\n" + indent_level(indent)
         #Looping Body
         elif curr == "while":
-            trans_code += "while "
-            exp = ""
-            output_val = ""
-            current_token_index += 2
-            curr = token[current_token_index]
-
-            while curr != ")":
-                print(f"---{curr}")
-                if curr == "&":
-                    pass
-                elif curr == "str_lit":
-                    output_val += lexeme[current_token_index].strip('"')
-                elif curr in ["true", "false"]:
-                    trans_code += lexeme[current_token_index].capitalize()
-                elif curr in ["&&", "||", "!"]:
-                    trans_code += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
-                else:
-                    if curr.startswith("id"):
-                        id_name = lexeme[current_token_index]
-                        prev_type = symbol_table.get(id_name, {}).get("type", None)
-                        if prev_type in ["str", "chr"]:
-                            exp += f"\"{{{lexeme[current_token_index]}}}\""
-                        else:
-                            exp += f"{{{lexeme[current_token_index]}}}"
-                    else:                    
-                        parens = 0  
-                        while True:
-                            if curr == "(":
-                                parens += 1
-                            elif curr == ")":
-                                if parens == 0:
-                                    break  
-                                parens -= 1
-
-                            if curr == "int_lit" and not isDec:
-                                isInt = True
-                            elif curr == "dec_lit":
-                                isInt = False
-                                isDec = True
-                            if curr in ["int_lit", "dec_lit"]:
-                                exp += checkNumLit(current_token_index)
-                            elif curr == "chr_lit":
-                                exp += lexeme[current_token_index].replace("'", '"')
-                            elif curr.startswith("id"):
-                                id_name = lexeme[current_token_index]
-                                prev_type = symbol_table.get(id_name, {}).get("type", None)
-                                if prev_type in ["str", "chr"]:
-                                    exp += f"\"{{{lexeme[current_token_index]}}}\""
-                                else:
-                                    exp += f"{{{lexeme[current_token_index]}}}"
+            #do while
+            if isDoWhile:
+                isDoWhile = False
+                trans_code += "\n"+indent_level(indent+1)+"if "
+                exp = ""
+                output_val = ""
+                current_token_index += 2
+                curr = token[current_token_index]
+                while curr != ")":
+                    print(f"---{curr}")
+                    if curr == "&":
+                        pass
+                    elif curr == "str_lit":
+                        output_val += lexeme[current_token_index].strip('"')
+                    elif curr in ["true", "false"]:
+                        trans_code += lexeme[current_token_index].capitalize()
+                    elif curr in ["&&", "||", "!"]:
+                        trans_code += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
+                    else:
+                        if curr.startswith("id"):
+                            id_name = lexeme[current_token_index]
+                            prev_type = symbol_table.get(id_name, {}).get("type", None)
+                            if prev_type in ["str", "chr"]:
+                                exp += f"\"{{{lexeme[current_token_index]}}}\""
                             else:
-                                exp += lexeme[current_token_index]
+                                exp += f"{{{lexeme[current_token_index]}}}"
+                            if getNextToken(current_token_index) == ")":
+                                trans_code += f"{id_name}"
+                        else:                    
+                            parens = 0  
+                            while True:
+                                if curr == "(":
+                                    parens += 1
+                                elif curr == ")":
+                                    if parens == 0:
+                                        break  
+                                    parens -= 1
 
-                            if current_token_index + 1 < len(token):
-                                next_token = token[current_token_index + 1]
-                                if next_token == ")" and parens == 0:
-                                    break  
-                                if next_token == "&":
-                                    break  
+                                if curr == "int_lit" and not isDec:
+                                    isInt = True
+                                elif curr == "dec_lit":
+                                    isInt = False
+                                    isDec = True
+                                if curr in ["int_lit", "dec_lit"]:
+                                    exp += checkNumLit(current_token_index)
+                                elif curr == "chr_lit":
+                                    exp += lexeme[current_token_index].replace("'", '"')
+                                elif curr.startswith("id"):
+                                    id_name = lexeme[current_token_index]
+                                    prev_type = symbol_table.get(id_name, {}).get("type", None)
+                                    if prev_type in ["str", "chr"]:
+                                        exp += f"\"{{{lexeme[current_token_index]}}}\""
+                                    else:
+                                        exp += f"{{{lexeme[current_token_index]}}}"
+                                else:
+                                    exp += lexeme[current_token_index]
 
-                            current_token_index += 1
-                            curr = token[current_token_index]
-                        exp = f"eval(f'{exp}')"
-                        output_val += f"{exp}"  
+                                if current_token_index + 1 < len(token):
+                                    next_token = token[current_token_index + 1]
+                                    if next_token == ")" and parens == 0:
+                                        break  
+                                    if next_token == "&":
+                                        break  
 
-                current_token_index += 1
+                                current_token_index += 1
+                                curr = token[current_token_index]
+                            exp = f"eval(f'{exp}')"
+                            output_val += f"{exp}"  
+
+                    current_token_index += 1
+                    curr = token[current_token_index]
+                output_val += ":"
+                exec_code.append(output_val)
+                trans_code += output_val+  "break"
+            else:
+                trans_code += "while "
+                exp = ""
+                output_val = ""
+                current_token_index += 2
                 curr = token[current_token_index]
 
-            output_val += ":"
-            exec_code.append(output_val)
-            trans_code += output_val
+                while curr != ")":
+                    print(f"---{curr}")
+                    if curr == "&":
+                        pass
+                    elif curr == "str_lit":
+                        output_val += lexeme[current_token_index].strip('"')
+                    elif curr in ["true", "false"]:
+                        trans_code += lexeme[current_token_index].capitalize()
+                    elif curr in ["&&", "||", "!"]:
+                        trans_code += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
+                    else:
+                        if curr.startswith("id"):
+                            id_name = lexeme[current_token_index]
+                            prev_type = symbol_table.get(id_name, {}).get("type", None)
+                            if prev_type in ["str", "chr"]:
+                                exp += f"\"{{{lexeme[current_token_index]}}}\""
+                            else:
+                                exp += f"{{{lexeme[current_token_index]}}}"
+                        else:                    
+                            parens = 0  
+                            while True:
+                                if curr == "(":
+                                    parens += 1
+                                elif curr == ")":
+                                    if parens == 0:
+                                        break  
+                                    parens -= 1
+
+                                if curr == "int_lit" and not isDec:
+                                    isInt = True
+                                elif curr == "dec_lit":
+                                    isInt = False
+                                    isDec = True
+                                if curr in ["int_lit", "dec_lit"]:
+                                    exp += checkNumLit(current_token_index)
+                                elif curr == "chr_lit":
+                                    exp += lexeme[current_token_index].replace("'", '"')
+                                elif curr.startswith("id"):
+                                    id_name = lexeme[current_token_index]
+                                    prev_type = symbol_table.get(id_name, {}).get("type", None)
+                                    if prev_type in ["str", "chr"]:
+                                        exp += f"\"{{{lexeme[current_token_index]}}}\""
+                                    else:
+                                        exp += f"{{{lexeme[current_token_index]}}}"
+                                else:
+                                    exp += lexeme[current_token_index]
+
+                                if current_token_index + 1 < len(token):
+                                    next_token = token[current_token_index + 1]
+                                    if next_token == ")" and parens == 0:
+                                        break  
+                                    if next_token == "&":
+                                        break  
+
+                                current_token_index += 1
+                                curr = token[current_token_index]
+                            exp = f"eval(f'{exp}')"
+                            output_val += f"{exp}"  
+
+                    current_token_index += 1
+                    curr = token[current_token_index]
+
+                output_val += ":"
+                exec_code.append(output_val)
+                trans_code += output_val
         elif curr == "for":
             #initialization
             current_token_index += 2
@@ -592,7 +622,8 @@ class DynamicArray:
             current_token_index += 1
             curr = token[current_token_index]
         elif curr == "foreach":
-            trans_code += f"for "
+            trans_code += "\n" + indent_level(indent) + f"__index25 = 0"
+            trans_code += "\n" + indent_level(indent) + f"for "
             current_token_index += 3
             curr = token[current_token_index]
             foriden = lexeme[current_token_index]
@@ -602,7 +633,18 @@ class DynamicArray:
             trans_code += f"{foriden}:"
             current_token_index += 1
             curr = token[current_token_index]
-        
+            
+            trans_code += "\n" + indent_level(indent+1) + f"if eval('len({foriden}) < __index25+1'):"
+            trans_code += "\n" + indent_level(indent+2) + f"break"
+            trans_code += "\n" + indent_level(indent+1) + f"else:"
+            trans_code += "\n" + indent_level(indent+2) + f"__index25 += 1"
+            
+        elif curr == "do":
+            isDoWhile = True
+            current_token_index += 1
+            curr = token[current_token_index]
+            indent +=1
+            trans_code += "while True:" + "\n" + indent_level(indent)
         #Conditional Body
         elif curr == "if":
             trans_code += f"if "
@@ -766,6 +808,7 @@ class DynamicArray:
 
             while True:
                 iden = lexeme[current_token_index + 1]
+                print(f"DECLARATION OF {iden}")
                 symbol_table[iden] = {
                     "type": var_type,
                     "scope": current_scope(),
@@ -799,7 +842,35 @@ class DynamicArray:
                             if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
                                 if(var_type == "dec"):
                                     var_type = "float"
-                                exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                                if getNextToken(current_token_index) == "[":
+                                    exp_parts.append(f"{var_type}({lexeme[current_token_index]}[")
+                                    current_token_index += 2
+                                    curr = token[current_token_index]
+                                    while True:
+                                        if curr.startswith("id"):
+                                            if symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int"]:
+                                                exp_parts.append(f"{lexeme[current_token_index]}")
+                                            else:
+                                                console.insert(tk.END, f"Semantic Error: index should only be integer\n", "error")
+                                                errorflag[0] = True
+                                                return
+                                        elif curr in literals:
+                                            if curr == "int_lit":
+                                                exp_parts.append(f"{lexeme[current_token_index]}")
+                                            else:
+                                                console.insert(tk.END, "Semantic Error: index should only be integer\n", "error")
+                                                errorflag[0] = True
+                                                return
+                                        
+                                        elif curr == "]":
+                                            exp_parts.append(f"])")
+                                            break
+                                        else:
+                                            exp_parts.append(f"{curr}")
+                                        current_token_index += 1
+                                        curr = token[current_token_index]
+                                else:
+                                    exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
                                 if(var_type == "float"):
                                     var_type = "dec"
                             elif var_type in ["str", "chr"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["str", "chr"]:
@@ -835,8 +906,8 @@ class DynamicArray:
                                     convert_value = convert_value.strip("'")
                                     convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
                             conversion_store += f"{convert_value})')"
-                            if con_type in ["str", "chr"]:
-                                conversion_store += "+\""
+                            #if con_type in ["str", "chr"]:
+                            #    conversion_store += "+\""
                             current_token_index += 1
                             curr = token[current_token_index]
                             exp_parts.append(conversion_store)
@@ -923,25 +994,10 @@ class DynamicArray:
             exp = ""
             output_val = ""
             var_name = lexeme[current_token_index] 
-            var_info = symbol_table.get(var_name, {})
-            # Check variable scope
-            current_scope1 = scope_stack[-1] if scope_stack else "global"
-            var_info = symbol_table.get(var_name, {})
-            
-            # Determine if we need to declare as global
-            global_declaration = ""
-            if var_info:  # If variable exists in symbol table
-                if var_info.get("scope") == "global" and current_scope1 != "global":
-                    # Only add global if we're in a function scope (not block scope)
-                    if current_scope1.startswith("function:"):
-                        # Check if it's being modified (assignment) not just accessed
-                        if token[current_token_index + 1] in assignment_operator:
-                            global_declaration = f"global {var_name}\n{indent_level(indent)}"
-            elif current_scope1 != "global":
-                global_declaration = f"global {var_name}\n{indent_level(indent)}"
 
-            if global_declaration:
-                trans_code += global_declaration
+            global_decl = emit_global(var_name, indent)
+            if global_decl:
+                trans_code += global_decl
                 
             if token[current_token_index+1] == "(":
                 print("function call ID")
@@ -1019,6 +1075,11 @@ class DynamicArray:
                         elif token[current_token_index] in ["true", "false"]:
                             index_expr += lexeme[current_token_index].capitalize()
                         else:
+                            if token[current_token_index].startswith("id"):
+                                index_name = lexeme[current_token_index]
+                                global_decl = emit_global(index_name, indent)
+                                if global_decl:
+                                    trans_code += global_decl
                             index_expr += lexeme[current_token_index]
                         current_token_index += 1
                     
@@ -1156,8 +1217,8 @@ class DynamicArray:
                                 convert_value = convert_value.strip("'")
                                 convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
                         conversion_store += f"{convert_value})')"
-                        if con_type in ["str", "chr"]:
-                            conversion_store += "+\""
+                        #if con_type in ["str", "chr"]:
+                        #    conversion_store += "+\""
                         current_token_index += 1
                         curr = token[current_token_index]
                         exp_parts.append(conversion_store)
@@ -1205,7 +1266,6 @@ class DynamicArray:
                 #exec_code.append(f"{assign}{exp.strip()}")
                 #trans_code += f"{assign}{exp.strip()}" + "\n" + indent_level(indent)
                 #print(f"assign {assign}{exp.strip()}")
-        
         #Output Statement
         elif curr == "disp":
             exp = ""
@@ -1271,8 +1331,7 @@ class DynamicArray:
             global var_nameList
             var_nameList.append(variable_insp)
             trans_code += f"{variable_insp} = console_insp('{variable_insp}')\n" + indent_level(indent)
-        
-        
+         
         #Other Statement
         elif curr == "ret":
             trans_code += "return "
@@ -1293,7 +1352,7 @@ class DynamicArray:
         elif curr == "brk":
             if isSwitchStatement:
                 console.insert(tk.END, "\nSemantic Error: Break not allowed inside switch statement\n", "error")
-                errorflag[0] = True  # Assuming you have an error flag
+                errorflag[0] = True  
                 return
             trans_code += "break"
             current_token_index += 1
