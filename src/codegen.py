@@ -13,28 +13,6 @@ from tkinter import simpledialog
 var_nameList = []
 scope_stack = ["global"]
 
-def get_input_from_tkinter():
-    # Create a hidden Tkinter root window
-    global var_nameList
-    input_name = var_nameList.pop(0)
-    root = tk.Tk()
-    root.withdraw()  # Hide the root window
-    
-    # Ask for input using a simple dialog box
-    user_input = simpledialog.askstring("", f"Please enter a {input_name}:")
-    root.attributes('-topmost', 1)  # This ensures the window is always on top
-    
-    root.destroy()  # Destroy the root window after input is given
-    if user_input is None:
-        return None  # Cancel was clicked
-
-    try:
-        if '.' in user_input:
-            return float(user_input)  # Convert to float
-        return int(user_input)  # Convert to int
-    except ValueError:
-        # If it's not a number, return it as a string with double quotes
-        return f'"{user_input}"'
 def checkNumLit(token_index):
     lit = lexeme[token_index]
     if lit.startswith("~"):
@@ -47,11 +25,9 @@ def declareArray(token_index):
         var_type = token[token_index]
         token_index += 1
         
-        # Check for array dimensions
-        dims = 1  # Default to 1D array
+        dims = 1  
         if token[token_index] == "[":
             token_index += 1
-            # Check if it's a 2D array (has comma)
             if token_index < len(token) and token[token_index] == ",":
                 dims = 2
                 token_index += 2  # Skip past ,]
@@ -373,7 +349,6 @@ class DynamicArray:
                 linelevel += 1
         
         elif curr == "}":
-            print(f"THIS IS FUUKING RUNNING {prev}/{isSwitchStatement}")
             if prev == ";" or prev == "}":
                 statements = get_statements_by_indent(indent)
                 if statements:
@@ -712,11 +687,9 @@ class DynamicArray:
                 var_name = lexeme[current_token_index]
                 op = token[current_token_index + 1]
                 if op == "++":
-                    #trans_code += f"{var_name}\n" + indent_level(indent)
                     trans_code += f"{var_name} += 1\n" + indent_level(indent)
                 else:
                     exec_code.append(f"{var_name} -= 1")
-                    #trans_code += f"{var_name}\n" + indent_level(indent)
                     trans_code += f"{var_name} -= 1\n" + indent_level(indent)
                 current_token_index += 1
                 curr = token[current_token_index]  
@@ -898,10 +871,6 @@ class DynamicArray:
                                         convert_value = ""
                                     else:
                                         convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
-                                    #convert_value = ', '.join(str(ord(char)) for char in convert_value)
-                                    #conversion_store = f"eval(("
-                                    #convert_value = f"eval(\'\\\',\\\'.join([str(ord(char)) for char in \"{convert_value}\"])\')"
-                                    #convert_value = f"eval(str(ord(char) for char in \"{convert_value}\"))"
                                 elif curr == "chr_lit":
                                     convert_value = convert_value.strip("'")
                                     convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
@@ -925,7 +894,7 @@ class DynamicArray:
                     exp_parts = []
                     if isString:
                         exp += '"'
-                    # Handle explicit type conversion based on requirements
+                    # type conversion based on requirements
                     if var_type == "int":
                         if exp.strip().isdigit():
                             trans_code += f"{iden} = int({exp.strip()})\n{indent_level(indent)}{iden} = int({iden})\n{indent_level(indent)}"
@@ -1060,18 +1029,16 @@ class DynamicArray:
                 current_token_index += 1
                 curr = lexeme[current_token_index]
                 if token[current_token_index] == "[":
-                    # Build the array access expression
                     array_access = var_name
                     current_token_index += 1
                     
-                    # Get the index expression(s)
                     index_expr = ""
-                    dims = 1  # Track dimensions
+                    dims = 1  
                     
                     while token[current_token_index] != "]":
                         if token[current_token_index] == ",":
                             dims += 1
-                            index_expr += ","  # Keep comma for 2D access
+                            index_expr += ","  
                         elif token[current_token_index] in ["true", "false"]:
                             index_expr += lexeme[current_token_index].capitalize()
                         else:
@@ -1083,13 +1050,12 @@ class DynamicArray:
                             index_expr += lexeme[current_token_index]
                         current_token_index += 1
                     
-                    # Format based on dimensions
                     if dims == 1:
                         array_access += f"[{index_expr}]"
-                    else:  # 2D array
-                        array_access += f"[{index_expr}]"  # arr[1,2] format
+                    else:  
+                        array_access += f"[{index_expr}]"  
                     
-                    current_token_index += 1  # Skip past ]
+                    current_token_index += 1  
                     
                     # Handle assignment operator
                     if current_token_index < len(token) and token[current_token_index] in assignment_operator:
@@ -1109,7 +1075,7 @@ class DynamicArray:
                         if assign_op == "=":
                             assignment_code = f"{array_access} = {rhs}"
                         else:  # Handle +=, -=, etc.
-                            op = assign_op[0]  # Get the operator
+                            op = assign_op[0]  
                             assignment_code = f"{array_access} = {array_access} {op} {rhs}"
                         
                         exec_code.append(assignment_code)
@@ -1177,6 +1143,7 @@ class DynamicArray:
                                 current_token_index+=1
                                 curr = token[current_token_index]
                             curr_identifier += f"{arr_identifier}]"
+                        var_type = symbol_table.get(curr_identifier, {}).get("type", None)
                         if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
                             if var_type == "dec":
                                 var_type = "float"
@@ -1377,9 +1344,6 @@ class DynamicArray:
     print("===============================")
     
     try:
-        #console.insert(tk.END, "\n=== Program Output ===\n")
-        # Execute the generated code in the current process so console_disp and console_insp work
-        # Custom function to handle input requests
         def handle_input(prompt=""):
             console.insert(tk.END, prompt)
             console.mark_set("input_start", tk.END)
@@ -1389,12 +1353,10 @@ class DynamicArray:
             input_var = tk.StringVar()
             input_done = threading.Event()
 
-            # Create Entry widget for input
             input_entry = tk.Entry(console, bg="#202020", fg="white", insertbackground="white", relief="flat", font=("Consolas", 12), textvariable=input_var)
             console.window_create("input_start", window=input_entry)
             input_entry.focus_set()
 
-            # Disable mouse clicks on console during input
             def block_mouse(event):
                 return "break"
 
@@ -1410,36 +1372,22 @@ class DynamicArray:
             user_input = input_var.get()
             user_input = user_input.replace("~", "-")
             processed_input = user_input.strip()
-            """
-            if processed_input.isdigit():  # Integer
-                processed_input = int(processed_input)
-            else:
-                try:
-                    processed_input = float(processed_input)  # Float
-                except ValueError:
-                    lowered = processed_input.lower()
-                    if lowered == "true" or lowered == "false":
-                        processed_input = lowered.capitalize()
-                    else:
-                        processed_input = f'{processed_input}'
-            """
+
             input_entry.destroy()
-            # Re-enable mouse clicks after input
             console.unbind("<Button-1>")
 
             user_input = user_input.replace("-", "~")
             console.insert(tk.END, user_input + "\n")
             return processed_input
-
             
-        # Inject console_disp and console_insp into the exec environment
         def console_disp(val):
             #val = str(val).lstrip()
             def replace_negative(match):
                 number = match.group(0)
                 return "~" + number[1:] 
 
-            val = re.sub(r'-\d+(\.\d+)?', replace_negative, val)
+            val = re.sub(r'(?<!\d)-\d+(\.\d+)?', replace_negative, val)
+
 
             console.insert(tk.END, val)
             console.see(tk.END)
