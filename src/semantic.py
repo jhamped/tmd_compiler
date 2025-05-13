@@ -232,7 +232,11 @@ class Semantic:
                 self.datatype_value = datatype_value
                 self.type_value = ""
                 self.add_symbol_table()
-                
+            elif lookahead == "(" and self.getState("next", "token", self.current_token_index+1) ==")":
+                self.current_token_index+=1
+                lookahead = token[self.current_token_index]
+                parameter_id = ""
+                continue
             elif lookahead == ")":
                 print(parameter_id)
                 self.update_param_symbol(segment_id, datatype_value, parameter_id)
@@ -1176,7 +1180,7 @@ class Semantic:
             type_literal = self.getLiteralTypeconversion(datatype)
             literal = self.getLiterals(type_literal)
             valid_types = valid_conversion.get(type_conversion_type, [])
-            if type_conversion_value not in valid_types:
+            if type_literal not in valid_types:
                 self.error_message(f"Type Mismatch: {literal} cannot be converted to {type_conversion_type}. Expected literals: {valid_types}")
                 return
         else:
@@ -1536,6 +1540,7 @@ class Semantic:
             return "false"
     def check_function_arguments(self, segment_id, actual_arg_types):
         print(actual_arg_types)
+        
         for entry in self.parameterList:
             if entry['Segment ID'] == segment_id:
                 if len(actual_arg_types) != entry['total_args']:
@@ -1609,16 +1614,26 @@ class Semantic:
         # Check if an entry with the same Segment ID exists
         for entry in self.parameterList:
             if entry["Segment ID"] == segment_id:
-                entry["args"].append(new_arg)
-                entry["total_args"] = len(entry["args"])
+                if new_arg["ID"] == "":
+                    entry["total_args"] = 0
+                else:
+                    entry["args"].append(new_arg)
+                    entry["total_args"] = len(entry["args"])
                 break
         else:
             # If no existing entry, create a new one
-            self.argsData = {
-                "Segment ID": segment_id,
-                "args": [new_arg],
-                "total_args": 1,
-            }
+            if new_arg["ID"] == "":
+                self.argsData = {
+                    "Segment ID": segment_id,
+                    "args": [],
+                    "total_args": 0,
+                }
+            else:
+                self.argsData = {
+                    "Segment ID": segment_id,
+                    "args": [new_arg],
+                    "total_args": 1,
+                }
             self.parameterList.append(self.argsData)
         
         self.type_value = "parameter"
