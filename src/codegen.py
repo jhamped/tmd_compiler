@@ -533,6 +533,7 @@ class DynamicArray:
             temp = ""
             current_token_index += 1
             curr = token[current_token_index]
+            #Condition
             while curr != ";":
                 if curr in ["true", "false"]:
                     temp += lexeme[current_token_index].capitalize()
@@ -546,7 +547,7 @@ class DynamicArray:
             indent += 1
             trans_code += f"while {temp}: \n" + indent_level(indent)
             
-            
+            #iteration
             temp = ""
             current_token_index += 1
             curr = token[current_token_index]

@@ -131,7 +131,7 @@ class Semantic:
             return
         self.lookahead = lookahead
         print(f"lookahead: {lookahead}")
-        #Scope handling
+        #Scope handling array 
         if lookahead == "{" and self.top != "<identifier_declaration>":
             self.level_value +=1
         elif lookahead in codeblocks:
@@ -1578,6 +1578,7 @@ class Semantic:
                 if symbol["identifier"] == variable_id and symbol["level"]["parent"] == current_scope:
                     return True  # Variable is already declared parent node
             # Traverse parent scope
+            #
             for symbol in self.symbol_table:
                 if symbol["identifier"] == current_scope:
                     current_scope = symbol["level"]["parent"]

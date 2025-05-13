@@ -75,7 +75,7 @@ key_delims = key1_delims | key2_delims | key3_delims
 
 
 #-------------------------------------Parsing Table-----------------------------------------
-
+ 
 parsing_table = {
     "<program>": {},
     "<global_dec>": {},
