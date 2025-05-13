@@ -176,8 +176,12 @@ class Semantic:
             self.checkIfIDNotDeclared(identifier)
         elif lookahead == "disp":
             self.checkDisp()
-        elif lookahead in ["if", "elif", "while", "switch"]:
+        elif lookahead in ["if", "elif", "while"]:
             self.handle_condition_statement()
+        elif lookahead == "switch":
+            self.current_token_index +=2
+            lookahead = token[self.current_token_index]
+            self.checkIfIDNotDeclared(lexeme[self.current_token_index])
         #Literal checker
         if lookahead in arithmetic_operator:
             self.checkOperand()
@@ -1043,7 +1047,7 @@ class Semantic:
             print(f"CONDITION VALUE: {lookahead}/{condition_valid}")
             if errorflag[0] == True:
                 return
-            if lookahead == ";" or lookahead == ",":
+            if param == 0:
                 if not condition_valid:
                     self.error_message(f"Expressions used in conditional statements must result in a boolean value.")
                     return

@@ -671,6 +671,7 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
+        parse(self.console)
         semantic(self.console)
     def run_click(self, event):
         errorflag[0] = False
@@ -683,6 +684,7 @@ class TMDCompiler:
         self.console.delete("1.0", tk.END)
         code = self.textFrame.get("1.0", "end")
         lexer(code, self.console, self.table)
+        parse(self.console)
         semantic(self.console)
 
         import threading
