@@ -1075,6 +1075,7 @@ class Semantic:
             lookahead = token[self.current_token_index]
     
     def handle_condition_statement(self):
+        print("CONDITION STATEMENT")
         self.current_token_index += 2
         lookahead = token[self.current_token_index]
         param = 1
@@ -1100,9 +1101,9 @@ class Semantic:
                 identifier = lexeme[self.current_token_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype == "bln":
+                if datatype in ["int", "bln", "dec"]:
                     condition_valid = True
-            elif lookahead in ["true", "false"]:
+            elif lookahead in ["true", "false", "int_lit"]:
                 condition_valid = True
             elif lookahead in booleanValue:
                 condition_valid = True
@@ -1291,9 +1292,9 @@ class Semantic:
                 identifier = lexeme[self.current_token_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype == "bln":
+                if datatype in ["int", "bln", "dec"]:
                     condition_valid = True
-            elif lookahead in ["true", "false"]:
+            elif lookahead in ["true", "false", "int_lit"]:
                 condition_valid = True
             elif lookahead in booleanValue:
                 condition_valid = True
@@ -1333,9 +1334,9 @@ class Semantic:
                 identifier = lexeme[self.current_token_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype == "bln":
+                if datatype in ["int", "bln", "dec"]:
                     condition_valid = True
-            elif lookahead in ["true", "false"]:
+            elif lookahead in ["true", "false", "int_lit"]:
                 condition_valid = True
             elif lookahead in booleanValue:
                 condition_valid = True
