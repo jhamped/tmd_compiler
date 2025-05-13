@@ -340,6 +340,10 @@ class Semantic:
                                 paren += 1
                             elif lookahead == ")":
                                 paren -= 1
+                            elif lookahead in semantic_datatype:
+                                args_type.append(lookahead)
+                                self.current_token_index+=3
+                                lookahead = token[self.current_token_index]
                             elif lookahead.startswith("id"):
                                 self.checkIDType(lexeme[self.current_token_index])
                                 args_id = lexeme[self.current_token_index]
@@ -422,6 +426,10 @@ class Semantic:
                     paren += 1
                 elif lookahead == ")":
                     paren -= 1
+                elif lookahead in semantic_datatype:
+                    args_type.append(lookahead)
+                    self.current_token_index+=3
+                    lookahead = token[self.current_token_index]
                 elif lookahead.startswith("id"):
                     self.checkIDType(lexeme[self.current_token_index])
                     args_id = lexeme[self.current_token_index]
@@ -502,6 +510,10 @@ class Semantic:
                                 paren += 1
                             elif lookahead == ")":
                                 paren -= 1
+                            elif lookahead in semantic_datatype:
+                                args_type.append(lookahead)
+                                self.current_token_index+=3
+                                lookahead = token[self.current_token_index]
                             elif lookahead.startswith("id"):
                                 self.checkIDType(lexeme[self.current_token_index])
                                 args_id = lexeme[self.current_token_index]
@@ -595,6 +607,10 @@ class Semantic:
                                 paren += 1
                             elif lookahead == ")":
                                 paren -= 1
+                            elif lookahead in semantic_datatype:
+                                args_type.append(lookahead)
+                                self.current_token_index+=3
+                                lookahead = token[self.current_token_index]
                             elif lookahead.startswith("id"):
                                 args_id = lexeme[self.current_token_index]
                                 datatype_arguments = self.getDatatype(args_id)
@@ -701,6 +717,10 @@ class Semantic:
                                 paren += 1
                             elif lookahead == ")":
                                 paren -= 1
+                            elif lookahead in semantic_datatype:
+                                args_type.append(lookahead)
+                                self.current_token_index+=3
+                                lookahead = token[self.current_token_index]
                             elif lookahead.startswith("id"):
                                 self.checkIDType(lexeme[self.current_token_index])
                                 args_id = lexeme[self.current_token_index]
@@ -813,6 +833,10 @@ class Semantic:
                                     paren += 1
                                 elif lookahead == ")":
                                     paren -= 1
+                                elif lookahead in semantic_datatype:
+                                    args_type.append(lookahead)
+                                    self.current_token_index+=3
+                                    lookahead = token[self.current_token_index]
                                 elif lookahead.startswith("id"):
                                     self.checkIDType(lexeme[self.current_token_index])
                                     args_id = lexeme[self.current_token_index]
@@ -878,6 +902,10 @@ class Semantic:
                                 paren += 1
                             elif lookahead == ")":
                                 paren -= 1
+                            elif lookahead in semantic_datatype:
+                                args_type.append(lookahead)
+                                self.current_token_index+=3
+                                lookahead = token[self.current_token_index]
                             elif lookahead.startswith("id"):
                                 self.checkIDType(lexeme[self.current_token_index])
                                 args_id = lexeme[self.current_token_index]
@@ -946,6 +974,10 @@ class Semantic:
                                     paren += 1
                                 elif lookahead == ")":
                                     paren -= 1
+                                elif lookahead in semantic_datatype:
+                                    args_type.append(lookahead)
+                                    self.current_token_index+=3
+                                    lookahead = token[self.current_token_index]
                                 elif lookahead.startswith("id"):
                                     self.checkIDType(lexeme[self.current_token_index])
                                     args_id = lexeme[self.current_token_index]
