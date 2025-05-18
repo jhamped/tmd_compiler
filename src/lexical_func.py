@@ -60,7 +60,7 @@ class Lexical:
         self.console.insert(tk.END, "Lexical Error: ", "error")
         self.console.insert(tk.END, f"{error}")
         if expectedError:
-            self.console.insert(tk.END, f"  Expected: {expected}", "expected")
+            self.console.insert(tk.END, f"  Delimeter: {expected}", "expected")
         self.console.insert(tk.END, f"\n       line {self.line}, column {self.col}\n", "ln_col")
         errorflag[0] = True
 class GetLitAndIden: 
@@ -162,7 +162,7 @@ class GetLitAndIden:
         if curr in digit:
             self.modify.append_state(curr, 250, 251)
             self.lex.key += curr
-            self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 251, 252, "num", False)
+            self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 251, 252, "num", True)
             if self.lex.peek_next() == '.' and self.lex.isDec == False:
                 self.check.check_dec(251, 271)
             elif self.lex.peek_next() in digit:
@@ -238,7 +238,7 @@ class GetLitAndIden:
         if curr in digit:
             decimal += curr
             self.modify.append_state(curr, self.lex.stateNum, self.lex.stateNum+1)
-            self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", self.lex.stateNum+1, self.lex.stateNum+2, "num", False)
+            self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", self.lex.stateNum+1, self.lex.stateNum+2, "num", True)
             if self.lex.peek_next() in digit:
                 decimal += self.lex.peek_next()
                 self.check.check_num(self.lex.stateNum+1, self.lex.stateNum+3, self.lex.stateNum+4)
@@ -289,7 +289,7 @@ class GetLitAndIden:
 
         self.lex.key = curr
         self.modify.append_state(curr, 0, 190)
-        self.check.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", 190, 191, "iden", False)
+        self.check.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", 190, 191, "iden", True)
         if self.lex.peek_next() in identifier: 
             self.check.check_id(190, 192, 193)
             if self.lex.peek_next() in identifier: 
@@ -793,7 +793,6 @@ class Checkers:
         esc = ''
         invalid = ''
         word = ''
-
         if not requiredSpace:
             self.lex.skip_whitespace()
 
