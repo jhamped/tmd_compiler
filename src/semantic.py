@@ -259,7 +259,10 @@ class Semantic:
                 self.current_token_index +=2
             else:
                 self.dimension_value = 1
-                self.type_value = "array"
+                if self.type_value == "const":
+                    self.type_value = "const-array"
+                else:
+                    self.type_value = "array"
                 self.current_token_index +=1
             lookahead = token[self.current_token_index]
             param = 0
@@ -504,7 +507,7 @@ class Semantic:
                     if self.datatype_value not in ["dec", "int"]:
                         self.error_message(f"Compound Assignment is only allowed for number identifier")
                         return
-                    elif lookahead == "=" and identifier_type == "const":
+                    elif lookahead == "=" and identifier_type.split("-")[0] == "const":
                         self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized once.")
                         return
                 elif lookahead.startswith("id"):
@@ -1503,15 +1506,18 @@ class Semantic:
     
     def checkIDType(self, id):
         identifier_type = self.getType(id)
-        next_token = self.getState("next", "token", self.current_token_index+1)
+        next_token = self.getState("next", "token", self.current_token_index + 1)
+        parts = identifier_type.split("-")
+
         if identifier_type == "segm":
             if next_token != "(":
                 self.error_message(f"Type mismatch. {id} is declared as a function.")
                 return
-        elif identifier_type == "array":
+        elif identifier_type == "array" or (len(parts) > 1 and parts[1] == "array"):
             if next_token != "[":
                 self.error_message(f"Type mismatch. {id} is declared as an array")
                 return
+
     
     def checkDisp(self):
         param = 1
