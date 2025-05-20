@@ -7,6 +7,7 @@ import tempfile
 import subprocess
 import os
 import threading
+import builtins
 index = 0
 code = ""
 from tkinter import simpledialog
@@ -376,11 +377,19 @@ class DynamicArray:
                     else:
                         if curr.startswith("id"):
                             id_name = lexeme[current_token_index]
+                            if id_name in dir(builtins) and id_name not in ["True", "False", "true", "false"]:
+                                id_name = f"_{id_name}"
                             prev_type = symbol_table.get(id_name, {}).get("type", None)
                             if prev_type in ["str", "chr"]:
                                 exp += f"\"{{{lexeme[current_token_index]}}}\""
                             else:
-                                exp += f"{{{lexeme[current_token_index]}}}"
+                                if lexeme[current_token_index].startswith("id"):
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    exp += f"{{{iden}}}"
+                                else:
+                                    exp += f"{{{lexeme[current_token_index]}}}"
                             if getNextToken(current_token_index) == ")":
                                 trans_code += f"{id_name}"
                         else:                    
@@ -515,7 +524,13 @@ class DynamicArray:
                 elif curr in ["&&", "||", "!"]:
                     temp += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
                 else:
-                    temp += lexeme[current_token_index]
+                    if lexeme[current_token_index].startswith("id"):
+                        iden = lexeme[current_token_index]
+                        if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                            iden = f"_{iden}"
+                        temp += iden
+                    else:
+                        temp += lexeme[current_token_index]
                 current_token_index += 1
                 curr = token[current_token_index]
             trans_code += f"{temp}\n" + indent_level(indent)
@@ -529,7 +544,13 @@ class DynamicArray:
                 elif curr in ["&&", "||", "!"]:
                     temp += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
                 else:
-                    temp += lexeme[current_token_index]
+                    if lexeme[current_token_index].startswith("id"):
+                        iden = lexeme[current_token_index]
+                        if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                            iden = f"_{iden}"
+                        temp += iden
+                    else:
+                        temp += lexeme[current_token_index]
                 current_token_index += 1
                 curr = token[current_token_index]
             
@@ -546,6 +567,8 @@ class DynamicArray:
                     unary = ""
                     if curr.startswith("id") and token[current_token_index + 1] in ["++", "--"]:
                         var_name = lexeme[current_token_index]
+                        if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false"]:
+                            var_name = f"_{var_name}"
                         op = token[current_token_index + 1]
                         if op == "++":
                             #temp += f"{var_name}\n" + indent_level(indent)
@@ -560,6 +583,8 @@ class DynamicArray:
                     elif curr in ["++", "--"] and token[current_token_index + 1].startswith("id"):
                         op = curr
                         var_name = lexeme[current_token_index + 1]
+                        if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false"]:
+                            var_name = f"_{var_name}"
                         if op == "++":
                             exec_code.append(f"{var_name} += 1")
                             unary += f"{var_name} += 1\n" + indent_level(indent)
@@ -592,9 +617,13 @@ class DynamicArray:
             current_token_index += 3
             curr = token[current_token_index]
             foriden = lexeme[current_token_index]
+            if for_iden in dir(builtins) and for_iden not in ["True", "False", "true", "false"]:
+                for_iden = f"_{for_iden}"
             trans_code += f"{foriden} in "
             current_token_index += 2
             foriden = lexeme[current_token_index]
+            if for_iden in dir(builtins) and for_iden not in ["True", "False", "true", "false"]:
+                for_iden = f"_{for_iden}"
             trans_code += f"{foriden}:"
             current_token_index += 1
             curr = token[current_token_index]
@@ -621,7 +650,13 @@ class DynamicArray:
                 elif curr in ["&&", "||", "!"]:
                     trans_code += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
                 else:
-                    trans_code += lexeme[current_token_index]
+                    if lexeme[current_token_index].startswith("id"):
+                        iden = lexeme[current_token_index]
+                        if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                            iden = f"_{iden}"
+                        trans_code += iden
+                    else:
+                        trans_code += lexeme[current_token_index]
                 current_token_index += 1
                 curr = token[current_token_index]
             trans_code += ":"
@@ -635,7 +670,13 @@ class DynamicArray:
                 elif curr in ["&&", "||", "!"]:
                     trans_code += {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
                 else:
-                    trans_code += lexeme[current_token_index]
+                    if lexeme[current_token_index].startswith("id"):
+                        iden = lexeme[current_token_index]
+                        if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                            iden = f"_{iden}"
+                        trans_code += iden
+                    else:
+                        trans_code += lexeme[current_token_index]
                 current_token_index += 1
                 curr = token[current_token_index]
             trans_code += ":"
@@ -654,12 +695,20 @@ class DynamicArray:
                 trans_code += f"{lexeme[current_token_index]}"
                 current_token_index += 1
                 curr = token[current_token_index]
+                if curr.startswith("id"):
+                    iden = lexeme[current_token_index]
+                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                        iden = f"_{iden}"
+                    curr = iden
             trans_code += f": "
         elif curr == "key":
             if token[current_token_index-1] == ";":
                 indent -= 1 
                 trans_code += "\n" + indent_level(indent)
-            trans_code += f"case {lexeme[current_token_index+1]}"
+            iden = lexeme[current_token_index+1]
+            if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                iden = f"_{iden}"
+            trans_code += f"case {iden}"
             current_token_index += 1
             curr = token[current_token_index]
         elif curr == ":":
@@ -675,6 +724,8 @@ class DynamicArray:
             # Case 1: x++
             if curr.startswith("id") and token[current_token_index + 1] in ["++", "--"]:
                 var_name = lexeme[current_token_index]
+                if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false"]:
+                    var_name = f"_{var_name}"
                 op = token[current_token_index + 1]
                 if op == "++":
                     trans_code += f"{var_name} += 1\n" + indent_level(indent)
@@ -688,6 +739,8 @@ class DynamicArray:
             elif curr in ["++", "--"] and token[current_token_index + 1].startswith("id"):
                 op = curr
                 var_name = lexeme[current_token_index + 1]
+                if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false"]:
+                    var_name = f"_{var_name}"
                 if op == "++":
                     exec_code.append(f"{var_name} += 1")
                     trans_code += f"{var_name} += 1\n" + indent_level(indent)
@@ -704,13 +757,19 @@ class DynamicArray:
                 curr = token[current_token_index]
                 print(curr)
                 if curr.startswith("id") and token[current_token_index+1] == "(":
-                    trans_code += f"{lexeme[current_token_index]}("
+                    iden = lexeme[current_token_index]
+                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                        iden = f"_{iden}"
+                    trans_code += f"{iden}("
                 elif curr.startswith("id"):
+                    iden = lexeme[current_token_index]
+                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                        iden = f"_{iden}"
                     if tempdata != "":
-                        trans_code += f"{lexeme[current_token_index]}: {tempdata}"
+                        trans_code += f"{iden}: {tempdata}"
                         tempdata = ""
                     else:
-                        trans_code += f"{lexeme[current_token_index]}"
+                        trans_code += f"{iden}"
                 elif curr in datatype:
                     pass
                 elif curr == ",":
@@ -790,6 +849,8 @@ class DynamicArray:
 
             while True:
                 iden = lexeme[current_token_index + 1]
+                if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                    iden = f"_{iden}"
                 print(f"DECLARATION OF {iden}")
                 symbol_table[iden] = {
                     "type": var_type,
@@ -810,13 +871,15 @@ class DynamicArray:
                         elif curr == "str_lit":
                             if not isVar:
                                 exp_parts.append(lexeme[current_token_index][:-1])
+                                exp_parts.append('"')
                             else:
                                 exp_parts.append(lexeme[current_token_index])
                         elif curr == "chr_lit":
                             if not isVar:
                                 exp_parts.append(f"\"{lexeme[current_token_index][1:-1]}")
+                                exp_parts.append('"')
                             else:
-                                exp_parts.append(f"\"{lexeme[current_token_index][1:-1]}")
+                                exp_parts.append(f"\"{lexeme[current_token_index][1:-1]}\"")
                         elif curr in ["true", "false"]:
                             exp_parts.append(lexeme[current_token_index].capitalize())
                         elif curr.startswith("id"):
@@ -825,13 +888,19 @@ class DynamicArray:
                                 if(var_type == "dec"):
                                     var_type = "float"
                                 if getNextToken(current_token_index) == "[":
-                                    exp_parts.append(f"{var_type}({lexeme[current_token_index]}[")
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    exp_parts.append(f"{var_type}({iden}[")
                                     current_token_index += 2
                                     curr = token[current_token_index]
                                     while True:
                                         if curr.startswith("id"):
-                                            if symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int"]:
-                                                exp_parts.append(f"{lexeme[current_token_index]}")
+                                            iden = lexeme[current_token_index]
+                                            if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                                iden = f"_{iden}"
+                                            if symbol_table.get(iden, {}).get("type") in ["int"]:
+                                                exp_parts.append(f"{iden}")
                                             else:
                                                 console.insert(tk.END, f"Semantic Error: index should only be integer\n", "error")
                                                 errorflag[0] = True
@@ -852,25 +921,38 @@ class DynamicArray:
                                         current_token_index += 1
                                         curr = token[current_token_index]
                                 else:
-                                    exp_parts.append(f"{var_type}({lexeme[current_token_index]})")
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    exp_parts.append(f"{var_type}({iden})")
                                 if(var_type == "float"):
                                     var_type = "dec"
                             elif var_type in ["str", "chr"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["str", "chr"]:
                                 var_type = "str"
+                                iden = lexeme[current_token_index]
+                                if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                    iden = f"_{iden}"
+                                exp_parts.append(f"{var_type}({iden})")
                             else:
                                 exp_parts.append(lexeme[current_token_index])
                         elif curr in ["int", "str", "chr", "bln", "dec"]:
                             isConversion = True
+                            isChar = False
                             if curr == "bln":
                                 con_type = "bool"
                             elif curr == "dec":
                                 con_type = "float"
                             else:
-                                con_type = curr
+                                con_type = "str"
+                            if curr == "chr":
+                                isChar = True
+                            
                             conversion_store = f"eval('{con_type}("
                             current_token_index += 2
                             curr = token[current_token_index]
                             convert_value = lexeme[current_token_index]
+                            if convert_value in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                convert_value = f"_{convert_value}"
                             if convert_value in ["true", "false"]:
                                 convert_value = convert_value.capitalize()
                             elif con_type == "int":
@@ -883,7 +965,20 @@ class DynamicArray:
                                 elif curr == "chr_lit":
                                     convert_value = convert_value.strip("'")
                                     convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
+                                elif curr.startswith("id"):
+                                    convert_id = lexeme[current_token_index]
+                                    if convert_id in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        convert_id = f"_{convert_id}"
+                                    id_type = symbol_table.get(convert_id, {}).get("type", None)
+                                    if id_type == "str":
+                                        convert_value = f"eval(str(ord({convert_id})))"
+                                    elif id_type == "chr":
+                                        convert_value = f"eval(str(ord({convert_id})))"
+                            
                             conversion_store += f"{convert_value})')"
+                            if isChar:
+                                conversion_store += f"[0]"
+                                isChar = False
                             #if con_type in ["str", "chr"]:
                             #    conversion_store += "+\""
                             current_token_index += 1
@@ -904,8 +999,8 @@ class DynamicArray:
                     
                     exp = "".join(exp_parts)
                     exp_parts = []
-                    if isString:
-                        exp += '"'
+                    #if isString:
+                    #    exp += '"'
                     # type conversion based on requirements
                     if var_type == "int":
                         if exp.strip().isdigit():
@@ -961,10 +1056,10 @@ class DynamicArray:
                     exec_code.append(f"{iden} = {exp}")
                     print(exec_code)
                 
-                if isString:
-                    exp = 'f"'
-                else: 
-                    exp = ""
+                #if isString:
+                #    exp = 'f"'
+                #else: 
+                #    exp = ""
                 if curr == ";":
                     trans_code += "\n"+indent_level(indent)
                     break 
@@ -975,14 +1070,18 @@ class DynamicArray:
             exp = ""
             output_val = ""
             var_name = lexeme[current_token_index] 
-
+            if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false"]:
+                var_name = f"_{var_name}"
             global_decl = emit_global(var_name, indent)
             if global_decl:
                 trans_code += global_decl
                 
             if token[current_token_index+1] == "(":
                 print("function call ID")
-                trans_code += f"{lexeme[current_token_index]}("
+                iden = lexeme[current_token_index]
+                if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                    iden = f"_{iden}"
+                trans_code += f"{iden}("
                 current_token_index += 2
                 curr = token[current_token_index]
                 while curr != ")":
@@ -998,7 +1097,10 @@ class DynamicArray:
                         output_val += f" {trans_logic} "
                     else:
                         if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
-                            output_val += f"{lexeme[current_token_index]}"
+                            iden = lexeme[current_token_index]
+                            if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                iden = f"_{iden}"
+                            output_val += f"{iden}"
                         else:                    
                             parens = 0  
 
@@ -1018,7 +1120,10 @@ class DynamicArray:
                                 if curr in ["int_lit", "dec_lit"]:
                                     exp += checkNumLit(current_token_index)
                                 else:
-                                    exp += lexeme[current_token_index]
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    exp += iden
 
                                 if current_token_index + 1 < len(token):
                                     next_token = token[current_token_index + 1]
@@ -1040,7 +1145,10 @@ class DynamicArray:
                 trans_code += output_val
             if token[current_token_index + 1] in assignment_operator or token[current_token_index + 1] == "[":
                 print(f"pass id2 ")
-                assign = f"{lexeme[current_token_index]}"
+                iden = lexeme[current_token_index]
+                if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                    iden = f"_{iden}"
+                assign = f"{iden}"
                 current_token_index += 1
                 curr = lexeme[current_token_index]
                 if token[current_token_index] == "[":
@@ -1059,6 +1167,8 @@ class DynamicArray:
                         else:
                             if token[current_token_index].startswith("id"):
                                 index_name = lexeme[current_token_index]
+                                if index_name in dir(builtins) and index_name not in ["True", "False", "true", "false"]:
+                                    index_name = f"_{index_name}"
                                 global_decl = emit_global(index_name, indent)
                                 if global_decl:
                                     trans_code += global_decl
@@ -1083,7 +1193,14 @@ class DynamicArray:
                             if token[current_token_index] in ["true", "false"]:
                                 rhs += lexeme[current_token_index].capitalize()
                             else:
-                                rhs += lexeme[current_token_index]
+                                if lexeme[current_token_index].startswith("id"):
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    rhs += iden
+                                else:
+                                    rhs += lexeme[current_token_index]
+                                
                             current_token_index += 1
                         
                         # Generate assignment code
@@ -1105,7 +1222,13 @@ class DynamicArray:
                         # Get right-hand side expression
                         rhs = ""
                         while token[current_token_index] != ";":
-                            rhs += lexeme[current_token_index]
+                            if lexeme[current_token_index].startswith("id"):
+                                iden = lexeme[current_token_index]
+                                if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                    iden = f"_{iden}"
+                                rhs += iden
+                            else:
+                                rhs += lexeme[current_token_index]
                             current_token_index += 1
                         
                         # Generate assignment code
@@ -1149,39 +1272,56 @@ class DynamicArray:
                         #Translation Type Conversion
                         print(f"-------------------------{lexeme[current_token_index]}")
                         curr_identifier = lexeme[current_token_index]
+                        iden = lexeme[current_token_index]
+                        if curr_identifier in dir(builtins) and curr_identifier not in ["True", "False", "true", "false"]:
+                            curr_identifier = f"_{curr_identifier}"
                         if getNextToken(current_token_index) == "[":
                             current_token_index+=1
                             curr = token[current_token_index]
                             arr_identifier = ""
                             while curr != "]":
-                                arr_identifier += lexeme[current_token_index]
+                                if lexeme[current_token_index].startswith("id"):
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    arr_identifier += iden
+                                else:
+                                    arr_identifier += lexeme[current_token_index]
                                 current_token_index+=1
                                 curr = token[current_token_index]
                             curr_identifier += f"{arr_identifier}]"
                         var_type = symbol_table.get(curr_identifier, {}).get("type", None)
-                        if var_type in ["int", "dec"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["int", "dec"]:
+                        iden = lexeme[current_token_index]
+                        if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                            iden = f"_{iden}"
+                        if var_type in ["int", "dec"] and symbol_table.get(iden, {}).get("type") in ["int", "dec"]:
                             if var_type == "dec":
                                 var_type = "float"
                             exp_parts.append(f"{var_type}({curr_identifier})")
                             if var_type == "float":
                                 var_type = "dec"
-                        elif var_type in ["str", "chr"] and symbol_table.get(lexeme[current_token_index], {}).get("type") in ["str", "chr"]:
+                        elif var_type in ["str", "chr"] and symbol_table.get(iden, {}).get("type") in ["str", "chr"]:
                             var_type = "str"
                             exp_parts.append(f"{var_type}({curr_identifier})")
                         else:
                             exp_parts.append(f"{curr_identifier}")
                     elif curr in ["int", "str", "chr", "bln", "dec"]:
                         isConversion = True
+                        isChar = False
                         if curr == "bln":
                             con_type = "bool"
                         elif curr == "dec":
                             con_type = "float"
                         else:
-                            con_type = curr
+                            con_type = "str"
+                        if curr == "chr":
+                            isChar = True
                         conversion_store = f"eval('{con_type}("
                         current_token_index += 2
                         curr = token[current_token_index]
                         convert_value = lexeme[current_token_index]
+                        if convert_value in dir(builtins) and convert_value not in ["True", "False", "true", "false"]:
+                            convert_value = f"_{convert_value}"
                         if convert_value in ["true", "false"]:
                             convert_value = convert_value.capitalize()
                         elif con_type == "int":
@@ -1198,7 +1338,19 @@ class DynamicArray:
                             elif curr == "chr_lit":
                                 convert_value = convert_value.strip("'")
                                 convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
+                            elif curr.startswith("id"):
+                                convert_id = lexeme[current_token_index]
+                                if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
+                                    convert_id = f"_{convert_id}"
+                                id_type = symbol_table.get(convert_id, {}).get("type", None)
+                                if id_type == "str":
+                                    convert_value = f"eval(str(ord({convert_id})))"
+                                elif id_type == "chr":
+                                    convert_value = f"eval(str(ord({convert_id})))"
                         conversion_store += f"{convert_value})')"
+                        if isChar:
+                            conversion_store += f"[0]"
+                            isChar = False
                         #if con_type in ["str", "chr"]:
                         #    conversion_store += "+\""
                         current_token_index += 1
@@ -1265,7 +1417,10 @@ class DynamicArray:
                     output_val += lexeme[current_token_index].capitalize()
                 else:
                     if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
-                        output_val += f"{{{lexeme[current_token_index]}}}"
+                        iden = lexeme[current_token_index]
+                        if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                            iden = f"_{iden}"
+                        output_val += f"{{{iden}}}"
                     else:
                         parens = 0  
                         while True:
@@ -1283,7 +1438,13 @@ class DynamicArray:
                             if curr in ["int_lit", "dec_lit"]:
                                 exp += checkNumLit(current_token_index)
                             else:
-                                exp += lexeme[current_token_index]
+                                if lexeme[current_token_index].startswith("id"):
+                                    iden = lexeme[current_token_index]
+                                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                                        iden = f"_{iden}"
+                                    exp += iden
+                                else:
+                                    exp += lexeme[current_token_index]
                             if current_token_index + 1 < len(token):
                                 next_token = token[current_token_index + 1]
                                 if next_token == ")" and parens == 0:
@@ -1308,7 +1469,10 @@ class DynamicArray:
                 if curr == ")" and getNextToken(current_token_index) == ";":
                     pass
                 else:
-                    variable_insp += f"{lexeme[current_token_index]}"
+                    iden = lexeme[current_token_index]
+                    if iden in dir(builtins) and iden not in ["True", "False", "true", "false"]:
+                        iden = f"_{iden}"
+                    variable_insp += f"{iden}"
                 current_token_index += 1
                 curr = token[current_token_index]
             global var_nameList
