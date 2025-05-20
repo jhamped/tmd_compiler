@@ -46,7 +46,7 @@ key1_delims = {
     'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ',', '=', '!'],
     'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.', '~'],
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
-    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.'],
+    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.', '['],
     'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.', ','],
     'concat_delim' : whitespace + alphanumeric + ['(', '"', "'", '#', '~'],
     'data_delim' : whitespace + ['[', '('],
@@ -338,7 +338,7 @@ def add_all_set():
     add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<id_tail>", ["null"])
     add_set(["++", "--"], "<id_tail>", ["<unary_op>"])
     add_set(["=", "+=", "-=", "*=", "/=", "%=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<id_array_tail>", ["null"])
-    add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_id_tail>", ["null"])
+    #add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_id_tail>", ["null"])
     add_set([")", ","], "<args>", ["null"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "str", "bln", "chr", "dec", "int", "id", "(", "++", "--"], "<args>", ["<args_operand>","<expression>","<more_args>"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<args_operand>", ["<literals>"])
