@@ -59,8 +59,8 @@ class Lexical:
     def error_message(self, error, expected, expectedError):
         self.console.insert(tk.END, "Lexical Error: ", "error")
         self.console.insert(tk.END, f"{error}")
-        if expectedError:
-            self.console.insert(tk.END, f"  Delimiter: {expected}", "expected")
+        #if expectedError:
+        #    self.console.insert(tk.END, f"  Delimiter: {expected}", "expected")
         self.console.insert(tk.END, f"\n       line {self.line}, column {self.col}\n", "ln_col")
         errorflag[0] = True
 class GetLitAndIden: 
@@ -78,7 +78,7 @@ class GetLitAndIden:
 
         while True:
             if self.lex.peek_next() is None:  
-                self.lex.error_message("Expected: \"", "", False)
+                self.lex.error_message("Invalid: \"", "", False)
                 break
             if self.lex.peek_next() == '"': 
                 self.modify.add_key(422, 423)
@@ -139,7 +139,7 @@ class GetLitAndIden:
         if self.lex.key.count("'") == 2:
             terminated = True
         if not terminated:
-            self.lex.error_message("Expected: '", "", False)
+            self.lex.error_message("Delimiter: '", "", False)
 
         self.lex.isChar = False
 
@@ -738,7 +738,7 @@ class GetLitAndIden:
                     self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
                 else:
                     if fraction == '':
-                        self.lex.error_message(f"Unexpected None after .", "identifier", True)
+                        self.lex.error_message(f"Invalid Delimiter: None after .", "identifier", True)
                     elif self.lex.struct:
                         self.lex.error_message(f"Invalid identifier: {fraction}", "", False)
                     else:
@@ -840,13 +840,13 @@ class Checkers:
                 while self.lex.peek_next() in identifier:
                     word += self.lex.advance()
                 if word not in keywords:
-                    self.lex.error_message(f"Unexpected id after {self.lex.key}", expected, True)
+                    self.lex.error_message(f"Invalid Delimiter: id after {self.lex.key}", expected, True)
                 else:
-                    self.lex.error_message(f"Unexpected {word} after {self.lex.key}", expected, True)
+                    self.lex.error_message(f"Invalid Delimiter {word} after {self.lex.key}", expected, True)
             elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
                 self.modify.append_key(self.lex.key)
             else:
-                self.lex.error_message(f"Unexpected {self.lex.peek_next()} after {self.lex.key}", expected, True)
+                self.lex.error_message(f"Invalid Delimiter {self.lex.peek_next()} after {self.lex.key}", expected, True)
                 if self.lex.peek_next() == '\\':
                     ctr = 1
                     while ctr <=2:

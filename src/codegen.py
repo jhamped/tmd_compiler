@@ -163,7 +163,7 @@ def generate_code(console):
 class DynamicArray:
     def __init__(self, dtype, dims=1, initial_values=None, scope=None):
         self.dtype = dtype
-        self.default = {'int':0, 'dec':0.0, 'str':'', 'chr':"''", 'bln':False, 'var':None}.get(dtype, None)
+        self.default = {'int':0, 'dec':0.0, 'str':'None', 'chr':"None", 'bln':False, 'var':None}.get(dtype, None)
         self.dims = dims
         self.scope = scope
         
@@ -176,7 +176,7 @@ class DynamicArray:
                     elif dtype == 'dec':
                         self.data.append(float(val))
                     else:
-                        self.data.append(val)
+                        self.data.append(val.strip('"').strip("'"))
         elif dims == 2:
             self.data = []
             if initial_values is not None:
@@ -188,7 +188,7 @@ class DynamicArray:
                         elif dtype == 'dec':
                             new_row.append(float(val))
                         else:
-                            new_row.append(val)
+                            new_row.append(val.strip('"').strip("'"))
                     self.data.append(new_row)
     def __len__(self):
         return len(self.data)
@@ -1257,6 +1257,7 @@ class DynamicArray:
 
             while curr != ")":
                 if curr == "&":
+                    exp = ""
                     pass
                 elif curr == "str_lit":
                     output_val += lexeme[current_token_index].strip('"')

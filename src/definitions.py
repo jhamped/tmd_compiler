@@ -46,7 +46,7 @@ key1_delims = {
     'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ',', '=', '!'],
     'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.', '~'],
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
-    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.', '['],
+    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.', '('],
     'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.', ','],
     'concat_delim' : whitespace + alphanumeric + ['(', '"', "'", '#', '~'],
     'data_delim' : whitespace + ['[', '('],

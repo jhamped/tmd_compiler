@@ -300,7 +300,7 @@ class Semantic:
             new_datatype = ""
             prev_datatype = self.datatype_value
             while True:
-                print(f"Declaration ID: {lookahead}")
+                print(f"Declaration ID: {lookahead}/{self.identifier_value}")
                 if errorflag[0] == True:
                     return
                 if lookahead == ";":
@@ -400,6 +400,20 @@ class Semantic:
                         return
                 elif lookahead in arithmetic_operator:
                     self.checkOperand()
+                elif lookahead == "[":
+                    array_id = lexeme[self.current_token_index-1]
+                    dimension = 1
+                    while True:
+                        if lookahead == "]":
+                            dimension_found = self.getDimension(array_id)
+                            if dimension != dimension_found:
+                                self.error_message(f"Array dimension mismatch. Expected {dimension_found}D but found {dimension}D")
+                                return
+                            break
+                        elif lookahead == ",":
+                            dimension = 2
+                        self.current_token_index+=1
+                        lookahead = token[self.current_token_index]
                 if lookahead in relate1_op or lookahead in str_logical_operator:
                     self.error_message("Relational Operator ('>', '>=', '<', '<=') only allowed for boolean datatype")
                 self.current_token_index += 1
@@ -648,6 +662,20 @@ class Semantic:
                     self.clear_all()
                 elif lookahead in arithmetic_operator:
                     self.checkOperand()  
+                elif lookahead == "[":
+                    array_id = lexeme[self.current_token_index-1]
+                    dimension = 1
+                    while True:
+                        if lookahead == "]":
+                            dimension_found = self.getDimension(array_id)
+                            if dimension != dimension_found:
+                                self.error_message(f"Array dimension mismatch. Expected {dimension_found}D but found {dimension}D")
+                                return
+                            break
+                        elif lookahead == ",":
+                            dimension = 2
+                        self.current_token_index+=1
+                        lookahead = token[self.current_token_index]
                 if lookahead in relate1_op or lookahead in str_logical_operator:
                     self.error_message("Relational Operator ('>', '>=', '<', '<=') only allowed for boolean datatype")
                 self.current_token_index += 1
@@ -1582,16 +1610,17 @@ class Semantic:
                 
     def checkLeftLogicalOperator(self, param):
         print("Checking left logical operator")
-        temp_index = self.current_token_index
+        temp_index = self.current_token_index -1
         lookahead = token[temp_index]
         valid_logical = False
         while True:
             print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
-            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", "="]:
                 if not valid_logical:
                     self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
+                    print("d2")
                 return
             elif lookahead == ")":
                 param += 1
@@ -1609,14 +1638,14 @@ class Semantic:
             lookahead = token[temp_index]
     def checkRightLogicalOperator(self, param):
         print("Checking right logical operator")
-        temp_index = self.current_token_index
+        temp_index = self.current_token_index+1
         lookahead = token[temp_index]
         valid_logical = False
         while True:
             print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
-            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", ")", "="]:
                 if not valid_logical:
                     self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
                 return
