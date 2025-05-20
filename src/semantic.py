@@ -400,6 +400,8 @@ class Semantic:
                         return
                 elif lookahead in arithmetic_operator:
                     self.checkOperand()
+                if lookahead in relate1_op or lookahead in str_logical_operator:
+                    self.error_message("Relational Operator ('>', '>=', '<', '<=') only allowed for boolean datatype")
                 self.current_token_index += 1
                 lookahead = token[self.current_token_index]
     
@@ -646,6 +648,8 @@ class Semantic:
                     self.clear_all()
                 elif lookahead in arithmetic_operator:
                     self.checkOperand()  
+                if lookahead in relate1_op or lookahead in str_logical_operator:
+                    self.error_message("Relational Operator ('>', '>=', '<', '<=') only allowed for boolean datatype")
                 self.current_token_index += 1
                 lookahead = token[self.current_token_index]
     
@@ -1045,6 +1049,14 @@ class Semantic:
                 condition_valid = True
             elif lookahead in arithmetic_operator:
                 self.checkOperand()
+            if lookahead in relate1_op:
+                self.checkLeftRelationalOperator(0)
+                self.checkRightRelationalOperator(0)
+            elif lookahead in str_logical_operator:
+                self.checkLeftLogicalOperator(0)
+                self.checkRightLogicalOperator(0)
+            elif lookahead == "!":
+                self.checkNotOperator(0)
             self.current_token_index += 1
             lookahead = token[self.current_token_index]
         #Iteration
@@ -1109,6 +1121,14 @@ class Semantic:
                 condition_valid = True
             elif lookahead in arithmetic_operator:
                 self.checkOperand()
+            if lookahead in relate1_op:
+                self.checkLeftRelationalOperator(0)
+                self.checkRightRelationalOperator(0)
+            elif lookahead in str_logical_operator:
+                self.checkLeftLogicalOperator(0)
+                self.checkRightLogicalOperator(0)
+            elif lookahead == "!":
+                self.checkNotOperator(0)
             self.current_token_index += 1
             lookahead = token[self.current_token_index]
     
@@ -1300,6 +1320,14 @@ class Semantic:
                 condition_valid = True
             elif lookahead in arithmetic_operator:
                 self.checkOperand()
+            if lookahead in relate1_op:
+                self.checkLeftRelationalOperator(0)
+                self.checkRightRelationalOperator(0)
+            elif lookahead in str_logical_operator:
+                self.checkLeftLogicalOperator(0)
+                self.checkRightLogicalOperator(0)
+            elif lookahead == "!":
+                self.checkNotOperator(0)
             self.current_token_index += 1
             lookahead = token[self.current_token_index]
         
@@ -1349,6 +1377,14 @@ class Semantic:
                 self.identifier_value = ""
             elif lookahead in arithmetic_operator:
                 self.checkOperand()
+            if lookahead in relate1_op:
+                self.checkLeftRelationalOperator(0)
+                self.checkRightRelationalOperator(0)
+            elif lookahead in str_logical_operator:
+                self.checkLeftLogicalOperator(0)
+                self.checkRightLogicalOperator(0)
+            elif lookahead == "!":
+                self.checkNotOperator(0)
             self.current_token_index += 1
             lookahead = token[self.current_token_index]
     
@@ -1472,6 +1508,160 @@ class Semantic:
             self.current_token_index +=1
             lookahead = token[self.current_token_index]
     
+    def checkLeftRelationalOperator(self, param):
+        print("Checking left relational operator")
+        temp_index = self.current_token_index
+        lookahead = token[temp_index]
+        while True:
+            print(temp_index, lookahead)
+            if errorflag[0] == True:
+                return
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+                return
+            elif lookahead == ")":
+                if self.getState("prev", "token", temp_index-1).startswith("id") or self.getState("prev", "token", temp_index-1) in literals:
+                    if self.getState("prev", "token", temp_index-3) not in ["int", "dec"]:
+                        self.error_message(f"Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+                    if self.getState("prev", "token", temp_index-3):
+                        temp_index -= 3
+                else:
+                    param += 1
+            elif lookahead == "(":
+                param -= 1
+            elif lookahead.startswith("id"):
+                identifier = lexeme[temp_index]
+                self.checkIfIDNotDeclared(identifier)
+                datatype = self.getDatatype(identifier)
+                if datatype not in ["int", "dec"]:
+                    self.error_message(f"Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+            elif lookahead in literals:
+                if lookahead not in ["int_lit", "dec_lit"]:
+                    self.error_message("Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+            temp_index -= 1
+            lookahead = token[temp_index]
+    
+    def checkRightRelationalOperator(self, param):
+        print("Checking right relational operator")
+        temp_index = self.current_token_index
+        lookahead = token[temp_index]
+        while True:
+            print(temp_index, lookahead)
+            if errorflag[0] == True:
+                return
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")"]:
+                return
+            elif lookahead == ")":
+                param -= 1
+            elif lookahead == "(":
+                param += 1
+            elif lookahead.startswith("id"):
+                identifier = lexeme[temp_index]
+                self.checkIfIDNotDeclared(identifier)
+                datatype = self.getDatatype(identifier)
+                if datatype not in ["int", "dec"]:
+                    self.error_message(f"Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+            elif lookahead in literals:
+                if lookahead not in ["int_lit", "dec_lit"]:
+                    self.error_message("Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+            elif lookahead in semantic_datatype:
+                type_conversion_type = lookahead
+                if lookahead.startswith("id"):
+                    identifier = lexeme[temp_index]
+                    self.checkIfIDNotDeclared(identifier)
+                    self.checkTypeConversion(type_conversion_type, identifier, "id")
+                    datatype = self.getDatatype(identifier)
+                    if datatype not in ["int", "dec"]:
+                        self.error_message(f"Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+                elif lookahead in literals:
+                    self.checkTypeConversion(type_conversion_type, lookahead, "literals")
+                    if lookahead not in ["int_lit", "dec_lit"]:
+                        self.error_message("Relational Operator ('>', '>=', '<', '<=') only allows numeric types")
+                temp_index +=3
+            temp_index += 1
+            lookahead = token[temp_index]     
+                
+    def checkLeftLogicalOperator(self, param):
+        print("Checking left logical operator")
+        temp_index = self.current_token_index
+        lookahead = token[temp_index]
+        valid_logical = False
+        while True:
+            print(temp_index, lookahead)
+            if errorflag[0] == True:
+                return
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+                if not valid_logical:
+                    self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
+                return
+            elif lookahead == ")":
+                param += 1
+            elif lookahead == "(":
+                param -= 1
+            elif lookahead.startswith("id"):
+                identifier = lexeme[temp_index]
+                self.checkIfIDNotDeclared(identifier)
+                datatype = self.getDatatype(identifier)
+                if datatype == "bln":
+                    valid_logical = True
+            elif lookahead in ["true", "false", booleanValue, "int_lit"]:
+                valid_logical = True
+            temp_index -= 1
+            lookahead = token[temp_index]
+    def checkRightLogicalOperator(self, param):
+        print("Checking right logical operator")
+        temp_index = self.current_token_index
+        lookahead = token[temp_index]
+        valid_logical = False
+        while True:
+            print(temp_index, lookahead)
+            if errorflag[0] == True:
+                return
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+                if not valid_logical:
+                    self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
+                return
+            elif lookahead == ")":
+                param -= 1
+            elif lookahead == "(":
+                param += 1
+            elif lookahead.startswith("id"):
+                identifier = lexeme[temp_index]
+                self.checkIfIDNotDeclared(identifier)
+                datatype = self.getDatatype(identifier)
+                if datatype == "bln":
+                    valid_logical = True
+            elif lookahead in ["true", "false", booleanValue, "int_lit"]:
+                valid_logical = True
+            temp_index += 1
+            lookahead = token[temp_index]
+    
+    def checkNotOperator(self, param):
+        print("Checking logical not operator")
+        temp_index = self.current_token_index
+        lookahead = token[temp_index]
+        valid_logical = False
+        while True:
+            print(temp_index, lookahead)
+            if errorflag[0] == True:
+                return
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+                if not valid_logical:
+                    self.error_message("Logical not operators (!) require boolean operands, or expressions that evaluate to boolean values.")
+                return
+            elif lookahead == ")":
+                param -= 1
+            elif lookahead == "(":
+                param += 1
+            elif lookahead.startswith("id"):
+                identifier = lexeme[temp_index]
+                self.checkIfIDNotDeclared(identifier)
+                datatype = self.getDatatype(identifier)
+                if datatype == "bln":
+                    valid_logical = True
+            elif lookahead in ["true", "false", booleanValue, "int_lit"]:
+                valid_logical = True
+            temp_index += 1
+            lookahead = token[temp_index]
     #Getter
     def getState(self, pointer, state, index):
         if pointer == "prev":
