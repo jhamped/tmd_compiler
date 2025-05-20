@@ -20,25 +20,14 @@ def checkNumLit(token_index):
     else:
         return lit
 
-def declareArray(token_index):
+def declareArray(token_index, iden, var_type, dims):
+    print(f"declaring array {token_index}")
     try:
-        var_type = token[token_index]
-        token_index += 1
+        # Get Identifier
+        #if token_index >= len(token) or not token[token_index].startswith("id"):
+        #    raise SyntaxError(f"Expected array name after array type declaration at token {token_index}. Found: {token[token_index] if token_index < len(token) else 'EOF'}")
         
-        dims = 1  
-        if token[token_index] == "[":
-            token_index += 1
-            if token_index < len(token) and token[token_index] == ",":
-                dims = 2
-                token_index += 2  # Skip past ,]
-            elif token[token_index] == "]":
-                token_index += 1  # Skip past ]
-        
-        # Now we should be at the identifier
-        if token_index >= len(token) or not token[token_index].startswith("id"):
-            raise SyntaxError(f"Expected array name after array type declaration at token {token_index}. Found: {token[token_index] if token_index < len(token) else 'EOF'}")
-        
-        iden = lexeme[token_index]
+        #iden = lexeme[token_index]
         token_index += 1
         current_scope = scope_stack[-1] if scope_stack else "global"
         
@@ -751,11 +740,31 @@ class DynamicArray:
                 isVar = True
             if token[current_token_index+1] == "[":
                 # Handle array declarations
+                dims = 1
+                var_type = curr
                 while True:
-                    result = declareArray(current_token_index)
-                    current_token_index = result[0]
-                    array_decl = result[1]
+                    print(f"ARRAY TOKEN {token[current_token_index]}")
                     
+                    while curr != ",":
+                        print(f"curr {curr}")
+                        if curr.startswith("id"):
+                            break
+                        if token[current_token_index] == "[":
+                            current_token_index += 1
+                            curr = token[current_token_index]
+                            if current_token_index < len(token) and curr == ",":
+                                dims = 2
+                                current_token_index += 1 # Skip past ,]
+                            elif curr == "]":
+                                pass  # Skip past ]
+                        current_token_index += 1
+                        curr = token[current_token_index]
+                    array_iden = lexeme[current_token_index]
+                    result = declareArray(current_token_index, array_iden, var_type, dims)
+                    current_token_index = result[0]
+                    curr = token[current_token_index]
+                    array_decl = result[1]
+                    print(f"DONE {curr}")
                     # Add to symbol table
                     array_name = array_decl.split('=')[0].strip()
                     symbol_table[array_name] = {
@@ -771,11 +780,10 @@ class DynamicArray:
                     trans_code += array_decl
                     
                     # Check for multiple declarations (comma separated)
-                    if token[current_token_index] == ",":
+                    if curr == ",":
                         trans_code += "\n" + indent_level(indent)
                         current_token_index += 1
-                        continue
-                    elif token[current_token_index] == ";":
+                    elif curr == ";":
                         break
                         
                 continue
@@ -882,6 +890,9 @@ class DynamicArray:
                             curr = token[current_token_index]
                             exp_parts.append(conversion_store)
                             print("conversion")
+                        elif curr in ["&&", "||", "!"]:
+                            trans_logic = {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
+                            exp_parts.append(trans_logic)
                         else:
                             if curr in ["int_lit", "dec_lit"]:
                                 exp_parts.append(checkNumLit(current_token_index))
@@ -982,6 +993,9 @@ class DynamicArray:
                         output_val += lexeme[current_token_index].strip('"')
                     elif curr in ["true", "false"]:
                         output_val += lexeme[current_token_index].capitalize()
+                    elif curr in ["&&", "||", "!"]:
+                        trans_logic = {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
+                        output_val += f" {trans_logic} "
                     else:
                         if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
                             output_val += f"{lexeme[current_token_index]}"

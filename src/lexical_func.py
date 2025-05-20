@@ -60,7 +60,7 @@ class Lexical:
         self.console.insert(tk.END, "Lexical Error: ", "error")
         self.console.insert(tk.END, f"{error}")
         if expectedError:
-            self.console.insert(tk.END, f"  Delimeter: {expected}", "expected")
+            self.console.insert(tk.END, f"  Delimiter: {expected}", "expected")
         self.console.insert(tk.END, f"\n       line {self.line}, column {self.col}\n", "ln_col")
         errorflag[0] = True
 class GetLitAndIden: 
@@ -283,6 +283,7 @@ class GetLitAndIden:
             self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
 
     def get_id(self):
+        
         self.lex.isDec = False
         self.lex.isIden = True
         curr = self.lex.advance()
