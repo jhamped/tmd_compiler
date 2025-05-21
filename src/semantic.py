@@ -1626,7 +1626,7 @@ class Semantic:
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", "="]:
                 if not valid_logical:
                     self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
-                    print("d2")
+                    print("Left Logical Error")
                 return
             elif lookahead == ")":
                 param += 1
@@ -1636,9 +1636,11 @@ class Semantic:
                 identifier = lexeme[temp_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype == "bln":
+                if datatype in ["bln", "int", "dec"]:
                     valid_logical = True
-            elif lookahead in ["true", "false", booleanValue, "int_lit"]:
+            elif lookahead in ["true", "false", "int_lit"]:
+                valid_logical = True
+            elif lookahead in booleanValue:
                 valid_logical = True
             temp_index -= 1
             lookahead = token[temp_index]
@@ -1654,6 +1656,7 @@ class Semantic:
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", ")", "="]:
                 if not valid_logical:
                     self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
+                    print("Error: Right Logical Operator")
                 return
             elif lookahead == ")":
                 param -= 1
@@ -1663,9 +1666,11 @@ class Semantic:
                 identifier = lexeme[temp_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype == "bln":
+                if datatype in ["bln", "int", "dec"]:
                     valid_logical = True
-            elif lookahead in ["true", "false", booleanValue, "int_lit"]:
+            elif lookahead in ["true", "false", "int_lit"]:
+                valid_logical = True
+            elif lookahead in booleanValue:
                 valid_logical = True
             temp_index += 1
             lookahead = token[temp_index]
@@ -1691,9 +1696,11 @@ class Semantic:
                 identifier = lexeme[temp_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype == "bln":
+                if datatype in ["bln", "int", "dec"]:
                     valid_logical = True
-            elif lookahead in ["true", "false", booleanValue, "int_lit"]:
+            elif lookahead in ["true", "false", "int_lit"]:
+                valid_logical = True
+            elif lookahead in booleanValue:
                 valid_logical = True
             temp_index += 1
             lookahead = token[temp_index]
