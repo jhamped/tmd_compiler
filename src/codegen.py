@@ -1344,10 +1344,6 @@ class DynamicArray:
                         elif con_type == "int":
                             if curr == "str_lit":
                                 convert_value = convert_value.strip('"')
-                                if len(convert_value) > 1:
-                                    convert_value = ""
-                                else:
-                                    convert_value = f"eval({convert_id.strip('"')})"
                                     #convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
                                 #convert_value = ', '.join(str(ord(char)) for char in convert_value)
                                 #conversion_store = f"eval(("
