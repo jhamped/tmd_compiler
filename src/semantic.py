@@ -277,6 +277,9 @@ class Semantic:
                 elif self.identifier_value == "" and lookahead.startswith( "id"):
                     self.identifier_value = lexeme[self.current_token_index]
                     self.checkIfIDAlreadyDeclared(self.identifier_value)
+                    if self.getState("next", "token", self.current_token_index+1) not in ["=", "+=", "-=", "*=", "/=", "%="]:
+                        self.error_message(f"A constant variable must be given a value when its declared")
+                        return
                 elif lookahead == "{":
                     param += 1
                 elif lookahead == "}":
@@ -474,7 +477,7 @@ class Semantic:
                 if errorflag[0] == True:
                     return
                 if (lookahead in assignment_number or lookahead == "=") and self.getType(rhs_identifier) == "const-array":
-                    self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized once.")
+                    self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized during its declaration.")
                     return
                 if lookahead == ";":
                     self.clear_all()
@@ -512,7 +515,7 @@ class Semantic:
                         self.error_message(f"Compound Assignment is only allowed for number identifier")
                         return
                     elif lookahead == "=" and identifier_type.split("-")[0] == "const":
-                        self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized once.")
+                        self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized during its declaration.")
                         return
                 elif lookahead.startswith("id"):
                     #Function call
@@ -609,7 +612,7 @@ class Semantic:
                             self.clear_all()
                             return
                 elif self.getType(identifier_temp) == "const":
-                    self.error_message(f"A constant identifier can only be declared in a declaration statement")
+                    self.error_message(f"Constant variable '{identifier_temp}' can only be initialized during its declaration.")
                     return
                 elif lookahead.startswith("id"):
                     self.checkIDType(lexeme[self.current_token_index])
@@ -851,7 +854,7 @@ class Semantic:
                             self.error_message(f"Compound Assignment is only allowed for number identifier")
                             return
                         elif lookahead == "=" and identifier_type == "const":
-                            self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized once.")
+                            self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized during its declaration.")
                             return
                     elif lookahead.startswith("id"):
                         self.checkIDType(lexeme[self.current_token_index])
@@ -920,7 +923,7 @@ class Semantic:
                         self.error_message(f"Compound Assignment is only allowed for number identifier")
                         return
                     elif lookahead == "=" and identifier_type == "const":
-                        self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized once.")
+                        self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized during its declaration.")
                         return
                 elif lookahead.startswith("id"):
                     self.checkIDType(lexeme[self.current_token_index])
@@ -1339,7 +1342,7 @@ class Semantic:
                 self.error_message("Compound Assignment is only allowed for number identifier. ")
                 return
             elif self.getType(identifier_bln) == "const":
-                self.error_message(f"A constant identifier can only be declared in a declaration statement")
+                self.error_message(f"Constant variable '{identifier_bln}' can only be initialized during its declaration.")
                 return
             elif lookahead.startswith("id"):
                 self.checkIDType(lexeme[self.current_token_index])
@@ -1444,7 +1447,7 @@ class Semantic:
                 self.error_message("Compound Assignment is only allowed for number identifier. ")
                 return
             elif self.getType(identifier_bln) == "const":
-                self.error_message(f"A constant identifier can only be declared in a declaration statement")
+                self.error_message(f"Constant variable '{identifier_bln}' can only be initialized during its declaration.")
                 return
             elif lookahead.startswith("id"):
                 self.checkIDType(lexeme[self.current_token_index])
