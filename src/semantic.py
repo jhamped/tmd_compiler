@@ -425,6 +425,7 @@ class Semantic:
     def handle_identifier_initialization(self):
         rhs_identifier = lexeme[self.current_token_index]
         self.checkIfIDNotDeclared(rhs_identifier)
+        self.checkIDType(rhs_identifier)
         identifier_type = self.getType(rhs_identifier)
         lookahead = token[self.current_token_index]
         #Function Call
@@ -471,6 +472,9 @@ class Semantic:
             while True:
                 print(f"=lookahead {lookahead}")
                 if errorflag[0] == True:
+                    return
+                if (lookahead in assignment_number or lookahead == "=") and self.getType(rhs_identifier) == "const-array":
+                    self.error_message(f"Constant variable '{rhs_identifier}' can only be initialized once.")
                     return
                 if lookahead == ";":
                     self.clear_all()
@@ -572,6 +576,7 @@ class Semantic:
                         self.updateDatatype(rhs_identifier, new_datatype)
                 elif lookahead in arithmetic_operator:
                     self.checkOperand()
+                
                 self.current_token_index += 1
                 lookahead = token[self.current_token_index]
         else:
