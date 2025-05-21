@@ -781,7 +781,7 @@ class Checkers:
     def check_id(self, s1, s2, s3):
         self.modify.add_key(s1, s2)
         if not self.lex.invalid:
-            self.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", s2, s3, "iden", False)            
+            self.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", s2, s3, "iden", True)            
 
     def check_symbol(self, delim, expected, stateNum1, stateNum2, requiredSpace):
         if self.lex.peek_next() in whitespace or self.lex.peek_next() in delim:

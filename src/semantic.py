@@ -255,6 +255,10 @@ class Semantic:
             print("Array declaration")
             self.current_token_index += 1
             if self.getState("next", "token", self.current_token_index+1) == ",":
+                if self.type_value == "const":
+                    self.type_value = "const-array"
+                else:
+                    self.type_value = "array"
                 self.dimension_value = 2
                 self.current_token_index +=2
             else:

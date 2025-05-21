@@ -968,10 +968,6 @@ class DynamicArray:
                             elif con_type == "int":
                                 if curr == "str_lit":
                                     convert_value = convert_value.strip('"')
-                                    if len(convert_value) > 1:
-                                        convert_value = ""
-                                    else:
-                                        convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
                                 elif curr == "chr_lit":
                                     convert_value = convert_value.strip("'")
                                     convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
@@ -980,11 +976,15 @@ class DynamicArray:
                                     if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
                                         convert_id = f"_{convert_id}"
                                     id_type = symbol_table.get(convert_id, {}).get("type", None)
-                                    if id_type == "str":
-                                        convert_value = f"eval(str(ord({convert_id})))"
+                                    if id_type == "str":  
+                                        convert_value = f"eval({convert_id.strip('"')})"
                                     elif id_type == "chr":
                                         convert_value = f"eval(str(ord({convert_id})))"
-                            
+                            elif con_type == "bool" and curr.startswith("id"):
+                                convert_id = lexeme[current_token_index]
+                                if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
+                                    convert_id = f"_{convert_id}"
+                                convert_value = f"eval({convert_id}.capitalize())"
                             conversion_store += f"{convert_value})')"
                             if isChar:
                                 conversion_store += f"[0]"
@@ -1347,7 +1347,8 @@ class DynamicArray:
                                 if len(convert_value) > 1:
                                     convert_value = ""
                                 else:
-                                    convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
+                                    convert_value = f"eval({convert_id.strip('"')})"
+                                    #convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
                                 #convert_value = ', '.join(str(ord(char)) for char in convert_value)
                                 #conversion_store = f"eval(("
                                 #convert_value = f"eval(\'\\\',\\\'.join([str(ord(char)) for char in \"{convert_value}\"])\')"
@@ -1359,11 +1360,20 @@ class DynamicArray:
                                 convert_id = lexeme[current_token_index]
                                 if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
                                     convert_id = f"_{convert_id}"
+                                if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
+                                    convert_id = f"_{convert_id}"
                                 id_type = symbol_table.get(convert_id, {}).get("type", None)
                                 if id_type == "str":
-                                    convert_value = f"eval(str(ord({convert_id})))"
+                                    convert_value = f"eval({convert_id.strip('"')})"
                                 elif id_type == "chr":
                                     convert_value = f"eval(str(ord({convert_id})))"
+                        elif con_type == "bool" and curr.startswith("id"):
+                                convert_id = lexeme[current_token_index]
+                                if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
+                                    convert_id = f"_{convert_id}"
+                                if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
+                                    convert_id = f"_{convert_id}"
+                                convert_value = f"eval({convert_id}.capitalize())"
                         conversion_store += f"{convert_value})')"
                         if isChar:
                             conversion_store += f"[0]"
@@ -1515,7 +1525,7 @@ class DynamicArray:
             
         elif curr == "brk":
             if isSwitchStatement:
-                console.insert(tk.END, "\nSemantic Error: Break not allowed inside switch statement\n", "error")
+                console.insert(tk.END, "\nIllegal Break: Break not allowed inside switch statement\n", "error")
                 errorflag[0] = True  
                 return
             trans_code += "break"
@@ -1597,7 +1607,7 @@ class DynamicArray:
                 
             elif dataType == "int":
                 if not (val.isdigit() or (val.startswith('-') and val[1:].isdigit())):
-                    raise ValueError(f"Semantic Error: Input rejected. Expected an integer number.\n{val}")
+                    raise ValueError(f"Illegal Input. Expected an integer number.\n{val}")
                 else:
                     val = int(val)
                 
@@ -1605,12 +1615,12 @@ class DynamicArray:
                 try:
                     val = float(val)
                 except ValueError:
-                    raise ValueError("Semantic Error: Input rejected. Expected a decimal number.\n")
+                    raise ValueError("Illegal Input. Expected a decimal number.\n")
                     return None
                 
             elif dataType == "chr":
                 if len(val) != 1:
-                    raise ValueError("Semantic Error: Input rejected. Expected a single character.\n")
+                    raise ValueError("Illegal Input. Expected a single character.\n")
                     return None
                 
             elif dataType == "bln":
@@ -1619,7 +1629,7 @@ class DynamicArray:
                 elif val.lower() in ["false", "0"]:
                     val = False
                 else:
-                    raise ValueError("Semantic Error: Input rejected. Expected a boolean value (True/False).\n")
+                    raise ValueError("Illegal Input. Expected a boolean value (True/False).\n")
                     return None
             #console.insert(tk.END, f"DEBUG {dataType}/{variable_insp}/{symbol_table}")
             #console.insert(tk.END, f"[DEBUG INSP] returning: {repr(val)}\n")
@@ -1636,9 +1646,17 @@ class DynamicArray:
         try:
             exec(trans_code, exec_env, exec_env)
         except ValueError as ve:
-            console.insert(tk.END, f"\n{str(ve)}\n", "error")
+            error_message = str(ve)
+            if "could not convert string to float" in error_message:
+                console.insert(tk.END, "\nError: cannot convert string to decimal because it contains non-digit characters\n", "error")
+            else:
+                console.insert(tk.END, f"\n{str(ve)}\n", "error")
         except Exception as e:
-            console.insert(tk.END, f"\nExecution failed: {str(e)}\n", "error")
+            error_message = str(e)
+            if "invalid decimal literal" in error_message:
+                console.insert(tk.END, "\nError: cannot convert string to integer because it contains non-digit characters\n", "error")
+            else:
+                console.insert(tk.END, f"\nExecution failed: {str(e)}\n", "error")
     finally:
         pass
 
