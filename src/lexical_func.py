@@ -663,7 +663,7 @@ class GetLitAndIden:
             self.modify.match_found(147, char)
             if self.lex.peek_next() == '|':
                 self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 147, 148, 149, "symbol", False)
-
+            
         elif char == '!':
             self.modify.match_found(150, char)
             if self.lex.peek_next() == '=':
@@ -797,8 +797,8 @@ class Checkers:
         esc = ''
         invalid = ''
         word = ''
-        if not requiredSpace:
-            self.lex.skip_whitespace()
+        #if not requiredSpace:
+        #    self.lex.skip_whitespace()
 
         if self.lex.peek_next() == '/':
             while True:
@@ -823,8 +823,8 @@ class Checkers:
             else:
                 self.lex.pos -= 1
 
-        if not requiredSpace:
-            self.lex.skip_whitespace()
+        #if not requiredSpace:
+        #    self.lex.skip_whitespace()
 
         if self.lex.peek_next() not in delim:
             if self.lex.isIden and self.lex.peek_next() in alpha:
@@ -899,6 +899,9 @@ class Checkers:
         addZero = False
         if reserved in ["iden", "word"]:
             if self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
+                self.lex.matched = False
+                return
+            if self.lex.peek_next() == "|" and self.lex.peek_next2() != "|":
                 self.lex.matched = False
                 return
         elif reserved == "num":
