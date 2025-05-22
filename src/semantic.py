@@ -281,7 +281,7 @@ class Semantic:
                 elif self.identifier_value == "" and lookahead.startswith( "id"):
                     self.identifier_value = lexeme[self.current_token_index]
                     self.checkIfIDAlreadyDeclared(self.identifier_value)
-                    if self.getState("next", "token", self.current_token_index+1) not in ["=", "+=", "-=", "*=", "/=", "%="]:
+                    if self.getState("next", "token", self.current_token_index+1) not in ["=", "+=", "-=", "*=", "/=", "%="] and self.type_value[0] == "const":
                         self.error_message(f"A constant variable must be given a value when its declared")
                         return
                 elif lookahead == "{":
