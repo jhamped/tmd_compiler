@@ -980,12 +980,13 @@ class DynamicArray:
                                         convert_value = f"eval({convert_id.strip('"')})"
                                     elif id_type == "chr":
                                         convert_value = f"eval(str(ord({convert_id})))"
-                            elif con_type == "bool" and curr.startswith("id"):
+                            conversion_store += f"{convert_value})')"
+                            if con_type == "bool" and curr.startswith("id"):
                                 convert_id = lexeme[current_token_index]
                                 if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
                                     convert_id = f"_{convert_id}"
-                                convert_value = f"eval({convert_id}.capitalize())"
-                            conversion_store += f"{convert_value})')"
+                                conversion_store = f"eval('{convert_id}.capitalize()') if str({convert_id}).lower() in ['true', 'false'] else bool({convert_id})"
+                            
                             if isChar:
                                 conversion_store += f"[0]"
                                 isChar = False
@@ -1363,14 +1364,13 @@ class DynamicArray:
                                     convert_value = f"eval({convert_id.strip('"')})"
                                 elif id_type == "chr":
                                     convert_value = f"eval(str(ord({convert_id})))"
-                        elif con_type == "bool" and curr.startswith("id"):
+                        conversion_store += f"{convert_value})')"
+                        if con_type == "bool" and curr.startswith("id"):
                                 convert_id = lexeme[current_token_index]
                                 if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
                                     convert_id = f"_{convert_id}"
-                                if convert_id in dir(builtins) and convert_id not in ["True", "False", "true", "false"]:
-                                    convert_id = f"_{convert_id}"
-                                convert_value = f"eval({convert_id}.capitalize())"
-                        conversion_store += f"{convert_value})')"
+                                conversion_store = f"eval('{convert_id}.capitalize()') if str({convert_id}).lower() in ['true', 'false'] else bool({convert_id})"
+                        
                         if isChar:
                             conversion_store += f"[0]"
                             isChar = False
