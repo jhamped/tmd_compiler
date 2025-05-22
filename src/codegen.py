@@ -1521,7 +1521,7 @@ class DynamicArray:
             
         elif curr == "brk":
             if isSwitchStatement:
-                console.insert(tk.END, "\nIllegal Break: Break not allowed inside switch statement\n", "error")
+                console.insert(tk.END, "Illegal Break: Break not allowed inside switch statement\n", "error")
                 errorflag[0] = True  
                 return
             trans_code += "break"
@@ -1603,7 +1603,7 @@ class DynamicArray:
                 
             elif dataType == "int":
                 if not (val.isdigit() or (val.startswith('-') and val[1:].isdigit())):
-                    raise ValueError(f"Illegal Input. Expected an integer number.\n{val}")
+                    raise ValueError(f"Illegal Input. Expected an integer number for identifier '{val}'")
                 else:
                     val = int(val)
                 
@@ -1611,12 +1611,12 @@ class DynamicArray:
                 try:
                     val = float(val)
                 except ValueError:
-                    raise ValueError("Illegal Input. Expected a decimal number.\n")
+                    raise ValueError("Illegal Input. Expected a decimal number for identifier '{val}'")
                     return None
                 
             elif dataType == "chr":
                 if len(val) != 1:
-                    raise ValueError("Illegal Input. Expected a single character.\n")
+                    raise ValueError("Illegal Input. Expected a single character for identifier '{val}'")
                     return None
                 
             elif dataType == "bln":
@@ -1625,7 +1625,7 @@ class DynamicArray:
                 elif val.lower() in ["false", "0"]:
                     val = False
                 else:
-                    raise ValueError("Illegal Input. Expected a boolean value (True/False).\n")
+                    raise ValueError("Illegal Input. Expected a boolean value (True/False) for identifier '{val}'")
                     return None
             #console.insert(tk.END, f"DEBUG {dataType}/{variable_insp}/{symbol_table}")
             #console.insert(tk.END, f"[DEBUG INSP] returning: {repr(val)}\n")
@@ -1645,12 +1645,21 @@ class DynamicArray:
             error_message = str(ve)
             if "could not convert string to float" in error_message:
                 console.insert(tk.END, "\nError: cannot convert string to decimal because it contains non-digit characters\n", "error")
+            elif "Illegal Input" in error_message:
+                console.insert(tk.END, "\nExecution Error: ", "error")
+                console.insert(tk.END, error_message)
+            elif "Illegal Break" in error_message:
+                console.insert(tk.END, "\nExecution Error: ", "error")
+                console.insert(tk.END, error_message)
             else:
                 console.insert(tk.END, f"\n{str(ve)}\n", "error")
         except Exception as e:
             error_message = str(e)
             if "invalid decimal literal" in error_message:
                 console.insert(tk.END, "\nError: cannot convert string to integer because it contains non-digit characters\n", "error")
+            elif "division by zero" in error_message:
+                console.insert(tk.END, "\nMath Error: ", "error")
+                console.insert(tk.END, f"Division by zero is not allowed")
             else:
                 console.insert(tk.END, f"\nExecution failed: {str(e)}\n", "error")
     finally:
