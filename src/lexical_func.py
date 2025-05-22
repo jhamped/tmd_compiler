@@ -38,6 +38,10 @@ class Lexical:
         if self.pos < len(self.code):
             return self.code[self.pos]
         return None
+    def peek_next2(self):
+        if self.pos+1 < len(self.code):
+            return self.code[self.pos+1]
+        return None
     
     def skip_whitespace(self):
         while(self.peek_next()) in whitespace:
@@ -862,15 +866,16 @@ class Checkers:
                 self.lex.isDec = True
                 
         else:
+            print("1")
             if self.lex.isIden or self.lex.key == ']':
                 if self.lex.peek_next() == '.': self.lex.struct = True
 
             if self.lex.isIden and self.lex.peek_next() in ['!', '&', '|']:
-                curr = self.lex.advance()
-                if curr == '!' and self.lex.peek_next() != '=':
+                curr = self.lex.peek_next()
+                if curr == '!' and self.lex.peek_next2() != '=':
                     self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
                     return
-                elif curr == '|' and self.lex.peek_next() != '|':
+                elif curr == '|' and self.lex.peek_next2() != '|':
                     self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
                     return
                 self.lex.pos -= 1
@@ -888,6 +893,7 @@ class Checkers:
             elif self.lex.isInt: self.modify.append_key('int_lit')
             elif self.lex.isDec: self.modify.append_key('dec_lit')
             else: self.modify.append_key(self.lex.key)
+            print("appending")
 
     def check_if_match(self, delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
         addZero = False
