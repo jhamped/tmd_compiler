@@ -1353,9 +1353,9 @@ class Semantic:
                 identifier = lexeme[self.current_token_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype in ["int", "bln", "dec"]:
+                if datatype in ["bln"]:
                     condition_valid = True
-            elif lookahead in ["true", "false", "int_lit"]:
+            elif lookahead in ["true", "false"]:
                 condition_valid = True
             elif lookahead in booleanValue:
                 condition_valid = True
@@ -1403,9 +1403,9 @@ class Semantic:
                 identifier = lexeme[self.current_token_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype in ["int", "bln", "dec"]:
+                if datatype in ["bln"]:
                     condition_valid = True
-            elif lookahead in ["true", "false", "int_lit"]:
+            elif lookahead in ["true", "false"]:
                 condition_valid = True
             elif lookahead in booleanValue:
                 condition_valid = True
