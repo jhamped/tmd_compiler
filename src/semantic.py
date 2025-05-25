@@ -8,7 +8,7 @@ def semantic(console):
     print(f"token: {token}")
     print(f"lexeme: {lexeme}")
     current_token_index = 0
-    prevlookahead = ""
+    prevlookahead = "Start"
     semantic_checker = Semantic(console)
     
     def error_message(error):
@@ -73,7 +73,10 @@ def semantic(console):
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
                     stack.extend(reversed(rule))
             else:
-                error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
+                if prevlookahead == "Start":
+                    error_message(f"Unexpected {lookahead}. Program must start with a function 'segm', declaration, or 'main' block. ")
+                else:
+                    error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
                 return
         else:
             error_message(f"Unexpected symbol {lookahead} after {prevlookahead} Expected: {top}")

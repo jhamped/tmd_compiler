@@ -8,7 +8,7 @@ def parse(console):
     print(f"token: {token}")
     print(f"lexeme: {lexeme}")
     current_token_index = 0
-    prevlookahead = ""
+    prevlookahead = "Start"
     
     def error_message(error):
         line = rows[current_token_index] if current_token_index < len(rows) else "0"
@@ -84,7 +84,10 @@ def parse(console):
                     stack.extend(reversed(rule))
                     #stack ["}", "<statements>", "{", "main", "<segm>", "<global_dec>"]
             else:
-                error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
+                if prevlookahead == "Start":
+                    error_message(f"Unexpected {lookahead}. Program must start with a function 'segm', declaration, or 'main' block. ")
+                else:
+                    error_message(f"Unexpected {lookahead} after {prevlookahead} Expected: {list(parsing_table.get(top, {}).keys())} ")
                 return
         else:
             error_message(f"Unexpected symbol {lookahead} after {prevlookahead} Expected: {top}")
