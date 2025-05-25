@@ -1641,12 +1641,12 @@ class DynamicArray:
                 try:
                     val = float(val)
                 except ValueError:
-                    raise ValueError("Illegal Input. Expected a decimal number for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected a decimal number for identifier '{val}'")
                     return None
                 
             elif dataType == "chr":
                 if len(val) != 1:
-                    raise ValueError("Illegal Input. Expected a single character for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected a single character for identifier '{val}'")
                     return None
                 
             elif dataType == "bln":
@@ -1655,7 +1655,7 @@ class DynamicArray:
                 elif val.lower() in ["false", "0"]:
                     val = False
                 else:
-                    raise ValueError("Illegal Input. Expected a boolean value (True/False) for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected a boolean value (True/False) for identifier '{val}'")
                     return None
             #console.insert(tk.END, f"DEBUG {dataType}/{variable_insp}/{symbol_table}")
             #console.insert(tk.END, f"[DEBUG INSP] returning: {repr(val)}\n")
