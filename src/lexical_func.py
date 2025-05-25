@@ -153,7 +153,6 @@ class GetLitAndIden:
         self.lex.isInt = True
         curr = char
         self.lex.key = ''
-
         if curr == '~':
             self.modify.append_state('~', 0, 250)
             self.lex.key += curr
@@ -209,7 +208,9 @@ class GetLitAndIden:
         self.lex.isInt = False
         if not self.lex.matched:
             if self.lex.peek_next() not in whitespace:
-                self.lex.key += curr
+                print(self.lex.key)
+                #self.lex.key += curr
+                print(self.lex.key)
                 self.modify.get_key(key_delims['num_delim'])
                 if self.lex.key.startswith('~'):
                     max = 11
@@ -368,6 +369,9 @@ class GetLitAndIden:
                     self.lex.error_message(f"Invalid identifier: {self.lex.key}", "", False)
 
     def get_lexeme(self):  
+        if self.lex.peek_next() is None:
+            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next() }", "", False)
+            return
         index = len(self.lex.key)
         del state[-index:]
         self.lex.pos -= index
@@ -382,11 +386,11 @@ class GetLitAndIden:
             if self.lex.peek_next() == 'l':
                 self.modify.add_key(1, 2)
                 if self.lex.peek_next() == 'n':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 2, 3, 4, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 2, 3, 4, "word", True)
             elif self.lex.peek_next() == 'r':
                 self.modify.add_key(1, 5)
                 if self.lex.peek_next() == 'k':
-                    self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 5, 6, 7, "word", False)
+                    self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 5, 6, 7, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -395,7 +399,7 @@ class GetLitAndIden:
             if self.lex.peek_next() == 'h':
                 self.modify.add_key(8, 9)
                 if self.lex.peek_next() == 'r':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 9, 10, 11, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 9, 10, 11, "word", True)
             elif self.lex.peek_next() == 'o':
                 self.modify.add_key(8, 12)
                 if self.lex.peek_next() == 'n':
@@ -412,17 +416,17 @@ class GetLitAndIden:
             if self.lex.peek_next() == 'e':
                 self.modify.add_key(17, 18)
                 if self.lex.peek_next() == 'c':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 18, 19, 20, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 18, 19, 20, "word", True)
                 elif self.lex.peek_next() == 'f':
-                    self.modify.add_matched_key(key_delims['def_delim'], "':'", 18, 21, 22, "word", False)
+                    self.modify.add_matched_key(key_delims['def_delim'], "':'", 18, 21, 22, "word", True)
             elif self.lex.peek_next() == 'i':
                 self.modify.add_key(17, 23)
                 if self.lex.peek_next() == 's':
                     self.modify.add_key(23, 24)
                     if self.lex.peek_next() == 'p':
-                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 24, 25, 26, "word", False)
+                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 24, 25, 26, "word", True)
             elif self.lex.peek_next() == 'o':
-                self.modify.add_matched_key(key_delims['block_delim'], "'{'", 17, 27, 28, "word", False)
+                self.modify.add_matched_key(key_delims['block_delim'], "'{'", 17, 27, 28, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -433,17 +437,17 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'i':
                     self.modify.add_key(30, 31)
                     if self.lex.peek_next() == 'f':
-                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 31, 32, 33, "word", False)
+                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 31, 32, 33, "word", True)
                 elif self.lex.peek_next() == 's':
                     self.modify.add_key(30, 34)
                     if self.lex.peek_next() == 'e':
-                        self.modify.add_matched_key(key_delims['block_delim'], "'{'", 34, 35, 36, "word", False)
+                        self.modify.add_matched_key(key_delims['block_delim'], "'{'", 34, 35, 36, "word", True)
             elif self.lex.peek_next() == 'x':
                 self.modify.add_key(29, 37)
                 if self.lex.peek_next() == 'i':
                     self.modify.add_key(37, 38)
                     if self.lex.peek_next() == 't':
-                        self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 38, 39, 40, "word", False)
+                        self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 38, 39, 40, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -456,14 +460,14 @@ class GetLitAndIden:
                     if self.lex.peek_next() == 's':
                         self.modify.add_key(43, 44)
                         if self.lex.peek_next() == 'e':
-                            self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 44, 45, 46, "word", False)
+                            self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 44, 45, 46, "word", True)
             elif self.lex.peek_next() == 'o':
                 self.modify.add_key(41, 47)
                 if self.lex.peek_next() == 'r':
                     self.modify.add_key(47, 48)
                     if self.lex.peek_next() != 'e':
                         self.lexmatched = True
-                        self.check.check_if_match(key_delims['state_delim'], "'('", 48, 49, "word", False)
+                        self.check.check_if_match(key_delims['state_delim'], "'('", 48, 49, "word", True)
                     else:
                         self.modify.add_key(48, 50)
                         if self.lex.peek_next() == 'a':
@@ -471,14 +475,14 @@ class GetLitAndIden:
                             if self.lex.peek_next() == 'c':
                                 self.modify.add_key(51, 52)
                                 if self.lex.peek_next() == 'h':
-                                    self.modify.add_matched_key(key_delims['state_delim'], "'('", 52, 53, 54, "word", False)  
+                                    self.modify.add_matched_key(key_delims['state_delim'], "'('", 52, 53, 54, "word", True)  
             if not self.lex.matched:
                 self.get_lexeme()
 
         elif char == 'i':
             self.modify.match_found(55, char)
             if self.lex.peek_next() == 'f':
-                self.modify.add_matched_key(key_delims['state_delim'], "'('", 55, 56, 57, "word", False)
+                self.modify.add_matched_key(key_delims['state_delim'], "'('", 55, 56, 57, "word", True)
             elif self.lex.peek_next() == 'n':
                 self.modify.add_key(55, 58)
                 if self.lex.peek_next() != 's' and self.lex.peek_next() != 't':
@@ -487,9 +491,9 @@ class GetLitAndIden:
                 elif self.lex.peek_next() == 's':
                     self.modify.add_key(58, 60)
                     if self.lex.peek_next() == 'p':
-                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 60, 61, 62, "word", False)
+                        self.modify.add_matched_key(key_delims['state_delim'], "'('", 60, 61, 62, "word", True)
                 elif self.lex.peek_next() == 't':
-                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", False)
+                    self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -509,7 +513,7 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'i':
                     self.modify.add_key(70, 71)
                     if self.lex.peek_next() == 'n':
-                        self.modify.add_matched_key(key_delims['block_delim'], "'{'", 71, 72, 73, "word", False)
+                        self.modify.add_matched_key(key_delims['block_delim'], "'{'", 71, 72, 73, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -520,7 +524,7 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'n':
                     self.modify.add_key(75, 76)
                     if self.lex.peek_next() == 'e':
-                        self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 76, 77, 78, "word", False)
+                        self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 76, 77, 78, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -533,7 +537,7 @@ class GetLitAndIden:
             elif self.lex.peek_next() == 's':
                 self.modify.add_key(79, 83)
                 if self.lex.peek_next() == 'm':
-                    self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 83, 84, 85, "word", False)
+                    self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 83, 84, 85, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -551,7 +555,7 @@ class GetLitAndIden:
                     self.modify.add_key(91, 92)
                     if self.lex.peek_next() != 'c':
                         #self.lex.matched = True
-                        self.check.check_if_match(key_delims['data_delim'], "whitespace, '[', '('", 92, 93, "word", False)
+                        self.check.check_if_match(key_delims['data_delim'], "whitespace, '[', '('", 92, 93, "word", True)
                     #else:
                     #    self.modify.add_matched_key(whitespace, "whitespace", 92, 94, 95, "word", True)
             elif self.lex.peek_next() == 'w':
@@ -563,7 +567,7 @@ class GetLitAndIden:
                         if self.lex.peek_next() == 'c':
                             self.modify.add_key(97, 98)
                             if self.lex.peek_next() == 'h':
-                                self.modify.add_matched_key(key_delims['state_delim'], "'('", 97, 98, 99, "word", False)
+                                self.modify.add_matched_key(key_delims['state_delim'], "'('", 97, 98, 99, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -574,7 +578,7 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'u':
                     self.modify.add_key(101, 102)
                     if self.lex.peek_next() == 'e':
-                        self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 102, 103, 104, "word", False)
+                        self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 102, 103, 104, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -596,7 +600,7 @@ class GetLitAndIden:
                     if self.lex.peek_next() == 'l':
                         self.modify.add_key(112, 113)
                         if self.lex.peek_next() == 'e':
-                            self.modify.add_matched_key(key_delims['state_delim'], "'('", 112, 113, 114, "word", False)
+                            self.modify.add_matched_key(key_delims['state_delim'], "'('", 112, 113, 114, "word", True)
             if not self.lex.matched:
                 self.get_lexeme()
 
@@ -609,85 +613,88 @@ class GetLitAndIden:
         if char == '=':
             self.modify.match_found(115, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 115, 117, 118, "symbol", False)
+                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 115, 117, 118, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['asn_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"', '{', '#'", 115, 116, False)
+                self.check.check_symbol(key_delims['asn_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"', '{', '#'", 115, 116, True)
 
         elif char == '+':
             self.modify.match_found(119, char)
             if self.lex.peek_next() == '+':
                 self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 119, 121, 122, "symbol", False)
             elif self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 119, 123, 124, "symbol", False)
+                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 119, 123, 124, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 119, 120, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 119, 120, True)
 
         elif char == '-':
             self.modify.match_found(125, char)
             if self.lex.peek_next() == '-':
                 self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 125, 127, 128, "symbol", False)
             elif self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 125, 129, 130, "symbol", False)
+                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 125, 129, 130, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 125, 126, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 125, 126, True)
                         
         elif char == '*':
             self.modify.match_found(131, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 131, 133, 134, "symbol", False)
+                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 131, 133, 134, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 131, 132, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 131, 132, True)
 
         elif char == '/':
             self.modify.match_found(135, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 135, 137, 138, "symbol", False)
+                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 135, 137, 138, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 135, 136, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 135, 136, True)
 
         elif char == '%':
             self.modify.match_found(139, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 139, 141, 142, "symbol", False)
+                self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 139, 141, 142, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 139, 140, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 139, 140, True)
 
         elif char == '&':
             self.modify.match_found(143, char)
             if self.lex.peek_next() == '&':
-                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 143, 145, 146, "symbol", False)
+                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 143, 145, 146, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['concat_delim'], "alpha,'(', '\"', '\'', '#'", 143, 144, False)
+                self.check.check_symbol(key_delims['concat_delim'], "alpha,'(', '\"', '\'', '#'", 143, 144, True)
                 
         elif char == '|':
             self.modify.match_found(147, char)
             if self.lex.peek_next() == '|':
-                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 147, 148, 149, "symbol", False)
-            
+                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 147, 148, 149, "symbol", True)
+            else:
+                self.lex.advance()
+                self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next() }", "", False)
+
         elif char == '!':
             self.modify.match_found(150, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 150, 152, 153, "symbol", False)
+                self.modify.add_matched_key(key_delims['relate_delim'], "alpha, number, '(', '~', '/', '.', '+', '-', '!', '\'', '\"'", 150, 152, 153, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['not_delim'], "alpha, '(',", 150, 151, False)
+                self.check.check_symbol(key_delims['not_delim'], "alpha, '(',", 150, 151, True)
 
         elif char == '<':
             self.modify.match_found(154, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 154, 156, 157, "symbol", False)
+                self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 154, 156, 157, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 154, 155, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 154, 155, True)
 
         elif char == '>':
             self.modify.match_found(158, char)
             if self.lex.peek_next() == '=':
-                self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 158, 160, 161, "symbol", False)
+                self.modify.add_matched_key(key_delims['relate1_delim'], "alpha, number, '(', '~', '+', '-', '!'", 158, 160, 161, "symbol", True)
             else:
-                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 158, 159, False)
+                self.check.check_symbol(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 158, 159, True)
 
         elif char == '[':
             self.modify.match_found(162, char)
-            self.check.check_symbol(key_delims['bracket_delim'], "alpha, number, ']', ',', '+', '-'", 162, 163, False)
+            self.check.check_symbol(key_delims['bracket_delim'], "alpha, number, ']', ',', '+', '-'", 162, 163, True)
 
         elif char == ']':
             self.modify.match_found(164, char)
@@ -697,32 +704,32 @@ class GetLitAndIden:
 
         elif char == '{':
             self.modify.match_found(166, char)
-            self.check.check_symbol(key_delims['brace_delim'], "alpha, number, ';', '(', "'", '"', '{', '}', '+', '-'", 166, 167, False)
+            self.check.check_symbol(key_delims['brace_delim'], "alpha, number, ';', '(', "'", '"', '{', '}', '+', '-'", 166, 167, True)
 
         elif char == '}':
             self.modify.match_found(168, char)
-            self.check.check_symbol(key_delims['brace1_delim'], "alpha, number, '(', '}', '+', '-', None, ';', ','", 168, 169, False)
+            self.check.check_symbol(key_delims['brace1_delim'], "alpha, number, '(', '}', '+', '-', None, ';', ','", 168, 169, True)
 
         elif char == '(':
             self.modify.match_found(170, char)
-            self.check.check_symbol(key_delims['paren_delim'], "alpha, number, ';', '!', '#', '\'', '\"', '(', ')', '+', '-', '.'", 170, 171, False)
+            self.check.check_symbol(key_delims['paren_delim'], "alpha, number, ';', '!', '#', '\'', '\"', '(', ')', '+', '-', '.'", 170, 171, True)
 
         elif char == ')':
             self.modify.match_found(172, char)
-            self.check.check_symbol(key_delims['paren1_delim'], "'+', '-', '*', '/', '%', '=', '!', '<', '>', '&', '|', '{', ')', ';'", 172, 173, False)
+            self.check.check_symbol(key_delims['paren1_delim'], "'+', '-', '*', '/', '%', '=', '!', '<', '>', '&', '|', '{', ')', ';'", 172, 173, True)
 
         elif char == ',':
             self.modify.match_found(174, char)
-            self.check.check_symbol(key_delims['comma_delim'], "alpha, number,']', '(', '{', '\"', '\'', '+', '-'", 174, 175, False)
+            self.check.check_symbol(key_delims['comma_delim'], "alpha, number,']', '(', '{', '\"', '\'', '+', '-'", 174, 175, True)
 
         elif char == ';':
             self.modify.match_found(176, char)
-            self.check.check_symbol(key_delims['semicolon_delim'], "alpha, number, '(', '}', '+', '-', None", 176, 177, False)
+            self.check.check_symbol(key_delims['semicolon_delim'], "alpha, number, '(', '}', '+', '-', None", 176, 177, True)
 
         elif char == ':':
             self.modify.match_found(178, char)
-            self.check.check_symbol(key_delims['colon_delim'], "alpha, number, '(', '+', '-'", 178, 179, False)
-
+            self.check.check_symbol(key_delims['colon_delim'], "alpha, number, '(', '+', '-'", 178, 179, True)
+        
         elif char == '.':
             self.lex.key = char
             fraction = ''
@@ -797,8 +804,8 @@ class Checkers:
         esc = ''
         invalid = ''
         word = ''
-        #if not requiredSpace:
-        #    self.lex.skip_whitespace()
+        if not requiredSpace:
+            self.lex.skip_whitespace()
 
         if self.lex.peek_next() == '/':
             while True:
@@ -823,8 +830,8 @@ class Checkers:
             else:
                 self.lex.pos -= 1
 
-        #if not requiredSpace:
-        #    self.lex.skip_whitespace()
+        if not requiredSpace:
+            self.lex.skip_whitespace()
 
         if self.lex.peek_next() not in delim:
             if self.lex.isIden and self.lex.peek_next() in alpha:
@@ -866,7 +873,6 @@ class Checkers:
                 self.lex.isDec = True
                 
         else:
-            print("1")
             if self.lex.isIden or self.lex.key == ']':
                 if self.lex.peek_next() == '.': self.lex.struct = True
 
@@ -893,15 +899,11 @@ class Checkers:
             elif self.lex.isInt: self.modify.append_key('int_lit')
             elif self.lex.isDec: self.modify.append_key('dec_lit')
             else: self.modify.append_key(self.lex.key)
-            print("appending")
 
     def check_if_match(self, delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
         addZero = False
         if reserved in ["iden", "word"]:
             if self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
-                self.lex.matched = False
-                return
-            if self.lex.peek_next() == "|" and self.lex.peek_next2() != "|":
                 self.lex.matched = False
                 return
         elif reserved == "num":
@@ -958,8 +960,11 @@ class StateAndKeyManipulation:
         Checkers(self.lex).check_if_match(delim, expected, s2, s3, reserved, requiredSpace)
 
     def get_key(self, delim):
-        while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
-            self.lex.key += self.lex.advance()
+        if self.lex.peek_next() is not None:
+            while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
+                self.lex.key += self.lex.advance()
+                if self.lex.peek_next() is None:
+                    break
 
     def match_found(self, state, char):
         self.lex.key = char

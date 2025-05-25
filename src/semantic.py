@@ -1696,7 +1696,7 @@ class Semantic:
             print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
-            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
+            if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", ")", "="]:
                 if not valid_logical:
                     self.error_message("Logical not operators (!) require boolean operands, or expressions that evaluate to boolean values.")
                 return

@@ -2,7 +2,8 @@ from definitions import *
 from lexical_func import *
 
 def lexer(code, console, table):
-    
+    if code.endswith("\n"):
+        code = code[:-1]
     lex = Lexical(code, console)
     get = GetLitAndIden(lex)
 

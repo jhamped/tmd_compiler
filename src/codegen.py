@@ -1553,35 +1553,65 @@ class DynamicArray:
             console.see(tk.END)
             console.focus_set()
 
-            input_var = tk.StringVar()
             input_done = threading.Event()
+            char_width_px = 8  
 
-            input_entry = tk.Entry(console, bg="#202020", fg="white", insertbackground="white", relief="flat", font=("Consolas", 12), textvariable=input_var)
-            console.window_create("input_start", window=input_entry)
-            input_entry.focus_set()
+            input_text = tk.Text(
+                console,
+                bg="#202020",
+                fg="white",
+                insertbackground="white",
+                relief="flat",
+                font=("Consolas", 12),
+                height=1,
+                wrap=tk.WORD,
+                width=40,
+                borderwidth=0,
+                highlightthickness=0
+            )
+
+            console.window_create("input_start", window=input_text)
+            input_text.focus_set()
 
             def block_mouse(event):
                 return "break"
-
             console.bind("<Button-1>", block_mouse)
 
             def on_enter(event):
                 input_done.set()
                 return "break"
 
-            input_entry.bind("<Return>", on_enter)
+            def auto_resize(event=None):
+                dline_count = input_text.count("1.0", "end", "displaylines")[0]
+                input_text.configure(height=max(1, dline_count))
+
+            def update_input_width(event=None):
+                try:
+                    console_width_px = console.winfo_width()
+                    width_chars = int((console_width_px / char_width_px) * 0.87)
+                    input_text.configure(width=max(20, width_chars))
+                except Exception:
+                    width_chars = 70
+
+            input_text.bind("<KeyRelease>", auto_resize)
+            input_text.bind("<Return>", on_enter)
+            input_text.bind("<Tab>", lambda e: "break")
+            console.bind("<Configure>", update_input_width)
+
+            auto_resize()
+            update_input_width()
+
             input_done.wait()
 
-            user_input = input_var.get()
-            user_input = user_input.replace("~", "-")
-            processed_input = user_input.strip()
+            user_input = input_text.get("1.0", "end-1c").replace("~", "-").strip()
+            input_text.destroy()
 
-            input_entry.destroy()
             console.unbind("<Button-1>")
+            console.unbind("<Configure>")
 
-            user_input = user_input.replace("-", "~")
-            console.insert(tk.END, user_input + "\n")
-            return processed_input
+            console.insert(tk.END, user_input.replace("-", "~") + "\n")
+            return user_input
+
             
         def console_disp(val):
             #val = str(val).lstrip()
