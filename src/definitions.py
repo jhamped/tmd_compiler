@@ -267,7 +267,7 @@ def add_all_set():
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
     add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>"])
     add_set(["true", "false", "id", "!"], "<value>", ["<not_op>","<bln_value>"])
-    add_set(["str_lit", "chr_lit"], "<value>", ["<text_operand>", "<expression_not_num>"])
+    #add_set(["str_lit", "chr_lit"], "<value>", ["<text_operand>", "<expression_not_num>"])
     add_set(["int_lit", "dec_lit"], "<value>", ["<integer_operand>", "<expression>"])
     add_set(["int", "dec", "chr", "str", "bln", "++", "--"], "<value>", ["<spec_operand>", "<expression>"])
     add_set(["true", "false"], "<bln_value>", ["<bln>", "<expression_not_num>"])
