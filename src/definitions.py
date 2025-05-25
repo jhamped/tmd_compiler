@@ -122,6 +122,7 @@ parsing_table = {
     "<more_assignment>": {";": ["null"], ",": [",", "id", "<assignment_tail>"]},
     "<output_statement>": {"disp": ["disp", "(", "<value>", ")", ";"]},
     "<value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
+    "<bln_value>": {"id": ["id", "<id_tail>", "<expression>"]},
     "<init_value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
     #"<more_value>": {"&": ["&", "<value>"]},
     "<input_statement>": {"insp": ["insp", "(", "<id_holder>", ")", ";"]},
@@ -265,11 +266,11 @@ def add_all_set():
     add_set(["[",  "=", "+=", "-=", "*=", "/=", "%="], "<assignment_tail>", ["<assignment_id_tail>", "<assignment_op>", "<value>", "<more_assignment>"])
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
     add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>"])
-    add_set(["true", "false", "id", "!"], 
-        "<value>", ["<not_op>","<bln_id_operand>","<expression_not_num>"])
+    add_set(["true", "false", "id", "!"], "<value>", ["<not_op>","<bln_value>"])
     add_set(["str_lit", "chr_lit"], "<value>", ["<text_operand>", "<expression_not_num>"])
     add_set(["int_lit", "dec_lit"], "<value>", ["<integer_operand>", "<expression>"])
     add_set(["int", "dec", "chr", "str", "bln", "++", "--"], "<value>", ["<spec_operand>", "<expression>"])
+    add_set(["true", "false"], "<bln_value>", ["<bln>", "<expression_not_num>"])
     #add_set([")", ";", ","], "<more_value>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
