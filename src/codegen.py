@@ -210,7 +210,7 @@ class DynamicArray:
             while col >= len(self.data[row]):
                 self.data[row].append(self.default)
             if self.dtype == 'int':
-                print("a")
+                
                 self.data[row][col] = int(value)
             elif self.dtype == 'dec':
                 self.data[row][col] = float(value)
@@ -220,13 +220,8 @@ class DynamicArray:
             while index >= len(self.data):
                 self.data.append(self.default)
             if self.dtype == 'int':
-                print(value)
-                value1 = value.strip('"')  
-                value1 = value1.strip("'")  
-                try:
-                    self.data[index] = int(value1)  # will fail if value1 is '1.1'
-                except ValueError:
-                    raise ValueError("a")
+                self.data[index] = int(value)  # will fail if value1 is '1.1'
+
             elif self.dtype == 'dec':
                 self.data[index] = float(value)
             else:
