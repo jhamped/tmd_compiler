@@ -1639,7 +1639,7 @@ class DynamicArray:
             elif dataType == "int":
                 val = val.strip()
                 if not (val.isdigit() or (val.startswith('-') and val[1:].isdigit())):
-                    raise ValueError(f"Illegal Input. Expected an integer number for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected an integer number for identifier '{variable_insp}'")
                 
                 digits_only = val.lstrip('-')
                 if len(digits_only) > 10:
@@ -1652,7 +1652,7 @@ class DynamicArray:
                 try:
                     float(val)  
                 except ValueError:
-                    raise ValueError(f"Illegal Input. Expected a decimal number for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected a decimal number for identifier '{variable_insp}'")
 
                 left, right = val.split('.')
                 left = left.lstrip('-') 
@@ -1667,7 +1667,7 @@ class DynamicArray:
                 
             elif dataType == "chr":
                 if len(val) != 1:
-                    raise ValueError(f"Illegal Input. Expected a single character for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected a single character for identifier '{variable_insp}'")
                     return None
                 
             elif dataType == "bln":
@@ -1676,7 +1676,7 @@ class DynamicArray:
                 elif val.lower() in ["false", "0"]:
                     val = False
                 else:
-                    raise ValueError(f"Illegal Input. Expected a boolean value (True/False) for identifier '{val}'")
+                    raise ValueError(f"Illegal Input. Expected a boolean value (True/False) for identifier '{variable_insp}'")
                     return None
             #console.insert(tk.END, f"DEBUG {dataType}/{variable_insp}/{symbol_table}")
             #console.insert(tk.END, f"[DEBUG INSP] returning: {repr(val)}\n")
