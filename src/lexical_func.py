@@ -288,7 +288,7 @@ class GetLitAndIden:
         self.lex.isDec = False
         self.lex.isIden = True
         curr = self.lex.advance()
-
+        print(f"1{self.lex.invalid}/{self.lex.matched}")
         self.lex.key = curr
         self.modify.append_state(curr, 0, 180)
         self.check.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", 180, 181, "iden", True)
@@ -352,9 +352,11 @@ class GetLitAndIden:
                                                                                                                             self.check.check_id(236, 238, 239)
 
         self.lex.isIden = False
+        print(f"2{self.lex.invalid}/{self.lex.matched}")
         if self.lex.invalid:
             self.modify.get_key("")
             self.lex.invalid = False
+            self.lex.matched = True #remove this if nagerror
             self.lex.error_message(f"Invalid identifier: {self.lex.key}", "", False)
 
         if not self.lex.matched:

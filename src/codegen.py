@@ -210,6 +210,7 @@ class DynamicArray:
             while col >= len(self.data[row]):
                 self.data[row].append(self.default)
             if self.dtype == 'int':
+                print("a")
                 self.data[row][col] = int(value)
             elif self.dtype == 'dec':
                 self.data[row][col] = float(value)
@@ -219,7 +220,13 @@ class DynamicArray:
             while index >= len(self.data):
                 self.data.append(self.default)
             if self.dtype == 'int':
-                self.data[index] = int(value)
+                print(value)
+                value1 = value.strip('"')  
+                value1 = value1.strip("'")  
+                try:
+                    self.data[index] = int(value1)  # will fail if value1 is '1.1'
+                except ValueError:
+                    raise ValueError("a")
             elif self.dtype == 'dec':
                 self.data[index] = float(value)
             else:
@@ -1434,6 +1441,36 @@ class DynamicArray:
                     output_val += lexeme[current_token_index].strip('"')
                 elif curr in ["true", "false", "none"]:
                     output_val += lexeme[current_token_index].capitalize()
+                elif curr in ["++", "--"] or getNextToken(current_token_index) in ["++", "--"]:
+                    # Case 1: x++
+                    if curr.startswith("id") and token[current_token_index + 1] in ["++", "--"]:
+                        var_name = lexeme[current_token_index]
+                        if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false", "none"]:
+                            var_name = f"_{var_name}"
+                        op = token[current_token_index + 1]
+                        if op == "++":
+                            trans_code += f"{var_name} += 1\n" + indent_level(indent)
+                            output_val += f"{{{var_name}}}"
+                        else:
+                            trans_code += f"{var_name} -= 1\n" + indent_level(indent)
+                            output_val += f"{{{var_name}}}"
+                        current_token_index += 1
+                        curr = token[current_token_index]  
+
+                    # Case 2: ++x
+                    elif curr in ["++", "--"] and token[current_token_index + 1].startswith("id"):
+                        op = curr
+                        var_name = lexeme[current_token_index + 1]
+                        if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false", "none"]:
+                            var_name = f"_{var_name}"
+                        if op == "++":
+                            trans_code += f"{var_name} += 1\n" + indent_level(indent)
+                            output_val += f"{{{var_name}}}"
+                        else:
+                            trans_code += f"{var_name} -= 1\n" + indent_level(indent)
+                            output_val += f"{{{var_name}}}"
+                        current_token_index += 1
+                        curr = token[current_token_index] 
                 else:
                     if curr.startswith("id") and token[current_token_index+1] in ["&", ")"]:
                         iden_temp = lexeme[current_token_index]
@@ -1456,6 +1493,36 @@ class DynamicArray:
                                 isDec = True
                             if curr in ["int_lit", "dec_lit"]:
                                 exp += checkNumLit(current_token_index)
+                            elif curr in ["++", "--"] or getNextToken(current_token_index) in ["++", "--"]:
+                                # Case 1: x++
+                                if curr.startswith("id") and token[current_token_index + 1] in ["++", "--"]:
+                                    var_name = lexeme[current_token_index]
+                                    if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false", "none"]:
+                                        var_name = f"_{var_name}"
+                                    op = token[current_token_index + 1]
+                                    if op == "++":
+                                        trans_code += f"{var_name} += 1\n" + indent_level(indent)
+                                        exp += f"{{{var_name}}}"
+                                    else:
+                                        trans_code += f"{var_name} -= 1\n" + indent_level(indent)
+                                        exp += f"{{{var_name}}}"
+                                    current_token_index += 1
+                                    curr = token[current_token_index]  
+
+                                # Case 2: ++x
+                                elif curr in ["++", "--"] and token[current_token_index + 1].startswith("id"):
+                                    op = curr
+                                    var_name = lexeme[current_token_index + 1]
+                                    if var_name in dir(builtins) and var_name not in ["True", "False", "true", "false", "none"]:
+                                        var_name = f"_{var_name}"
+                                    if op == "++":
+                                        trans_code += f"{var_name} += 1\n" + indent_level(indent)
+                                        exp += f"{{{var_name}}}"
+                                    else:
+                                        exec_code.append(f"{var_name} -= 1")
+                                        exp += f"{{{var_name}}}"
+                                    current_token_index += 1
+                                    curr = token[current_token_index] 
                             else:
                                 if token[current_token_index].startswith("id"):
                                     iden_temp = lexeme[current_token_index]
@@ -1562,7 +1629,6 @@ class DynamicArray:
             char_count = int(console.count(f"{adjusted_line}.0", f"{adjusted_line}.end", "chars")[0])
             def on_key(event):
                 # Handle Enter
-                print(f"{event.keysym}/{event}")
                 if event.keysym == "Return":
                     input_done.set()
                     return "break"
@@ -1578,7 +1644,6 @@ class DynamicArray:
                     # but usually col won't go negative here.
 
                     final_index = f"{line}.{char_count}"
-                    print(f"Current index: {current_index}<{final_index}")
                     if current_index <= final_index:
                         return "break"
 
@@ -1626,8 +1691,10 @@ class DynamicArray:
             console.see(tk.END)
         def console_insp(variable_insp):
             val = handle_input()
+            variable_insp = re.sub(r'\[.*?\]', '', variable_insp)
             val = val.replace("~", "-")
             dataType = symbol_table.get(variable_insp, {}).get("type", None)
+            print(f"HANDLE {val}/{variable_insp}/{dataType}")
             if dataType == "str":
                 val = str(val)
                 
