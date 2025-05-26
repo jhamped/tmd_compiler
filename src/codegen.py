@@ -1,11 +1,7 @@
 from definitions import *
-import sys
-import io
 import tkinter as tk
 import re
-import tempfile
-import subprocess
-import os
+import tkinter.font as tkFont
 import threading
 import builtins
 index = 0
@@ -1554,68 +1550,58 @@ class DynamicArray:
     try:
         def handle_input(prompt=""):
             console.insert(tk.END, prompt)
-            console.mark_set("input_start", tk.END)
-            console.see(tk.END)
+            console.mark_set("input_start", tk.END)  # where user input begins
+            console.mark_gravity("input_start", tk.RIGHT)
             console.focus_set()
 
+            input_index = console.index("input_start")
+            line_number = int(input_index.split('.')[0])
             input_done = threading.Event()
-            char_width_px = 8  
+            adjusted_line = line_number-1
+            char_count = int(console.count(f"{adjusted_line}.0", f"{adjusted_line}.end", "chars")[0])
+            def on_key(event):
+                # Handle Enter
+                if event.keysym == "Return":
+                    input_done.set()
+                    return "break"
 
-            input_text = tk.Text(
-                console,
-                bg="#202020",
-                fg="white",
-                insertbackground="white",
-                relief="flat",
-                font=("Consolas", 12),
-                height=1,
-                wrap=tk.WORD,
-                width=40,
-                borderwidth=0,
-                highlightthickness=0
-            )
+                # Handle Backspace: block if before input_start
+                elif event.keysym == "BackSpace":
+                    current_index = console.index(tk.INSERT)
+                    input_start_index = console.index("input_start")
+                    line_str, col_str = input_start_index.split(".")
+                    line = int(line_str) - 1
 
-            console.window_create("input_start", window=input_text)
-            input_text.focus_set()
+                    # If final_col < 0, you might want to adjust line accordingly,
+                    # but usually col won't go negative here.
+
+                    final_index = f"{line}.{char_count}"
+                    print(f"Current index: {current_index}<{final_index}")
+                    if current_index <= final_index:
+                        return "break"
+
+                return None
 
             def block_mouse(event):
                 return "break"
+
+            console.bind("<KeyPress>", on_key)
             console.bind("<Button-1>", block_mouse)
-
-            def on_enter(event):
-                input_done.set()
-                return "break"
-
-            def auto_resize(event=None):
-                dline_count = input_text.count("1.0", "end", "displaylines")[0]
-                input_text.configure(height=max(1, dline_count))
-
-            def update_input_width(event=None):
-                try:
-                    console_width_px = console.winfo_width()
-                    width_chars = int((console_width_px / char_width_px) * 0.87)
-                    input_text.configure(width=max(20, width_chars))
-                except Exception:
-                    width_chars = 70
-
-            input_text.bind("<KeyRelease>", auto_resize)
-            input_text.bind("<Return>", on_enter)
-            input_text.bind("<Tab>", lambda e: "break")
-            console.bind("<Configure>", update_input_width)
-
-            auto_resize()
-            update_input_width()
 
             input_done.wait()
 
-            user_input = input_text.get("1.0", "end-1c").replace("~", "-").strip()
-            input_text.destroy()
+            # Get the input
+            start = console.index("input_start")
+            end = console.index("end-1c")
+            user_input = console.get(start, end).replace("~", "-").strip()
 
+            # Finalize
+            console.insert(tk.END, "\n")
+            console.unbind("<KeyPress>")
             console.unbind("<Button-1>")
-            console.unbind("<Configure>")
-
-            console.insert(tk.END, user_input.replace("-", "~") + "\n")
             return user_input
+
+
 
             
         def console_disp(val):
@@ -1654,15 +1640,19 @@ class DynamicArray:
                 except ValueError:
                     raise ValueError(f"Illegal Input. Expected a decimal number for identifier '{variable_insp}'")
 
-                left, right = val.split('.')
+                if '.' in val:
+                    left, right = val.split('.', 1)
+                else:
+                    left = val
+                    right = ''
                 left = left.lstrip('-') 
                 left_digits = sum(1 for ch in left if ch.isdigit())
                 right_digits = sum(1 for ch in right if ch.isdigit())
 
-                if left_digits > 10 or right_digits > 7:
-                    raise ValueError(f"Illegal Input. Decimal input exceeds maximum length of 10 digits")
+                if left_digits > 10:
+                    raise ValueError(f"Illegal Input. Decimal whole number exceeds maximum length of 10 digits")
                 elif right_digits > 7:
-                    raise ValueError(f"Illegal Input. Decimal input exceeds maximum length of 7 decimal places")
+                    raise ValueError(f"Illegal Input. Decimal fraction digit exceeds maximum length of 7 decimal places")
                 val = float(val)
                 
             elif dataType == "chr":
