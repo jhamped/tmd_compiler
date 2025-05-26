@@ -1612,67 +1612,74 @@ class DynamicArray:
     try:
         def handle_input(prompt=""):
             console.insert(tk.END, prompt)
-            console.mark_set("input_start", tk.END)
-            console.see(tk.END)
+            console.mark_set("input_start", tk.END)  # where user input begins
+            console.mark_gravity("input_start", tk.RIGHT)
             console.focus_set()
+            console.config(insertbackground="white")
 
+            input_index = console.index("input_start")
+            line_number = int(input_index.split('.')[0])
+            print(f"d02 ")
             input_done = threading.Event()
-            char_width_px = 8  
+            adjusted_line = line_number-1
+            print(f"d3 {adjusted_line}")
+            try:
+                count_result = console.count(f"{adjusted_line}.0", f"{adjusted_line}.end", "chars")
+                char_count = int(count_result[0]) if count_result else 0
+            except Exception as e:
+                print("Error getting char_count:", e)
+                char_count = 0
+            print(f"A = {char_count}")
+            def on_key(event):
+                print(event.keysym, "a")
+                if event.keysym == "Return":
+                    print("done")
+                    input_done.set()
+                    return "break"
 
-            input_text = tk.Text(
-                console,
-                bg="#202020",
-                fg="white",
-                insertbackground="white",
-                relief="flat",
-                font=("Consolas", 12),
-                height=1,
-                wrap=tk.WORD,
-                width=40,
-                borderwidth=0,
-                highlightthickness=0
-            )
+                # Handle Backspace: block if before input_start
+                elif event.keysym == "BackSpace":
+                    current_index = console.index(tk.INSERT)
+                    input_start_index = console.index("input_start")
+                    line_str, col_str = input_start_index.split(".")
+                    line = int(line_str) - 1
 
-            console.window_create("input_start", window=input_text)
-            input_text.focus_set()
+                    # If final_col < 0, you might want to adjust line accordingly,
+                    # but usually col won't go negative here.
+
+                    final_index = f"{line}.{char_count}"
+                    if current_index <= final_index:
+                        return "break"
+
+                return None
 
             def block_mouse(event):
                 return "break"
+
+            console.bind("<KeyPress>", on_key)
+            console.bind('<Key-Return>', on_key)
+           
             console.bind("<Button-1>", block_mouse)
-
-            def on_enter(event):
-                input_done.set()
-                return "break"
-
-            def auto_resize(event=None):
-                dline_count = input_text.count("1.0", "end", "displaylines")[0]
-                input_text.configure(height=max(1, dline_count))
-
-            def update_input_width(event=None):
-                try:
-                    console_width_px = console.winfo_width()
-                    width_chars = int((console_width_px / char_width_px) * 0.87)
-                    input_text.configure(width=max(20, width_chars))
-                except Exception:
-                    width_chars = 70
-
-            input_text.bind("<KeyRelease>", auto_resize)
-            input_text.bind("<Return>", on_enter)
-            input_text.bind("<Tab>", lambda e: "break")
-            console.bind("<Configure>", update_input_width)
-
-            auto_resize()
-            update_input_width()
 
             input_done.wait()
 
-            user_input = input_text.get("1.0", "end-1c").replace("~", "-").strip()
-            input_text.destroy()
+            # Get the input
+            input_start_index = console.index("input_start")
+            line_str, col_str = input_start_index.split(".")
+            line = int(line_str) - 1
+            start = f"{line}.{char_count}"
+            end = console.index("end-1c")
+            user_input = console.get(start, end).replace("~", "-").strip()
 
+            # Finalize
+            console.insert(tk.END, "\n")
+            console.unbind("<Key>")
+            console.bind("<Key>", lambda e: "break")
+            console.unbind("<KeyPress>")
+            console.bind("<KeyPress>", lambda e: "break")
+            console.unbind("<Key-Return>")
             console.unbind("<Button-1>")
-            console.unbind("<Configure>")
-
-            console.insert(tk.END, user_input.replace("-", "~") + "\n")
+            console.config(insertbackground="#202020")
             return user_input
 
 
