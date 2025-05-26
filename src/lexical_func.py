@@ -19,7 +19,8 @@ class Lexical:
         self.isDec = False
         self.matched = False
         self.invalid = False
-        self.struct = False
+        self.isStringDone = False
+        #self.struct = False
 
     def advance(self):
         if self.pos < len(self.code):
@@ -86,7 +87,7 @@ class GetLitAndIden:
                 break
             if self.lex.peek_next() == '"': 
                 self.modify.add_key(412, 413)
-                self.check.check_delim(key_delims['lit_delim'], "';', ',', '&', ')', '}', '!', '=', '|', ':'", False)
+                self.check.check_delim(key_delims['lit_delim'], "';', ',', '&', ')', '}', '!', '=', '|', ':'", True)
                 break
             elif self.lex.peek_next() == '\\': 
                 esc = self.lex.advance()
@@ -118,7 +119,6 @@ class GetLitAndIden:
                     self.modify.add_key(411, 412)
                 else:
                     self.modify.add_key(412, 412)
-        
         self.lex.isString = False
 
     def get_character(self):
@@ -208,9 +208,8 @@ class GetLitAndIden:
         self.lex.isInt = False
         if not self.lex.matched:
             if self.lex.peek_next() not in whitespace:
-                print(self.lex.key)
-                #self.lex.key += curr
-                print(self.lex.key)
+                if len(self.lex.key) < 10:
+                    self.lex.key += curr
                 self.modify.get_key(key_delims['num_delim'])
                 if self.lex.key.startswith('~'):
                     max = 11
@@ -239,7 +238,6 @@ class GetLitAndIden:
         decimal = ''
         curr = self.lex.advance()
         self.lex.key += curr
-
         if curr in digit:
             decimal += curr
             self.modify.append_state(curr, self.lex.stateNum, self.lex.stateNum+1)
@@ -262,7 +260,6 @@ class GetLitAndIden:
                                 if self.lex.peek_next() in digit:
                                     decimal += self.lex.peek_next()
                                     self.check.check_num(self.lex.stateNum+11, self.lex.stateNum+13, self.lex.stateNum+14)
-        
         if not self.lex.matched:
             lex = ''
             invalid = False
@@ -553,9 +550,7 @@ class GetLitAndIden:
                 self.modify.add_key(86, 91)
                 if self.lex.peek_next() == 'r':
                     self.modify.add_key(91, 92)
-                    if self.lex.peek_next() != 'c':
-                        #self.lex.matched = True
-                        self.check.check_if_match(key_delims['data_delim'], "whitespace, '[', '('", 92, 93, "word", True)
+                    self.check.check_if_match(key_delims['data_delim'], "whitespace, '[', '('", 92, 93, "word", True)
                     #else:
                     #    self.modify.add_matched_key(whitespace, "whitespace", 92, 94, 95, "word", True)
             elif self.lex.peek_next() == 'w':
@@ -698,8 +693,8 @@ class GetLitAndIden:
 
         elif char == ']':
             self.modify.match_found(164, char)
-            if self.lex.peek_next() == '.':
-                self.lex.struct = True
+            #if self.lex.peek_next() == '.':
+            #    self.lex.struct = True
             self.check.check_symbol(key_delims['bracket1_delim'], "operator, ')', '=', ';', '&', '.'", 164, 165, True)
 
         elif char == '{':
@@ -736,25 +731,21 @@ class GetLitAndIden:
 
             self.lex.skip_whitespace()
 
-            if self.lex.struct and self.lex.peek_next() in alpha:
-                self.modify.append_key(self.lex.key)
-                self.get_id()
+            while self.lex.peek_next() not in whitespace and (self.lex.peek_next() not in key_delims['num_delim'] or self.lex.peek_next()) and self.lex.peek_next() != None:
+                fraction += self.lex.peek_next()
+                self.lex.advance()
+            if fraction.isdigit():
+                self.lex.key += fraction
+                self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
             else:
-                while self.lex.peek_next() not in whitespace and (self.lex.peek_next() not in key_delims['num_delim'] or self.lex.peek_next() not in key_delims['iden_delim']):
-                    fraction += self.lex.peek_next()
-                    self.lex.advance()
-                if fraction.isdigit() and not self.lex.struct:
-                    self.lex.key += fraction
-                    self.lex.error_message(f"Invalid decimal value: {self.lex.key}", "", False)
+                if fraction == '':
+                    self.lex.error_message(f"Invalid Delimiter: None after .", "identifier", True)
+                #elif self.lex.struct:
+                #    self.lex.error_message(f"Invalid identifier: {fraction}", "", False)
                 else:
-                    if fraction == '':
-                        self.lex.error_message(f"Invalid Delimiter: None after .", "identifier", True)
-                    elif self.lex.struct:
-                        self.lex.error_message(f"Invalid identifier: {fraction}", "", False)
-                    else:
-                        self.lex.key += fraction
-                        self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
-            self.lex.struct = False
+                    self.lex.key += fraction
+                    self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
+            #self.lex.struct = False
                     
         elif char == '_':
             self.lex.key = char
@@ -774,7 +765,7 @@ class Checkers:
 
     def check_num(self, s1, s2, s3):
         self.modify.add_key(s1, s2)
-        self.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", s2, s3, "num", False)
+        self.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", s2, s3, "num", True)
 
     def check_dec(self, s1, s2):
         self.modify.add_key(s1, s2)
@@ -847,12 +838,12 @@ class Checkers:
                 return
 
             if self.lex.peek_next() in alpha and self.lex.key not in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
-                while self.lex.peek_next() in identifier:
+                while self.lex.peek_next() in identifier and not self.lex.isString:
                     word += self.lex.advance()
                 if word not in keywords:
                     self.lex.error_message(f"Invalid Delimiter: id after {self.lex.key}", expected, True)
                 else:
-                    self.lex.error_message(f"Invalid Delimiter {word} after {self.lex.key}", expected, True)
+                    self.lex.error_message(f"Invalid Delimiter: {word} after {self.lex.key}", expected, True)
             elif self.lex.peek_next() in alpha and self.lex.key in ['bln', 'chr', 'dec', 'int', 'str', 'var']:
                 self.modify.append_key(self.lex.key)
             else:
@@ -873,8 +864,8 @@ class Checkers:
                 self.lex.isDec = True
                 
         else:
-            if self.lex.isIden or self.lex.key == ']':
-                if self.lex.peek_next() == '.': self.lex.struct = True
+            #if self.lex.isIden or self.lex.key == ']':
+            #    if self.lex.peek_next() == '.': self.lex.struct = True
 
             if self.lex.isIden and self.lex.peek_next() in ['!', '&', '|']:
                 curr = self.lex.peek_next()
@@ -928,7 +919,6 @@ class Checkers:
 
         if addZero:
             self.lex.key += '0'
-
         self.check_delim(delim, expected, requiredSpace)
 
 
