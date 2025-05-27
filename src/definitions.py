@@ -122,7 +122,7 @@ parsing_table = {
     "<more_assignment>": {";": ["null"], ",": [",", "id", "<assignment_tail>"]},
     "<output_statement>": {"disp": ["disp", "(", "<value>", ")", ";"]},
     "<value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
-    "<bln_value>": {"id": ["id", "<id_tail>", "<expression>", "<concat_string>"]},
+    "<bln_value>": {"id": ["id", "<id_tail>", "<expression_iden>", "<concat_string>"]},
     "<init_value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
     #"<more_value>": {"&": ["&", "<value>"]},
     "<input_statement>": {"insp": ["insp", "(", "<id_holder>", ")", ";"]},
@@ -138,7 +138,7 @@ parsing_table = {
     "<post_unary>": {"id": ["<unary_id>", "<unary_op>"]},
     "<unary_id>": {"id": ["<id_holder>"]},
     "<return_statement>": {"ret": ["ret", "<return_value>", ";"]},
-    "<return_value>": {"(": ["(", "<return_value>", ")", "<ret_expression>"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"]},
+    "<return_value>": {"(": ["(", "<return_value>", ")", "<ret_expression>"], "id": ["id", "<ret_id_tail>","<ret_expression>"], "none": ["none"], "int": ["int", "(", "<int_type_value>", ")"], "dec": ["dec", "(", "<int_type_value>", ")"], "bln": ["bln", "(", "<int_type_value>", ")"]},
     "<ret_expression>": {},
     "<ret_id_tail>": {"[": ["[", "<index>", "]"], "(": ["(", "<args>", ")"]},
     "<conditional_statement>": {"if": ["<if_statement>"], "switch": ["<switch_statement>"]},
@@ -174,6 +174,7 @@ parsing_table = {
     "<con_operand_tail>": {},
     "<con_operand_paren>": {"(": ["(","<con_operand_paren>",")", "<con_operand_tail>"]},
     "<comparison_operator>": {},
+    "<equality_operator>": {"==": ["=="], "!=": ["!="]},
     "<iteration>": {},
     "<iteration_statement>": {"id": ["id", "<iteration_statement_tail>"], "(": ["(","<iteration_statement>",")"]},
     "<iteration_statement_tail>": {},
@@ -185,16 +186,34 @@ parsing_table = {
     "<expression>": {},
     "<expression_num>": {},
     "<expression_not_num>": {},
+    "<expression_iden>": {},
+    "<expression_integer>": {},
+    "<expression_text>": {},
+    "<expression_bln>": {},
     "<tail_operand>": {"(": ["(", "<not_op>", "<tail_operand>", ")", "<expression>"]},
-    "<number_tail_operand>": {"(": ["(", "<number_tail_operand>", ")", "<expression_num>"]},
-    "<operand>": {"id": ["id", "<id_tail>"]}, 
+    "<number_tail_operand>": {"(": ["(", "<number_tail_operand>", ")", "<expression_iden>"]},
+    "<iden_tail_operand>": {"(": ["(", "<iden_tail_operand>", ")", "<expression_num>"]},
+    "<integer_log_tail_operand>": {"(": ["(", "<integer_log_tail_operand>", ")", "<expression_integer>"]},
+    "<integer_ar_rel_tail_operand>": {"(": ["(", "<integer_ar_rel_tail_operand>", ")", "<expression_integer>"], "int": ["int", "(", "<int_type_value>", ")", "<expression_integer>"], "dec": ["dec", "(", "<group_type_value>", ")", "<expression_integer>"]},
+    "<integer_equal_tail_operand>": {"(": ["(", "<integer_equal_operand>", ")", "<expression_integer>"], "bln": ["bln", "(", "<group_type_value>", ")", "<expression_integer>"], "id": ["id", "<id_tail>", "<expression_iden>"], "int": ["int", "(", "<int_type_value>", ")", "<expression_integer>"], "dec": ["dec", "(", "<group_type_value>", ")", "<expression_integer>"]},
+    "<text_log_tail_operand>": {"(": ["(", "<text_log_tail_operand>", ")", "<expression_text>"], "id": ["id", "<id_tail>", "<expression_iden>"]},
+    "<text_equal_tail_operand>": {"(": ["(", "<text_equal_tail_operand>", ")", "<expression_text>"]},
+    "<bln_log_tail_operand>": {"(": ["(", "<bln_log_tail_operand>", ")", "<expression_bln>"]},
+    "<bln_equal_tail_operand>": {"(": ["(", "<bln_equal_tail_operand>", ")", "<expression_bln>"], "id": ["id", "<id_tail>", "<expression_iden>"], "int": ["int", "(", "<int_type_value>", ")", "<expression_bln>"], "dec": ["dec", "(", "<group_type_value>", ")", "<expression_bln>"], "bln": ["bln", "(", "<group_type_value>", ")", "<expression_bln>"]},
+    "<operand>": {"id": ["id", "<id_tail>"], "int_lit": ["int_lit", "<expression_integer>"], "dec_lit": ["dec_lit", "<expression_integer>"]}, 
     "<spec_operand>": {},
+    "<iden_operand>": {"id": ["id", "<id_tail>", "<expression_iden>"], "int": ["int", "(", "<int_type_value>", ")", "<expression_integer>"], "dec": ["dec", "(", "<group_type_value>", ")", "<expression_integer>"], "bln": ["bln", "(", "<group_type_value>", ")", "<expression_bln>"]},
+    "<log_integer_operand>": {"id": ["id", "<id_tail>", "<expression_iden>"], "int": ["int", "(", "<int_type_value>", ")"], "dec": ["dec", "(", "<group_type_value>", ")"], "bln": ["bln", "(", "<group_type_value>", ")"]},
+    "<equal_text_operand>": {"id": ["id", "<id_tail>", "<expression_iden>"], "bln": ["bln", "(", "<group_type_value>", ")"]},
+    "<log_bln_operand>": {"int": ["int", "(", "<int_type_value>", ")"], "dec": ["dec", "(", "<group_type_value>", ")"], "bln": ["bln", "(", "<group_type_value>", ")"]},
     "<text_operand>": {"str_lit": ["str_lit"], "chr_lit": ["chr_lit"]},
-    "<number_operand>": {"id": ["id", "<id_tail>"]},
+    "<number_operand>": {"id": ["id", "<id_tail>", "<expression_iden>"]},
     "<integer_operand>": {"int_lit": ["int_lit"], "dec_lit": ["dec_lit"]},
-    "<bln_id_operand>": {"id": ["id", "<id_tail>"]},
+    "<bln_id_operand>": {"id": ["id", "<id_tail>", "<expression_iden>"]},
+    "<text_type>": {"str": ["str", "(", "<str_type_value>", ")"], "chr": ["chr", "(", "<group_type_value>", ")"]},
     "<operator>": {},
     "<non_number_operator>": {},
+    "<inequality_operator>": {">": [">"], ">=": [">="], "<": ["<"], "<": ["<="]},
     "<expression_literals>": {"int_lit": ["int_lit"], "dec_lit": ["dec_lit"]},
     "<assignment_op>": {"=": ["="], "+=": ["+="], "-=": ["-="], "*=": ["*="], "/=": ["/="], "%=": ["%="]},
     "<arithmetic_op>": {"+": ["+"], "-": ["-"], "*": ["*"], "/": ["/"], "%": ["%"]},
@@ -207,6 +226,10 @@ parsing_table = {
     "<concat_value>": {"(": ["(","<concat_value>",")","<concat_string>"]},
     "<type_conversion>": {},
     "<type_value>": {"(": ["(","<type_value>",")"], "id": ["id", "<id_tail>"], "none": ["none"]},
+    "<int_type_value>": {"id": ["id", "<id_tail>"], "str_lit": ["str_lit"]},
+    "<group_type_value>": {"id": ["id", "<id_tail>"], "int_lit": ["int_lit"], "str_lit": ["str_lit"]},
+    "<str_type_value>": {"id": ["id", "<id_tail>"], "int_lit": ["int_lit"]},
+    "<type_value_chr_dec>": {"chr_lit": ["chr_lit"], "dec_lit": ["dec_lit"]},
     "<index>": {}, 
     "<more_index>": {",": [",", "<index_value>"], "]": ["null"]},
     "<index_value>": {"(": ["(", "<index_value>", ")", "<index_expression>"]},
@@ -265,26 +288,26 @@ def add_all_set():
     add_set(["++", "--"], "<assignment_tail>", ["<unary_op>", "<more_unary>"])
     add_set(["[",  "=", "+=", "-=", "*=", "/=", "%="], "<assignment_tail>", ["<assignment_id_tail>", "<assignment_op>", "<value>", "<more_assignment>"])
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
-    add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>"])
+    add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>", "<expression_text>"])
     add_set(["true", "false", "id", "!"], "<value>", ["<not_op>","<bln_value>"])
     #add_set(["str_lit", "chr_lit"], "<value>", ["<text_operand>", "<expression_not_num>"])
-    add_set(["int_lit", "dec_lit"], "<value>", ["<integer_operand>", "<expression>"])
-    add_set(["int", "dec", "chr", "str", "bln", "++", "--"], "<value>", ["<spec_operand>", "<expression>"])
-    add_set(["true", "false"], "<bln_value>", ["<bln>", "<expression_not_num>"])
+    add_set(["int_lit", "dec_lit"], "<value>", ["<integer_operand>", "<expression_integer>"])
+    add_set(["int", "dec", "chr", "str", "bln", "++", "--"], "<value>", ["<spec_operand>", "<expression_iden>"])
+    add_set(["true", "false"], "<bln_value>", ["<bln>", "<expression_bln>"])
     #add_set([")", ";", ","], "<more_value>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
     #add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_hold_id_tail>", ["null"])
     add_set(["++", "--"], "<pre_unary_statement>", ["<pre_unary_paren>", "<more_unary>", ";"])
-    add_set(["++", "--"], "<pre_unary_paren>", {"<pre_unary>"})
+    add_set(["++", "--"], "<pre_unary_paren>", ["<pre_unary>"])
     add_set(["++", "--"], "<unary_statement>", ["<pre_unary>", "<more_unary>"])
     add_set([")", ";" ], "<more_unary>", ["null"])
     add_set(["++", "--"], "<pre_unary>", ["<unary_op>", "<unary_id>"])
     #add_set(["int_lit", "dec_lit", "true", "false"], "<return_value>", ["<expression_literals>","<ret_expression>"])
-    add_set(["int_lit", "dec_lit"], "<return_value>", ["<integer_operand>", "<expression_num>"])
-    add_set(["true", "false"], "<return_value>", ["<bln>", "<expression_not_num>"])
-    add_set(["str", "bln", "chr", "dec", "int"], "<return_value>", ["<type_conversion>", "<ret_expression>"])
-    add_set(["str_lit", "chr_lit"], "<return_value>", ["<text_format>"])
+    add_set(["int_lit", "dec_lit"], "<return_value>", ["<integer_operand>", "<expression_integer>"])
+    add_set(["true", "false"], "<return_value>", ["<bln>", "<expression_bln>"])
+    #add_set(["str", "bln", "chr", "dec", "int"], "<return_value>", ["<type_conversion>", "<ret_expression>"])
+    add_set(["str_lit", "chr_lit"], "<return_value>", ["<text_type>", "<expression_text>"])
     add_set(["++", "--"], "<return_value>", ["<pre_unary>"])
     add_set([";", ")"], "<ret_expression>", ["null"])
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<ret_expression>", ["<operator>","<not_op>","<tail_operand>"])
@@ -314,7 +337,7 @@ def add_all_set():
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<con_expression>", ["<comparison_operator>", "<not_op>","<con_value>"])
     add_set(["str", "chr", "int", "dec"], "<con_operand>", ["<con_type_conversion>"])
     add_set(["++", "--"], "<con_operand>", ["<pre_unary>","<con_operand_tail>"])
-    add_set([ "str_lit", "chr_lit"], "<con_operand>", ["<text_format>"])
+    add_set([ "str_lit", "chr_lit"], "<con_operand>", ["<text_format>", "<equality_operator>", "<text_format>"])
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";" ], "<con_operand_tail>", ["null"])
     add_set(["+", "-", "*", "/", "%"], "<con_operand_tail>", ["<arithmetic_op>", "<con_operand_paren>"])
     add_set(["int_lit", "dec_lit", "str_lit", "chr_lit", "id", "int", "dec", "chr", "str", "++", "--"],"<con_operand_paren>", ["<con_operand>"])
@@ -332,21 +355,65 @@ def add_all_set():
     add_set(["++", "--"], "<iteration_id>", ["<pre_unary>"])
     add_set([")", ";", "&", ","], "<expression>", ["null"])
     add_set(["+", "-", "*", "/", "%"], "<expression>", ["<arithmetic_op>", "<number_tail_operand>"])
-    add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<expression>", ["<non_number_operator>", "<not_op>", "<tail_operand>"])
+    add_set(["!=", "=="], "<expression>", ["<inequality_operator>", "<not_op>", "<tail_operand>"])
+    add_set(["==", "!="], "<expression>", ["<non_number_equal_op>", "<not_op>", "<tail_operand_equal>"])
     add_set(["&", ")", ";", ","], "<expression_num>", ["null"])
     add_set(["+", "-", "*", "/", "%" ], "<expression_num>", ["<arithmetic_op>", "<number_tail_operand>"])
     add_set([";", ")", ","], "<expression_not_num>", ["null"])
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<expression_not_num>", ["<non_number_operator>", "<tail_operand>"])
+    
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_iden>", ["null"])
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<expression_iden>", ["<operator>", "<not_op>", "<iden_tail_operand>"])
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_integer>", ["null"])
+    add_set(["&&", "||"], "<expression_integer>", ["<logical_op>", "<integer_log_tail_operand>"])
+    add_set(["+", "-", "*", "/", "%"], "<expression_integer>", ["<arithmetic_op>", "<integer_ar_rel_tail_operand>"])
+    add_set(["<", "<=", ">", ">="], "<expression_integer>", ["<inequality_operator>", "<integer_ar_rel_tail_operand>"]) #here
+    add_set(["==", "!="], "<expression_integer>", ["<equality_operator>", "<integer_equal_tail_operand>"])
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_text>", ["null"])
+    add_set(["&&", "||"], "<expression_text>", ["<logical_op>", "<text_log_tail_operand>"])
+    add_set(["==", "!="], "<expression_text>", ["<equality_operator>", "<text_equal_tail_operand>"])
+    add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_bln>", ["null"])
+    add_set(["&&", "||"], "<expression_bln>", ["<logical_op>", "<bln_log_tail_operand>"])
+    add_set(["==", "!="], "<expression_bln>", ["<equality_operator>", "<bln_equal_tail_operand>"])
+    
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<tail_operand>", ["<operand>", "<expression>"])
     add_set(["int_lit", "dec_lit", "id", "++", "--"], "<number_tail_operand>", ["<number_operand>", "<expression_num>"])
-    add_set(["int_lit", "dec_lit", "true", "false"], "<operand>", ["<expression_literals>"])
+    add_set(["id", "dec_lit", "int_lit", "chr_lit", "str_lit", "chr", "str", "true", "false", "int", "dec", "bln", "++", "--"], "<iden_tail_operand>", ["<iden_operand>", "<expression_iden>"])
+    add_set(["id", "int_lit", "dec_lit", "true", "false", "str_lit", "chr_lit", "str", "chr", "int", "dec", "bln", "++", "--"], "<integer_log_tail_operand>", ["<log_integer_operand>", "<expression_integer>"])
+    add_set(["int_lit", "dec_lit", "id", "++", "--"], "<integer_ar_rel_tail_operand>", ["<number_operand>", "<expression_integer>"])
+    add_set(["true", "false"], "<integer_equal_tail_operand>", ["<bln>", "<expression_integer>"])
+    add_set(["int_lit", "dec_lit", "id", "++", "--"], "<integer_equal_tail_operand>", ["<number_operand>", "<expression_integer>"])
+    add_set(["str_lit", "chr_lit", "str", "chr"], "<text_log_tail_operand>", ["<text_type>", "<equality_operator>", "<text_type>", "<expression_text>"])
+    add_set(["str_lit", "chr_lit", "str", "chr", "id", "true", "false", "bln", "("], "<text_equal_tail_operand>", ["<equal_text_operand>", "<expression_text>"])
+    add_set(["id", "true", "false", "int", "dec", "bln"], "<bln_log_tail_operand>", ["<log_bln_operand>", "<expression_bln>"])
+    add_set(["int_lit", "dec_lit", "true", "false"], "<bln_equal_tail_operand>", ["<expression_literals>", "<expression_bln>"])
+    add_set(["++", "--"], "<bln_equal_tail_operand>", ["<pre_unary>", "<expression_bln>"])
+    add_set(["str_lit", "chr_lit", "str", "chr"], "<bln_equal_tail_operand>", ["<text_type>", "<expression_bln>"])
+
+    #add_set(["int_lit", "dec_lit", "true", "false"], "<operand>", ["<expression_literals>"])
+    add_set(["true", "false"], "<operand>", ["<bln>", "<expression_bln>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<operand>", ["<type_conversion>"])
     add_set(["++", "--"], "<operand>", ["<pre_unary>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<spec_operand>", ["<type_conversion>"])
     add_set(["++", "--"], "<spec_operand>", ["<pre_unary>"])
+    
+    add_set(["int_lit", "dec_lit"], "<iden_operand>", ["<integer_operand>", "<expression_integer>"])
+    add_set(["str_lit", "chr_lit", "str", "chr"], "<iden_operand>", ["<text_type>", "<expression_text>"])
+    add_set(["true", "false"], "<iden_operand>", ["<bln>", "<expression_bln>"])
+    add_set(["++", "--"], "<iden_operand>", ["<pre_unary>", "<expression_iden>"])
+    add_set(["int_lit", "dec_lit", "true", "false"], "<log_integer_operand>", ["<expression_literals>"])
+    add_set(["++", "--"], "<log_integer_operand>", ["<pre_unary>"])
+    add_set(["str_lit", "chr_lit", "str", "chr"], "<log_integer_operand>", ["<text_type>", "<equality_operator>", "<text_type>"])
+    add_set(["str_lit", "chr_lit", "str", "chr"], "<equal_text_operand>", ["<text_type>"])
+    add_set(["false", "true"], "<equal_text_operand>", ["<bln>"])
+    add_set(["int_lit", "dec_lit", "id", "++", "--"], "<log_bln_operand>", ["<number_operand>"])
+    add_set(["false", "true"], "<log_bln_operand>", ["<bln>"])
+
+
     add_set(["int_lit", "dec_lit"], "<number_operand>", ["<integer_operand>"])
     add_set(["++", "--"], "<number_operand>", ["<pre_unary>"])
     add_set(["true", "false"], "<bln_id_operand>", ["<bln>"])
+    add_set(["chr_lit", "str_lit"], "<text_type>", ["<text_format>"])
     add_set(["+", "-", "*", "/", "%"], "<operator>", ["<arithmetic_op>"])
     add_set(["<", "<=", ">", ">=", "==", "!="], "<operator>", ["<relational_op>"])
     add_set(["&&", "||"], "<operator>", ["<logical_op>"])
@@ -354,12 +421,16 @@ def add_all_set():
     add_set(["&&", "||"], "<non_number_operator>", ["<logical_op>"])
     add_set(["true", "false"], "<expression_literals>", ["<bln>"])
     add_set(["int_lit", "dec_lit", "str_lit", "chr_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--", "("], "<not_op>", ["null"])
-    add_set([";", ")", ","], "<concat_string>", ["null"])
+    add_set([";", ")", ",", "==", "!=", "&&", "||"], "<concat_string>", ["null"])
     add_set(["str_lit", "chr_lit"], "<concat_value>", ["<text_format>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<concat_value>", ["<type_conversion>"])
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<concat_value>", ["<operand>", "<expression>", "<concat_string>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<type_conversion>", ["<datatype>", "(", "<type_value>", ")"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<type_value>", ["<literals>"])
+    add_set(["chr_lit", "dec_lit"], "<int_type_value>", ["<type_value_chr_dec>"])
+    add_set(["true", "false"], "<int_type_value>", ["<bln>"])
+    add_set(["chr_lit", "dec_lit"], "<str_type_value>", ["<type_value_chr_dec>"])
+    add_set(["true", "false"], "<bln>", ["<bln>"])
     add_set(["int_lit", "id", "("], "<index>", ["<index_value>","<more_index>"])
     add_set(["int_lit", "id"], "<index_value>", ["<index_operand>","<index_expression>"])
     add_set([ ")", "]", ","], "<index_expression>", ["null"])
