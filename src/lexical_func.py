@@ -617,7 +617,7 @@ class GetLitAndIden:
         elif char == '+':
             self.modify.match_found(119, char)
             if self.lex.peek_next() == '+':
-                self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 119, 121, 122, "symbol", False)
+                self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 119, 121, 122, "symbol", True)
             elif self.lex.peek_next() == '=':
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 119, 123, 124, "symbol", True)
             else:
@@ -626,7 +626,7 @@ class GetLitAndIden:
         elif char == '-':
             self.modify.match_found(125, char)
             if self.lex.peek_next() == '-':
-                self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 125, 127, 128, "symbol", False)
+                self.modify.add_matched_key(key_delims['unary_delim'], "alpha, number, '(', ')', ';', ',', '~'", 125, 127, 128, "symbol", True)
             elif self.lex.peek_next() == '=':
                 self.modify.add_matched_key(key_delims['op_delim'], "alpha, number, '(', '~', '+', '-'", 125, 129, 130, "symbol", True)
             else:
