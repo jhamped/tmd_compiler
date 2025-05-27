@@ -337,7 +337,7 @@ def add_all_set():
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<con_expression>", ["<comparison_operator>", "<not_op>","<con_value>"])
     add_set(["str", "chr", "int", "dec"], "<con_operand>", ["<con_type_conversion>"])
     add_set(["++", "--"], "<con_operand>", ["<pre_unary>","<con_operand_tail>"])
-    add_set([ "str_lit", "chr_lit"], "<con_operand>", ["<text_format>", "<equality_operator>", "<text_format>"])
+    add_set([ "str_lit", "chr_lit"], "<con_operand>", ["<text_format>"])
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";" ], "<con_operand_tail>", ["null"])
     add_set(["+", "-", "*", "/", "%"], "<con_operand_tail>", ["<arithmetic_op>", "<con_operand_paren>"])
     add_set(["int_lit", "dec_lit", "str_lit", "chr_lit", "id", "int", "dec", "chr", "str", "++", "--"],"<con_operand_paren>", ["<con_operand>"])
