@@ -269,6 +269,8 @@ class GetLitAndIden:
                     invalid = True
                 while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
                     lex += self.lex.advance()
+                    if self.lex.peek_next() == None:
+                        break
                 if all(char == '0' for char in lex) and lex != '':
                     self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 0, 0, "num", False)
                     return
@@ -388,7 +390,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 2, 3, 4, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             elif self.lex.peek_next() == 'r':
                 self.modify.add_key(1, 5)
@@ -396,7 +398,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 5, 6, 7, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -409,7 +411,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 9, 10, 11, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             elif self.lex.peek_next() == 'o':
                 self.modify.add_key(8, 12)
@@ -421,7 +423,7 @@ class GetLitAndIden:
                             self.modify.add_matched_key(whitespace, "whitespace", 14, 15, 16, "word", True)
                             if not self.lex.matched and self.lex.peek_next() not in identifier:
                                  
-                                self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                                self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                                 return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -436,7 +438,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(key_delims['def_delim'], "':'", 18, 21, 22, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             elif self.lex.peek_next() == 'i':
                 self.modify.add_key(17, 23)
@@ -446,13 +448,13 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['state_delim'], "'('", 24, 25, 26, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             elif self.lex.peek_next() == 'o':
                 self.modify.add_matched_key(key_delims['block_delim'], "'{'", 17, 27, 28, "word", True)
                 if not self.lex.matched and self.lex.peek_next() not in identifier:
                      
-                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                     return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -467,7 +469,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['state_delim'], "'('", 31, 32, 33, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
                 elif self.lex.peek_next() == 's':
                     self.modify.add_key(30, 34)
@@ -475,7 +477,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['block_delim'], "'{'", 34, 35, 36, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             elif self.lex.peek_next() == 'x':
                 self.modify.add_key(29, 37)
@@ -485,7 +487,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 38, 39, 40, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -502,7 +504,7 @@ class GetLitAndIden:
                             self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 44, 45, 46, "word", True)
                             if not self.lex.matched and self.lex.peek_next() not in identifier:
                                  
-                                self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                                self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                                 return
             
             elif self.lex.peek_next() == 'o':
@@ -514,7 +516,7 @@ class GetLitAndIden:
                         self.check.check_if_match(key_delims['state_delim'], "'('", 48, 49, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
                     elif self.lex.peek_next() == 'e':
                         self.modify.add_key(48, 50)
@@ -526,7 +528,7 @@ class GetLitAndIden:
                                     self.modify.add_matched_key(key_delims['state_delim'], "'('", 52, 53, 54, "word", True)  
                                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                                          
-                                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                                         return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -537,7 +539,7 @@ class GetLitAndIden:
                 self.modify.add_matched_key(key_delims['state_delim'], "'('", 55, 56, 57, "word", True)
                 if not self.lex.matched and self.lex.peek_next() not in identifier:
                      
-                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                     return
             elif self.lex.peek_next() == 'n':
                 self.modify.add_key(55, 58)
@@ -546,7 +548,7 @@ class GetLitAndIden:
                     self.check.check_if_match(whitespace, "alpha", 58, 59, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
                 elif self.lex.peek_next() == 's':
                     self.modify.add_key(58, 60)
@@ -554,13 +556,13 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['state_delim'], "'('", 60, 61, 62, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
                 elif self.lex.peek_next() == 't':
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -573,7 +575,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(whitespace, "whitespace", 66, 67, 68, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -588,7 +590,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['block_delim'], "'{'", 71, 72, 73, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -603,7 +605,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 76, 77, 78, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -616,7 +618,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(whitespace, "whitespace", 80, 81, 82, "word", True )
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             elif self.lex.peek_next() == 's':
                 self.modify.add_key(79, 83)
@@ -624,7 +626,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 83, 84, 85, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -639,7 +641,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(whitespace, "whitespace", 88, 89, 90, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             elif self.lex.peek_next() == 't':
                 self.modify.add_key(86, 91)
@@ -648,7 +650,7 @@ class GetLitAndIden:
                     self.check.check_if_match(key_delims['data_delim'], "whitespace, '[', '('", 92, 93, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
                     #else:
                     #    self.modify.add_matched_key(whitespace, "whitespace", 92, 94, 95, "word", True)
@@ -664,7 +666,7 @@ class GetLitAndIden:
                                 self.modify.add_matched_key(key_delims['state_delim'], "'('", 97, 98, 99, "word", True)
                                 if not self.lex.matched and self.lex.peek_next() not in identifier:
                                      
-                                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                                    self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                                     return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -679,7 +681,7 @@ class GetLitAndIden:
                         self.modify.add_matched_key(key_delims['val_delim'], "';', ',', ')', '}', '!', '&', '='", 102, 103, 104, "word", True)
                         if not self.lex.matched and self.lex.peek_next() not in identifier:
                              
-                            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                            self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                             return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -692,7 +694,7 @@ class GetLitAndIden:
                     self.modify.add_matched_key(whitespace, "whitespace", 106, 107, 108, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
                          
-                        self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                        self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
                 self.get_lexeme()
@@ -709,7 +711,7 @@ class GetLitAndIden:
                             self.modify.add_matched_key(key_delims['state_delim'], "'('", 112, 113, 114, "word", True)
                             if not self.lex.matched and self.lex.peek_next() not in identifier:
                                  
-                                self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                                self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                                 return
             if not self.lex.matched:
                 self.get_lexeme()
