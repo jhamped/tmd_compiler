@@ -159,6 +159,7 @@ class GetLitAndIden:
                 self.lex.key += curr
                 curr = self.lex.advance()
                 self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
+                self.lex.invalid = False
                 return
             self.modify.append_state('~', 0, 250)
             self.lex.key += curr
