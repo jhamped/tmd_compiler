@@ -357,7 +357,7 @@ class GetLitAndIden:
             self.modify.get_key("")
             self.lex.invalid = False
             self.lex.matched = True #remove this if nagerror
-            self.lex.error_message(f"Invalid identifier: {self.lex.key}", "", False)
+            self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
 
         if not self.lex.matched:
             if self.lex.peek_next() not in whitespace:
@@ -365,7 +365,7 @@ class GetLitAndIden:
                 if len(self.lex.key) > 30:
                     self.lex.error_message(f"Identifier {self.lex.key} exceeds maximum length of 30 characters", "", False)
                 else:
-                    self.lex.error_message(f"Invalid identifier: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
 
     def get_lexeme(self):  
         if self.lex.peek_next() is None:
@@ -872,10 +872,10 @@ class Checkers:
             if self.lex.isIden and self.lex.peek_next() in ['!', '&', '|']:
                 curr = self.lex.peek_next()
                 if curr == '!' and self.lex.peek_next2() != '=':
-                    self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key + curr}", "", False)
                     return
                 elif curr == '|' and self.lex.peek_next2() != '|':
-                    self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key + curr}", "", False)
                     return
                 self.lex.pos -= 1
 
@@ -903,7 +903,7 @@ class Checkers:
             if self.lex.peek_next() not in whitespace:
                 if self.lex.peek_next() in alpha:
                     self.modify.get_key(key_delims["num_delim"])
-                    self.lex.error_message(f"Invalid identifier: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
                     self.lex.matched = True
                     return
                 elif self.lex.peek_next() in digit or self.lex.peek_next() == '.':

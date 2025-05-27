@@ -38,7 +38,7 @@ key1_delims = {
     'block_delim' : whitespace + ['{'],    
     'def_delim' : whitespace + [':'],
     'comma_delim' : whitespace + [']', '(', '{', '"', '\'', '+', '-', '.', '~'] + alphanumeric,
-    'iden_delim' : whitespace + all_operators + ['<', '>', '=', ';', '&', '>', '(', ')', '[', ']', '{', '}', ','],
+    'iden_delim' : whitespace + all_operators + ['<', '>', '=', ';', '&', '>', '(', ')', '[', ']', ','],
     'lit_delim' : whitespace + [';', ',', '&', ')', '}', '!', '=', '|', ':'],
     'op_delim' : whitespace + alphanumeric + ['(', '~', '.', '+', '-'],
     'unary_delim' : whitespace + alphanumeric + number_operator + ['(', ')', ';', ',', '~'],
