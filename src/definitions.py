@@ -440,7 +440,7 @@ def add_all_set():
     add_set(["=", "+=", "-=", "*=", "/=", "%=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<id_array_tail>", ["null"])
     #add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_id_tail>", ["null"])
     add_set([")", ","], "<args>", ["null"])
-    add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "str", "bln", "chr", "dec", "int", "id", "(", "++", "--"], "<args>", ["<args_operand>","<expression>","<more_args>"])
+    add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--", "none", "str_lit", "chr_lit", "(", "!"], "<args>", ["<value>","<expression>","<more_args>"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<args_operand>", ["<literals>"])
     add_set(["++", "--"], "<args_operand>", ["<pre_unary>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<args_operand>", ["<type_conversion>"])
