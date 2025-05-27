@@ -978,7 +978,11 @@ class Checkers:
                     self.lex.error_message(f"Invalid escape sequence: {esc}", "", False)
                     return
                 if self.lex.peek_next() == '~':
+                    if self.lex.peek_next2() in digit:
+                        return
                     while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in key_delims['num_delim']:
+                        if self.lex.peek_next() is None:
+                            break
                         invalid += self.lex.advance()
                     self.lex.error_message(f"Invalid: {invalid}", "", False)
                     return
@@ -1031,6 +1035,7 @@ class Checkers:
                 elif self.lex.peek_next() in digit or self.lex.peek_next() == '.':
                     self.lex.matched = False
                     return
+                print(f"running {self.lex.key}/{self.lex.peek_next()}")
 
         self.lex.matched = True
         state.append(f"end : {stateNum1}-{stateNum2}")
