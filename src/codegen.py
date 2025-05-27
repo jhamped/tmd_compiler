@@ -1712,7 +1712,7 @@ class DynamicArray:
                 
                 digits_only = val.lstrip('-')
                 if len(digits_only) > 10:
-                    raise ValueError(f"Illegal Input. Decimal input exceeds maximum length of 10 digits")
+                    raise ValueError(f"Illegal Input. Whole number exceeds maximum length of 10 digits")
                 
                 val = int(val)
 
