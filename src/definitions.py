@@ -430,7 +430,7 @@ def add_all_set():
     add_set(["chr_lit", "dec_lit"], "<int_type_value>", ["<type_value_chr_dec>"])
     add_set(["true", "false"], "<int_type_value>", ["<bln>"])
     add_set(["chr_lit", "dec_lit"], "<str_type_value>", ["<type_value_chr_dec>"])
-    add_set(["true", "false"], "<bln>", ["<bln>"])
+    add_set(["true", "false"], "<str_type_value>", ["<bln>"])
     add_set(["int_lit", "id", "("], "<index>", ["<index_value>","<more_index>"])
     add_set(["int_lit", "id"], "<index_value>", ["<index_operand>","<index_expression>"])
     add_set([ ")", "]", ","], "<index_expression>", ["null"])
