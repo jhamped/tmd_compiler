@@ -361,8 +361,7 @@ class GetLitAndIden:
             self.lex.invalid = False
             #self.lex.matched = True #remove this if nagerror
             self.lex.error_message(f"Invalid identifier: {self.lex.key}", "", False)
-        else:
-            self.lex.isIden = False
+
         if not self.lex.matched:
             if self.lex.peek_next() not in whitespace:
                 self.modify.get_key(key_delims['iden_delim'])
