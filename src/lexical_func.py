@@ -369,9 +369,7 @@ class GetLitAndIden:
                 if len(self.lex.key) > 30:
                     self.lex.error_message(f"Identifier {self.lex.key} exceeds maximum length of 30 characters", "", False)
                 else:
-                    last_lexem = self.lex.key[-1]
-                    current_id = self.lex.key[:-1]
-                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter1: {self.lex.key}", "", False)
         else:
             self.lex.isIden = False
     def get_lexeme(self):  
@@ -394,7 +392,6 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'n':
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 2, 3, 4, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
-                         
                         self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             elif self.lex.peek_next() == 'r':
@@ -402,7 +399,6 @@ class GetLitAndIden:
                 if self.lex.peek_next() == 'k':
                     self.modify.add_matched_key(key_delims['jmp_delim'], "';'", 5, 6, 7, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
-                         
                         self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
@@ -566,7 +562,6 @@ class GetLitAndIden:
                 elif self.lex.peek_next() == 't':
                     self.modify.add_matched_key(key_delims['data_delim'], "whitespace, '[', '('", 58, 63, 64, "word", True)
                     if not self.lex.matched and self.lex.peek_next() not in identifier:
-                         
                         self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next()} after {self.lex.key}", "", False)
                         return
             if not self.lex.matched:
@@ -879,6 +874,7 @@ class GetLitAndIden:
             self.lex.key = char
             #self.modify.get_key('')
             self.lex.error_message(f"Invalid: {self.lex.key}", "", False)
+            self.lex.invalid = False
 
 
 class Checkers:
@@ -1082,7 +1078,7 @@ class StateAndKeyManipulation:
             while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
                 print(f"4 {self.lex.key}/{self.lex.isIden}/{self.lex.peek_next()}")
                 if self.lex.isIden and self.lex.peek_next() not in identifier:
-                    self.lex.advance()
+                    #self.lex.advance()
                     return
                 self.lex.key += self.lex.advance()
                 
