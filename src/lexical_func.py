@@ -131,12 +131,12 @@ class GetLitAndIden:
         if self.lex.peek_next() is not None:
             if self.lex.peek_next() == "'":
                 self.modify.add_key(416, 417)
-                self.check.check_delim(key_delims['lit_delim'], "';', ',', '&', ')', '}', '!', '=', '|', ':'", False)
+                self.check.check_delim(key_delims['lit_delim'], "';', ',', '&', ')', '}', '!', '=', '|', ':'", True)
             else:
                 self.modify.add_key(415, 416)
                 if self.lex.peek_next() == "'":
                     self.modify.add_key(416, 417)
-                    self.check.check_delim(key_delims['lit_delim'], "';', ',', '&', ')', '}', '!', '=', '|', ':'", False)
+                    self.check.check_delim(key_delims['lit_delim'], "';', ',', '&', ')', '}', '!', '=', '|', ':'", True)
                 else:
                     self.modify.get_key(key_delims['lit_delim'])
                     self.lex.error_message("Character literals must only contain one character", "", False)
@@ -148,7 +148,7 @@ class GetLitAndIden:
         self.lex.isChar = False
 
     def get_num(self, char):
-        print("Get Num")
+        print(f"Get Num {char}")
         self.lex.isDec = False
         self.lex.matched = False
         self.lex.isInt = True
@@ -166,10 +166,21 @@ class GetLitAndIden:
             curr = self.lex.advance()
 
         if curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
+            temp = "0"
             while curr == '0' and not (self.lex.peek_next() in whitespace or self.lex.peek_next() in key_delims['num_delim']) and self.lex.peek_next() != '.':
+                print("d2")
+                if curr != "0":
+                    temp += temp
+                if curr not in digit:
+                    self.lex.error_message(f"Invalid number: {temp}", "", False)
+                    return
+                elif self.lex.peek_next() not in digit:
+                    self.lex.error_message(f"Invalid number: {temp}", "", False)
+                    return
                 curr = self.lex.advance()
 
         if curr in digit:
+            print("digit")
             self.modify.append_state(curr, 240, 241)
             self.lex.key += curr
             self.check.check_if_match(key_delims['num_delim'], "operator, ':', ';', ')', '}', ']', ','", 241, 242, "num", True)
@@ -297,15 +308,12 @@ class GetLitAndIden:
         print("GET ID")
         self.lex.isDec = False
         self.lex.isIden = True
-        print(f"---{self.lex.key}/{self.lex.peek_next()}/{self.lex.peek_next2()}/{self.lex.pos}")
         curr = self.lex.advance()
-        print(f"++ {curr}/{self.lex.pos}/{self.lex.peek_next()}")
         self.lex.key = curr
         self.modify.append_state(curr, 0, 180)
         self.check.check_if_match(key_delims['iden_delim'], "operator, ';', '&', '>', '(', ')', '[', ']', '{', '}', '.', ','", 180, 181, "iden", True)
         if self.lex.peek_next() in identifier: 
             self.check.check_id(180, 182, 183)
-            print(f"=== {self.lex.peek_next()}/{curr}")
             if self.lex.peek_next() in identifier: 
                 self.check.check_id(182, 184, 185)
                 if self.lex.peek_next() in identifier: 
@@ -362,7 +370,6 @@ class GetLitAndIden:
                                                                                                                         self.check.check_id(234, 236, 237)
                                                                                                                         if self.lex.peek_next() in identifier: 
                                                                                                                             self.check.check_id(236, 238, 239)
-        print("pumunta dito?")
         #self.lex.isIden = False
         if self.lex.invalid:
             self.modify.get_key("")
@@ -378,18 +385,16 @@ class GetLitAndIden:
                 if len(self.lex.key) > 30:
                     self.lex.error_message(f"Identifier {self.lex.key} exceeds maximum length of 30 characters", "", False)
                 else:
-                    self.lex.error_message(f"Invalid Delimiter1: {self.lex.key}", "", False)
+                    self.lex.error_message(f"Invalid Delimiter: {self.lex.key}", "", False)
         else:
             self.lex.isIden = False
     def get_lexeme(self):  
         if self.lex.peek_next() is None:
             self.lex.error_message(f"Invalid Delimiter: {self.lex.peek_next() }", "", False)
             return
-        print(f"LEXEMEKEY {self.lex.key}")
         index = len(self.lex.key)
         del state[-index:]
         self.lex.pos -= index
-        print(f"UWU {self.lex.code[self.lex.pos]}/{self.lex.key}/{self.lex.pos}")
         self.get_id()
 
     def get_keyword(self, char):
@@ -1008,9 +1013,7 @@ class Checkers:
         else:
             #if self.lex.isIden or self.lex.key == ']':
             #    if self.lex.peek_next() == '.': self.lex.struct = True
-            print("d2 pls")
             if self.lex.isIden and self.lex.peek_next() in ['!', '&', '|']:
-                print("how")
                 curr = self.lex.peek_next()
                 if curr == '!' and self.lex.peek_next2() != '=':
                     self.lex.error_message(f"Invalid identifier: {self.lex.key + curr}", "", False)
@@ -1023,7 +1026,6 @@ class Checkers:
                 self.lex.pos -= 1
 
             if self.lex.isIden: 
-                print("dine ba")
                 if self.lex.key in idens:
                     id = idens.index(self.lex.key)
                 else:
@@ -1039,7 +1041,6 @@ class Checkers:
 
     def check_if_match(self, delim, expected, stateNum1, stateNum2, reserved, requiredSpace):
         addZero = False
-        print(f"3 {self.lex.key}")
 
         if reserved in ["iden", "word"]:
             if self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
@@ -1048,7 +1049,7 @@ class Checkers:
         elif reserved == "num":
             if self.lex.peek_next() not in whitespace:
                 if self.lex.peek_next() in alpha:
-                    self.modify.get_key(key_delims["num_delim"])
+                    #self.modify.get_key(key_delims["num_delim"])
                     self.lex.error_message(f"Invalid number: {self.lex.key}", "", False)
                     self.lex.matched = True
                     return
@@ -1101,7 +1102,6 @@ class StateAndKeyManipulation:
     def get_key(self, delim):
         if self.lex.peek_next() is not None:
             while self.lex.peek_next() not in whitespace and self.lex.peek_next() not in delim:
-                print(f"4 {self.lex.key}/{self.lex.isIden}/{self.lex.peek_next()}")
                 if self.lex.isIden and self.lex.peek_next() not in identifier:
                     #self.lex.advance()
                     return
