@@ -169,6 +169,8 @@ parsing_table = {
     "<con_value>": {"(": ["(", "<con_value>",")","<con_operand_tail>","<con_expression>"], "bln": ["bln", "(", "<type_value>", ")", "<con_expression>"]},
     "<con_expression>": {},
     "<con_operand>": {"id": ["id","<id_tail>","<con_operand_tail>"],"dec_lit": ["dec_lit", "<con_operand_tail>"], "int_lit": ["int_lit", "<con_operand_tail>"]},
+    "<text_con_operand>": {},
+    "<text_id>": {},
     "<con_type_conversion>": {"str": ["str","(","<type_value>",")"], "chr": ["chr","(","<type_value>",")"], "int": ["int","(","<type_value>",")","<con_operand_tail>"],
                               "dec": ["dec","(","<type_value>",")","<con_operand_tail>"]},
     "<con_operand_tail>": {},
@@ -337,7 +339,11 @@ def add_all_set():
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<con_expression>", ["<comparison_operator>", "<not_op>","<con_value>"])
     add_set(["str", "chr", "int", "dec"], "<con_operand>", ["<con_type_conversion>"])
     add_set(["++", "--"], "<con_operand>", ["<pre_unary>","<con_operand_tail>"])
-    add_set([ "str_lit", "chr_lit"], "<con_operand>", ["<text_format>"])
+    add_set([ "str_lit", "chr_lit"], "<con_operand>", ["<text_format>", "<text_con_operand>"])
+    add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";"], "<text_con_operand>", ["null"])
+    add_set([ "==", "!="], "<text_con_operand>", ["<equality_operator>", "<text_id>"])
+    add_set([ "str_lit", "chr_lit"], "<text_id>", ["<text_format>"])
+    add_set([ "id"], "<text_id>", ["id", "<id_tail>"])
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";" ], "<con_operand_tail>", ["null"])
     add_set(["+", "-", "*", "/", "%"], "<con_operand_tail>", ["<arithmetic_op>", "<con_operand_paren>"])
     add_set(["int_lit", "dec_lit", "str_lit", "chr_lit", "id", "int", "dec", "chr", "str", "++", "--"],"<con_operand_paren>", ["<con_operand>"])
