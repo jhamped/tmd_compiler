@@ -46,43 +46,25 @@ def parse(console):
         #8 > 0
         if len(token) > current_token_index:
             lookahead = get_lookahead()
-            
-        #else:
-            #error_message("End of file")
-        #stack []
-        #top = <program>
-        ##stack ["}", "<statements>", "{"]
-        #top = "main"
         print(f"stack: {stack}")
         top = stack.pop()
-        print(f"after stack: {stack}")
-        print(f"top {top}")
         lookahead = get_lookahead()
         if lookahead is None:
             error_message("Unexpected End-of-File. ")
             return
         
-        #main == main
         if top == lookahead:
             # Terminal matches lookahead, consume the token
             print(f"Match: {lookahead}")
             prevlookahead = lookahead
             current_token_index += 1
-        #TRUE
         elif top in parsing_table:
-            # Non-terminal: use the parsing table
             rule = parsing_table[top].get(lookahead)
-            #rule = ["null"]
             print(f"rule: {rule}/{lookahead}/{top}")
             if rule:
                 print(f"Apply rule: {top} -> {' '.join(rule)}")
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
-                    #stack [<program>]
-                    #<global_dec>", "<segm>", "main", "{", "<statements>", "}"
-                    #stack ["<global_dec>", "<segm>", "main", "{", "<statements>", "}"]
-                    #stack ["}", "<statements>", "{", "main", "<segm>", "<global_dec>"]
                     stack.extend(reversed(rule))
-                    #stack ["}", "<statements>", "{", "main", "<segm>", "<global_dec>"]
             else:
                 if prevlookahead == "Start":
                     error_message(f"Unexpected {lookahead}. Program must start with a function 'segm', declaration, or 'main' block. ")

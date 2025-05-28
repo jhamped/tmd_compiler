@@ -7,7 +7,6 @@ from tkinter import ttk, PhotoImage, filedialog, messagebox
 import ctypes as ct
 
 class CustomNotebook(ttk.Notebook):
-    """A ttk Notebook with close buttons on each tab"""
 
     __initialized = False
 
@@ -25,7 +24,6 @@ class CustomNotebook(ttk.Notebook):
         self.bind("<ButtonRelease-1>", self.on_close_release)
         
     def on_close_press(self, event):
-        """Called when the button is pressed over the close button"""
 
         element = self.identify(event.x, event.y)
         if "close" in element:
@@ -38,13 +36,11 @@ class CustomNotebook(ttk.Notebook):
             return "break"
 
     def on_close_release(self, event):
-        """Called when the button is released"""
         if not self.instate(['pressed']):
             return
 
         element =  self.identify(event.x, event.y)
         if "close" not in element:
-            # user moved the mouse off of the close button
             return
 
         index = self.index("@%d,%d" % (event.x, event.y))
@@ -113,13 +109,12 @@ class TMDCompiler:
         self.opened_files = {}  
         self.create_ui()
         self.keyboard_shortcut()
-        self.input_var = tk.StringVar()  # Stores console input
-        self.console.bind("<Return>", self._submit_input)  # Bind Enter key
+        self.input_var = tk.StringVar() 
+        self.console.bind("<Return>", self._submit_input) 
         
     def _submit_input(self, event):
-        """Captures input when Enter is pressed."""
         input_text = self.console.get("input_start", tk.END).strip()
-        self.input_var.set(input_text)  # Store input
+        self.input_var.set(input_text)
         self.console.insert(tk.END, "\n")
 
     def dark_title_bar(self):
@@ -148,15 +143,13 @@ class TMDCompiler:
         navFrame = tk.Frame(self.environFrame, bg="#a6b3f1", height=35)
         navFrame.pack(side="top", fill="x")
 
-        # Load base icons and resize them to a smaller size
-        self.new_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon.png").subsample(28, 28)  # Adjust the subsample factor as needed
+        self.new_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon.png").subsample(28, 28) 
         self.new_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/_new_icon_hover.png").subsample(28, 28)
         self.open_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon.png").subsample(30, 30)
         self.open_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/open_icon_hover.png").subsample(30, 30)
         self.save_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon.png").subsample(33, 33)
         self.save_hover_icon = tk.PhotoImage(file="TMD_Compiler/assets/save_icon_hover.png").subsample(33, 33)
 
-        # Define hover and leave behavior as methods of the class
         def on_hover_button(self, button, hover_icon):
             button.config(image=hover_icon)
 
@@ -245,7 +238,6 @@ class TMDCompiler:
 
     
     def create_notebook(self):
-        # Initialize the CustomNotebook
         self.notebook = CustomNotebook(self.environFrame)
         self.notebook.pack(fill="both")
 
@@ -307,7 +299,6 @@ class TMDCompiler:
         self.consoleFrame.pack(side="bottom", fill="x")
         self.consoleFrame.pack_propagate(False)  # Prevent auto-resizing
 
-        # Add a panel for the draggable area
         consolePanel = tk.Frame(self.consoleFrame, bg="#1A1A1A", height=10, cursor="sb_v_double_arrow")
         consolePanel.pack(side="top", fill="x")
 
@@ -316,7 +307,6 @@ class TMDCompiler:
         self.consoleClose.pack(side="right", pady=(7, 0), padx=(0, 15))
         self.consoleClose.bind("<Button-1>", self.consoleClose_click)
 
-        # Create the text widget for the console
         self.console = tk.Text(
             self.consoleFrame, bg="#202020", fg="white",
             font=("Consolas", 12), padx=10, pady=10, borderwidth=1, relief="solid"
@@ -330,19 +320,14 @@ class TMDCompiler:
         consolePanel.bind("<B1-Motion>", self.perform_drag)
 
     def start_drag(self, event):
-        # Record the initial mouse position and console height
         self.start_y = event.y_root
         self.start_height = self.consoleFrame.winfo_height()
-        # Store the total height of the environment frame for boundaries
         self.environ_height = self.environFrame.winfo_height()
 
     def perform_drag(self, event):
         # Calculate the vertical change in mouse position
         delta_y = self.start_y - event.y_root
         new_console_height = self.start_height + delta_y
-        """
-        self.console.insert(1.0,f"height:   {new_console_height}   delta_y: {delta_y}   start: {self.start_y}   y_root: {event.y_root}\n")
-        """
         
         if new_console_height > 200:
             self.consoleClose.config(text="˅")
@@ -350,9 +335,8 @@ class TMDCompiler:
         else:
             self.consoleClose.config(text="˄")
             
-        # Define minimum and maximum heights for the console
         min_console_height = 50  # Minimum height for the console
-        max_console_height = self.environ_height - 50  # Leave at least 50px for the code editor
+        max_console_height = self.environ_height - 50 
 
         # Constrain the new console height within the allowed range
         new_console_height = max(min_console_height, min(new_console_height, max_console_height))
@@ -474,7 +458,7 @@ class TMDCompiler:
                     self.opened_files[file_info["name"]] = file_info
 
                     new_frame = tk.Frame(self.notebook, bg="#272727")
-                    self.notebook.add(new_frame, text=fileName)  #
+                    self.notebook.add(new_frame, text=fileName)  
                     self.notebook.select(new_frame)
                     
                     content = file.read()
@@ -642,14 +626,13 @@ class TMDCompiler:
     def on_leave_syntax(self,event):
         self.syntaxBtn.config(fg="black")
     def syntax_click(self, event):
-        #self.lexical_click
         errorflag[0] = False
         lexeme.clear()
         token.clear()
         state.clear()
         idens.clear()
-        rows.clear() # NEW!
-        col.clear() # NEW!
+        rows.clear() 
+        col.clear()
         for item in self.table.get_children():
             self.table.delete(item)
         self.console.delete("1.0", tk.END)
@@ -658,14 +641,13 @@ class TMDCompiler:
         
         parse(self.console)
     def semantic_click(self, event):
-        #self.lexical_click
         errorflag[0] = False
         lexeme.clear()
         token.clear()
         state.clear()
         idens.clear()
-        rows.clear() # NEW!
-        col.clear() # NEW!
+        rows.clear()  
+        col.clear() 
         for item in self.table.get_children():
             self.table.delete(item)
         self.console.delete("1.0", tk.END)
@@ -691,28 +673,22 @@ class TMDCompiler:
         threading.Thread(target=generate_code, args=(self.console,), daemon=True).start()
         
     def get_input(self, prompt=None):
-        """Get input from the console widget."""
         if prompt:
             self.insert(tk.END, prompt)
         
-        # Mark the start of input
         self.mark_set("input_start", tk.END)
         self.mark_gravity("input_start", "left")
         
-        # Create an entry widget for input
         input_entry = tk.Entry(self, bg="#202020", fg="white", insertbackground="white",
                             relief="flat", font=("Consolas", 12))
         
-        # Place the entry at the end of the console
         self.window_create("input_start", window=input_entry)
         input_entry.focus_set()
         
-        # Wait for the input to be completed
         self.wait_variable(self.input_var)
         
-        # Get the input and clean up
         user_input = self.input_var.get()
-        self.input_var.set("")  # Reset for next input
+        self.input_var.set("") 
         
         return user_input
 

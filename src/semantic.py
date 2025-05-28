@@ -1,12 +1,9 @@
 from definitions import *
 import tkinter as tk
 
-# Parsing table based on the provided grammar
 def semantic(console):  
     if errorflag[0] == True:  
         return
-    print(f"token: {token}")
-    print(f"lexeme: {lexeme}")
     current_token_index = 0
     prevlookahead = "Start"
     semantic_checker = Semantic(console)
@@ -20,13 +17,13 @@ def semantic(console):
         errorflag[0] = True
         return
     add_all_set()
-    if not token:  # If token list is empty
+    if not token:  
         error_message("No tokens to parse")
         return
-    stack = ["<program>"]  # Initialize stack with start symbol and end marker
+    stack = ["<program>"] 
     expressionstack = []
     def get_lookahead():
-        if current_token_index >= len(token):  # Prevent index out of range
+        if current_token_index >= len(token): 
             return None
         curr_token = token[current_token_index]
         
@@ -44,8 +41,6 @@ def semantic(console):
             return
         if len(token) > current_token_index:
             lookahead = get_lookahead()
-        #else:
-            #error_message("End of file")
         top = stack.pop()
         lookahead = get_lookahead()
         if lookahead is None:
@@ -54,22 +49,17 @@ def semantic(console):
         
         
         if top == lookahead:
-            # Terminal matches lookahead, consume the token
-            print(f"Match: {lookahead}")
             prevlookahead = lookahead
             #-----Semantic-----
             semantic_checker.semantic_process(lookahead, current_token_index)
             current_token_index += 1
                 
         elif top in parsing_table:
-            # Non-terminal: use the parsing table
             rule = parsing_table[top].get(lookahead)
             #Semantic
             if top in non_terminal_check:
                 semantic_checker.semantic_nonterminal(top)
-            #End
             if rule:
-                #print(f"Apply rule: {top} -> {' '.join(rule)}")
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
                     stack.extend(reversed(rule))
             else:
@@ -97,7 +87,7 @@ class Semantic:
         self.parameterList = []
         
         self.parentStack = ["global"]
-        self.parent = "global"         # Current parent scope
+        self.parent = "global" 
         self.level_value = 0    
                
         self.console = console
@@ -127,11 +117,9 @@ class Semantic:
         return
     
     def semantic_process(self, lookahead, current_token_index):
-        print(f"{self.current_token_index}/{current_token_index}")
         if self.current_token_index != current_token_index:
             return
         self.lookahead = lookahead
-        print(f"lookahead: {lookahead}")
         #Scope handling array 
         if lookahead == "{" and self.top != "<identifier_declaration>":
             self.level_value +=1
@@ -239,7 +227,6 @@ class Semantic:
                 parameter_id = ""
                 continue
             elif lookahead == ")":
-                print(parameter_id)
                 self.update_param_symbol(segment_id, datatype_value, parameter_id)
                 self.identifier_value = parameter_id
                 self.datatype_value = datatype_value
@@ -255,7 +242,6 @@ class Semantic:
         self.datatype_value = lookahead
         #Array
         if self.getState("next", "token", self.current_token_index+1) == "[":
-            print("Array declaration")
             self.current_token_index += 1
             if self.getState("next", "token", self.current_token_index+1) == ",":
                 if self.type_value == "const":
@@ -274,7 +260,6 @@ class Semantic:
             lookahead = token[self.current_token_index]
             param = 0
             while True:
-                print(f"lookahead! {lookahead}/{self.current_token_index}")
                 if errorflag[0] == True: 
                     return
                 if lookahead == ";":
@@ -313,7 +298,6 @@ class Semantic:
             new_datatype = ""
             prev_datatype = self.datatype_value
             while True:
-                print(f"Declaration ID: {lookahead}/{self.identifier_value}")
                 if errorflag[0] == True:
                     return
                 if lookahead == ";":
@@ -343,7 +327,6 @@ class Semantic:
                         args_type = []
                         
                         while True:
-                            print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                             if errorflag[0] == True:
                                 return
                             if paren == 0:
@@ -448,7 +431,6 @@ class Semantic:
             args_type = []
             
             while True:
-                print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                 if errorflag[0] == True:
                     return
                 if paren == 0:
@@ -478,9 +460,7 @@ class Semantic:
             self.datatype_value = self.getDatatype(rhs_identifier)
             dimension = self.getDimension(rhs_identifier)
             dimension_found = 1
-            print(f"DATATYPE {semantic_datatype}")
             while True:
-                print(f"=lookahead {lookahead}")
                 if errorflag[0] == True:
                     return
                 if (lookahead in assignment_number or lookahead == "=") and self.getType(rhs_identifier) == "const-array":
@@ -492,7 +472,6 @@ class Semantic:
                 elif lookahead == "[":
                     #Index checker
                     while True:
-                        print(f"== {lookahead}")
                         if errorflag[0] == True:
                             return
                         if lookahead == "]":
@@ -535,7 +514,6 @@ class Semantic:
                         args_type = []
                         
                         while True:
-                            print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                             if errorflag[0] == True:
                                 return
                             if paren == 0:
@@ -633,7 +611,6 @@ class Semantic:
                         args_type = []
                         
                         while True:
-                            print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                             if errorflag[0] == True:
                                 return
                             if paren == 0:
@@ -725,7 +702,6 @@ class Semantic:
         
 
     def handle_for_statement(self):
-        print("For statement")
         self.current_token_index += 2 #skip for(
         lookahead = token[self.current_token_index]
         if lookahead in semantic_datatype:
@@ -740,7 +716,6 @@ class Semantic:
             self.current_token_index += 1
             lookahead = token[self.current_token_index]
             while True:
-                print(f"FOR INITIALIZATION: {lookahead}")
                 if errorflag[0] == True:
                     return
                 if lookahead == ";":
@@ -759,7 +734,6 @@ class Semantic:
                         args_type = []
                         
                         while True:
-                            print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                             if errorflag[0] == True:
                                 return
                             if paren == 0:
@@ -822,9 +796,7 @@ class Semantic:
                 self.datatype_value = self.getDatatype(rhs_identifier)
                 dimension = self.getDimension(rhs_identifier)
                 dimension_found = 1
-                print(f"DATATYPE {semantic_datatype}")
                 while True:
-                    print(f"=lookahead {lookahead}")
                     if errorflag[0] == True:
                         return
                     if lookahead == ";":
@@ -833,7 +805,6 @@ class Semantic:
                     elif lookahead == "[":
                         #Index checker
                         while True:
-                            print(f"== {lookahead}")
                             if errorflag[0] == True:
                                 return
                             if lookahead == "]":
@@ -875,7 +846,6 @@ class Semantic:
                             args_type = []
                             
                             while True:
-                                print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                                 if errorflag[0] == True:
                                     return
                                 if paren == 0:
@@ -944,7 +914,6 @@ class Semantic:
                         args_type = []
                         
                         while True:
-                            print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                             if errorflag[0] == True:
                                 return
                             if paren == 0:
@@ -1016,7 +985,6 @@ class Semantic:
                             args_type = []
                             
                             while True:
-                                print(f"param {lookahead}/{paren}/{lexeme[self.current_token_index]}/{self.current_token_index}")
                                 if errorflag[0] == True:
                                     return
                                 if paren == 0:
@@ -1068,19 +1036,16 @@ class Semantic:
                     self.current_token_index += 1
                     lookahead = token[self.current_token_index]
         #Condition 
-        print("For Condition")
         self.current_token_index += 1
         lookahead = token[self.current_token_index]
         condition_valid = False
         while True:
-            print(f"FOR CONDITION: {lookahead}")
             if errorflag[0] == True:
                 return
             if lookahead == ";":
                 if not condition_valid:
                     self.error_message(f"For condition must evaluate to boolean values")
                     return
-                print("Breaking")
                 break
             elif lookahead.startswith("id"):
                 self.checkIDType(lexeme[self.current_token_index])
@@ -1106,7 +1071,6 @@ class Semantic:
             self.current_token_index += 1
             lookahead = token[self.current_token_index]
         #Iteration
-        print("For Iteration")
         param = 0
         while True:
             if errorflag[0] == True:
@@ -1131,13 +1095,11 @@ class Semantic:
             lookahead = token[self.current_token_index]
     
     def handle_condition_statement(self):
-        print("CONDITION STATEMENT")
         self.current_token_index += 2
         lookahead = token[self.current_token_index]
         param = 1
         condition_valid = False
         while True:
-            print(f"CONDITION VALUE: {lookahead}/{condition_valid}")
             if errorflag[0] == True:
                 return
             if param == 0:
@@ -1183,8 +1145,8 @@ class Semantic:
         if errorflag[0] == True:
             return
         identifier_exists = any(
-            entry["identifier"].split("[")[0]== id and #Check if id exist
-            entry["level"]["parent"] == self.parent #Check if same scope
+            entry["identifier"].split("[")[0]== id and 
+            entry["level"]["parent"] == self.parent 
             for entry in self.symbol_table
         )
 
@@ -1193,16 +1155,14 @@ class Semantic:
             return
     
     def checkIfIDNotDeclared(self, id):
-        print(f"Check if id not declared {id}/{self.isDeclaredInParent(id, self.parent)}")
         if errorflag[0] == True:
             return
         identifier_not_found = not any(
-            entry["identifier"] == id and #Check if id exist
-            self.isDeclaredInParent(id, self.parent) #Check if id already declared in parent scope
+            entry["identifier"] == id and 
+            self.isDeclaredInParent(id, self.parent) 
             for entry in self.symbol_table
         )
         if identifier_not_found:
-            print(f"Identifier {id} not declared")
             self.error_message(f"Identifier {id} not declared")
             return
          
@@ -1211,14 +1171,12 @@ class Semantic:
             return
         Expected = self.getLiterals(self.datatype_value)
         Found = self.getLiterals(lookahead)
-        print(f"Assignment Valid: {lookahead}, {self.datatype_value}")
         if Expected != Found:
             if Expected == "decimal number" and Found == "integer":
                 pass
             elif Expected == "string" and Found == "character":
                 pass
             else:
-                print(f"Assignment type mismatch. Expected {Expected} but found {Found}.")
                 self.error_message(f"Assignment type mismatch. Expected {Expected} but found {Found}.")
                 return
     def checkIfAssignmentIDIsValid(self, identifier):
@@ -1233,7 +1191,6 @@ class Semantic:
             elif Expected == "string" and Found == "character":
                 pass
             else:
-                print(f"Assignment ID type mismatch. Expected {Expected} but found {Found}.")
                 self.error_message(f"Assignment type mismatch. Expected {Expected} but found {Found}.")
                 return
     
@@ -1241,7 +1198,7 @@ class Semantic:
         if errorflag[0] == True:
             return
         if state == "id":
-            datatype = self.getDatatype(type_conversion_value) #The datatype of id int(id)
+            datatype = self.getDatatype(type_conversion_value)
             type_literal = self.getLiteralTypeconversion(datatype)
             literal = self.getLiterals(type_literal)
             valid_types = valid_conversion.get(type_conversion_type, [])
@@ -1256,8 +1213,6 @@ class Semantic:
                 return
     
     def checkOperand(self):
-        print("checking operand")
-        #Semantic For Zero Value
         prev = next = nextLexeme = prev4 = ""
         lookahead = token[self.current_token_index]
         if self.current_token_index < len(token) and self.current_token_index > 0:
@@ -1267,7 +1222,6 @@ class Semantic:
             if self.current_token_index > 4:
                 prev4 = token[self.current_token_index-4]
         if nextLexeme == "0":
-            print("0")
             if lookahead == "/":
                 self.error_message(f"Division by Zero is not allowed")
                 return
@@ -1286,7 +1240,6 @@ class Semantic:
             identifier = lexeme[self.current_token_index-4]
             datatype = self.getDatatype(identifier)
             prev4 = self.getLiteralTypeconversion(datatype)
-        print(f"check operand {prev}/{next}/{prev4}")
         if lookahead in arithmetic_operator:
             if next in {"str_lit", "chr_lit", "true", "false"}:
                 self.error_message(f"Use of arithmetic operation '{lookahead}' is not valid for {next}. Use proper type conversion")
@@ -1329,11 +1282,9 @@ class Semantic:
     
     def checkBooleanAssignment(self):
         lookahead = token[self.current_token_index]
-        print(f"Boolean Assignment: ")
         identifier_bln = ""
         condition_valid = False
         while True:
-            print(f"BOOLEAN VALUE: {lookahead}/{condition_valid}")
             if errorflag[0] == True:
                 return
             if lookahead == ";" or lookahead == ",":
@@ -1378,12 +1329,10 @@ class Semantic:
             lookahead = token[self.current_token_index]
         
     def checkBooleanDeclaration(self):
-        print(f"BOOLDEC {self.identifier_value}")
         self.identifier_value = ""
         lookahead = token[self.current_token_index]
         condition_valid = False
         while True:
-            print(f"BOOLEAN DECLARATION VALUE: {lookahead}/")
             if errorflag[0] == True:
                 return
             if lookahead == ";":
@@ -1436,11 +1385,9 @@ class Semantic:
     
     def checkStringAssignment(self):
         lookahead = token[self.current_token_index]
-        print(f"String Assignment: ")
         identifier_bln = ""
         string_valid = False
         while True:
-            print(f"STRING VALUE: {lookahead}/{string_valid}")
             if errorflag[0] == True:
                 return
             if lookahead == ";" or lookahead == ",":
@@ -1473,12 +1420,10 @@ class Semantic:
             lookahead = token[self.current_token_index]
         
     def checkStringDeclaration(self):
-        print(f"StringDec {self.identifier_value}")
         self.identifier_value = ""
         lookahead = token[self.current_token_index]
         string_valid = False
         while True:
-            print(f"String DECLARATION VALUE: {lookahead}/")
             if errorflag[0] == True:
                 return
             if lookahead == ";":
@@ -1558,11 +1503,9 @@ class Semantic:
             lookahead = token[self.current_token_index]
     
     def checkLeftRelationalOperator(self, param):
-        print("Checking left relational operator")
         temp_index = self.current_token_index
         lookahead = token[temp_index]
         while True:
-            print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")", "="]:
@@ -1590,11 +1533,9 @@ class Semantic:
             lookahead = token[temp_index]
     
     def checkRightRelationalOperator(self, param):
-        print("Checking right relational operator")
         temp_index = self.current_token_index
         lookahead = token[temp_index]
         while True:
-            print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", ")"]:
@@ -1630,18 +1571,15 @@ class Semantic:
             lookahead = token[temp_index]     
                 
     def checkLeftLogicalOperator(self, param):
-        print("Checking left logical operator")
         temp_index = self.current_token_index -1
         lookahead = token[temp_index]
         valid_logical = False
         while True:
-            print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", "(", "="]:
                 if not valid_logical:
                     self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
-                    print("Left Logical Error")
                 return
             elif lookahead == ")":
                 param += 1
@@ -1651,27 +1589,24 @@ class Semantic:
                 identifier = lexeme[temp_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype in ["bln", "int", "dec"]:
+                if datatype in ["bln", "int", "dec", "str", "chr"]:
                     valid_logical = True
-            elif lookahead in ["true", "false", "int_lit"]:
+            elif lookahead in ["true", "false", "int_lit", "str_lit", "chr_lit"]:
                 valid_logical = True
             elif lookahead in booleanValue:
                 valid_logical = True
             temp_index -= 1
             lookahead = token[temp_index]
     def checkRightLogicalOperator(self, param):
-        print("Checking right logical operator")
         temp_index = self.current_token_index+1
         lookahead = token[temp_index]
         valid_logical = False
         while True:
-            print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", ")", "="]:
                 if not valid_logical:
                     self.error_message("Logical operators (&&, ||) require boolean operands, or expressions that evaluate to boolean values.")
-                    print("Error: Right Logical Operator")
                 return
             elif lookahead == ")":
                 param -= 1
@@ -1681,9 +1616,9 @@ class Semantic:
                 identifier = lexeme[temp_index]
                 self.checkIfIDNotDeclared(identifier)
                 datatype = self.getDatatype(identifier)
-                if datatype in ["bln", "int", "dec"]:
+                if datatype in ["bln", "int", "dec", "str", "chr"]:
                     valid_logical = True
-            elif lookahead in ["true", "false", "int_lit"]:
+            elif lookahead in ["true", "false", "int_lit", "str_lit", "chr_lit"]:
                 valid_logical = True
             elif lookahead in booleanValue:
                 valid_logical = True
@@ -1691,12 +1626,10 @@ class Semantic:
             lookahead = token[temp_index]
     
     def checkNotOperator(self, param):
-        print("Checking logical not operator")
         temp_index = self.current_token_index
         lookahead = token[temp_index]
         valid_logical = False
         while True:
-            print(temp_index, lookahead)
             if errorflag[0] == True:
                 return
             if param == 0 and lookahead in [assignment_number, relate1_op, str_logical_operator,";", ",", ")", "="]:
@@ -1719,7 +1652,6 @@ class Semantic:
                 valid_logical = True
             temp_index += 1
             lookahead = token[temp_index]
-    #Getter
     def getState(self, pointer, state, index):
         if pointer == "prev":
             if index < 0:
@@ -1735,7 +1667,6 @@ class Semantic:
                     return lexeme[index]
     
     def getDatatype(self, id):
-        print(f"Get datatype: {id}")
         for entry in self.symbol_table:
             if entry["identifier"].split("[")[0] == id:
                 return entry["datatype"] 
@@ -1785,7 +1716,6 @@ class Semantic:
         elif datatype == "bln":
             return "false"
     def check_function_arguments(self, segment_id, actual_arg_types):
-        print(actual_arg_types)
         
         for entry in self.parameterList:
             if entry['Segment ID'] == segment_id:
@@ -1805,13 +1735,11 @@ class Semantic:
         self.error_message(f"No function with Segment ID '{segment_id}' found.")
         return False
     def getType(self, id):
-        print(f"Get Type: {id}")
         for entry in self.symbol_table:
             if entry["identifier"].split("[")[0] == id:
                 return entry["type"] 
         return ""
     def getDimension(self, id):
-        print(f"Get Type: {id}")
         for entry in self.symbol_table:
             if entry["identifier"].split("[")[0] == id:
                 return entry["dimension"] 
@@ -1821,31 +1749,24 @@ class Semantic:
         while current_scope is not None:
             for symbol in self.symbol_table:
                 if symbol["identifier"] == variable_id and symbol["level"]["parent"] == current_scope:
-                    return True  # Variable is already declared parent node
+                    return True 
             # Traverse parent scope
-            #
             for symbol in self.symbol_table:
                 if symbol["identifier"] == current_scope:
                     current_scope = symbol["level"]["parent"]
                     break
             else:
-                break  # End node
-        return False  # Variable is not declared in parent node
+                break  
+        return False 
     
-    #Proccesor
+    #Processor
     def updateDatatype(self, identifier, new_datatype):
-        print(f"UPDATING DATATYPE {identifier}/{self.parent}/{new_datatype}")
         for entry in self.symbol_table:
-            print(entry)
-            print(f"ID FOUND: {entry["identifier"] == identifier }")
-            print(f"PARENT FOUND: {entry["level"]["parent"] == self.parent}")
-            print(f"ALL {entry["identifier"] == identifier and entry["level"]["parent"] == self.parent}")
             if (
                 entry["identifier"] == identifier and 
                 entry["level"]["parent"] == self.parent
             ):
                 entry["datatype"] = new_datatype
-                print("MATCH FOUND")
                 break
     def clear_all(self):
         self.type_value = ""
@@ -1854,11 +1775,8 @@ class Semantic:
         self.literal_value = ""
         self.dimension_value = ""
        
-       
     def update_param_symbol(self, segment_id, datatype_value, parameter_id):
         new_arg = {"datatype": datatype_value, "ID": parameter_id}
-
-        # Check if an entry with the same Segment ID exists
         for entry in self.parameterList:
             if entry["Segment ID"] == segment_id:
                 if new_arg["ID"] == "":
@@ -1868,7 +1786,6 @@ class Semantic:
                     entry["total_args"] = len(entry["args"])
                 break
         else:
-            # If no existing entry, create a new one
             if new_arg["ID"] == "":
                 self.argsData = {
                     "Segment ID": segment_id,
@@ -1887,7 +1804,6 @@ class Semantic:
         self.literal_value = literal_types.get(self.datatype_value, "")
         self.add_symbol_table()
     def add_symbol_table(self):
-        print("updating symbolo")
         data = {
             "type": self.type_value,
             "datatype": self.datatype_value,

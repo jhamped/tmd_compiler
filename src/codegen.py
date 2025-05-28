@@ -18,13 +18,7 @@ def checkNumLit(token_index):
         return lit
 
 def declareArray(token_index, iden, var_type, dims):
-    print(f"declaring array {token_index}")
     try:
-        # Get Identifier
-        #if token_index >= len(token) or not token[token_index].startswith("id"):
-        #    raise SyntaxError(f"Expected array name after array type declaration at token {token_index}. Found: {token[token_index] if token_index < len(token) else 'EOF'}")
-        
-        #iden = lexeme[token_index]
         token_index += 1
         current_scope = scope_stack[-1] if scope_stack else "global"
         
@@ -67,7 +61,7 @@ def declareArray(token_index, iden, var_type, dims):
                             if token_index < len(token) and token[token_index] == ",":
                                 token_index += 1
                 if token_index < len(token):
-                    token_index += 1  # Skip past }
+                    token_index += 1 
                 exp = f"{iden} = DynamicArray('{var_type}', dims={dims}, initial_values={values}, scope='{current_scope}')"
             else:
                 exp = f"{iden} = DynamicArray('{var_type}', dims={dims}, scope='{current_scope}')"
@@ -77,9 +71,6 @@ def declareArray(token_index, iden, var_type, dims):
         return [token_index, exp]
     
     except Exception as e:
-        print(f"Error in array declaration at token {token_index}: {e}")
-        print(f"Current token: {token[token_index] if token_index < len(token) else 'EOF'}")
-        print(f"Surrounding tokens: {token[max(0,token_index-3):min(len(token),token_index+3)]}")
         raise
 
 def initArray(token_index):
@@ -106,7 +97,6 @@ def initArray(token_index):
         exp += curr
         token_index += 1
     elif token[token_index] in [",", ";"]:
-        # Initialize empty dynamic array
         exp = "[]"
 
     return [token_index, exp]
@@ -151,10 +141,8 @@ def generate_code(console):
     else:
         console.delete("1.0", tk.END)
     global scope_stack
-    # Start with global scope
     scope_stack = ["global"]
     console1 = console
-    print(token)
     current_token_index = 0
     trans_code = """
 class DynamicArray:
@@ -190,20 +178,20 @@ class DynamicArray:
     def __len__(self):
         return len(self.data)
     def __getitem__(self, index):
-        if isinstance(index, tuple):  # Handle comma syntax (1,2)
+        if isinstance(index, tuple):   
             row, col = index
             if row >= len(self.data):
                 return self.default
             if col >= len(self.data[row]):
                 return self.default
             return self.data[row][col]
-        else:  # Single index access
+        else: 
             if index >= len(self.data):
                 return self.default
             return self.data[index]
     
     def __setitem__(self, index, value):
-        if isinstance(index, tuple):  # Handle comma syntax (1,2)
+        if isinstance(index, tuple): 
             row, col = index
             while row >= len(self.data):
                 self.data.append([])
@@ -216,11 +204,11 @@ class DynamicArray:
                 self.data[row][col] = float(value)
             else:
                 self.data[row][col] = value
-        else:  # Single index
+        else: 
             while index >= len(self.data):
                 self.data.append(self.default)
             if self.dtype == 'int':
-                self.data[index] = int(value)  # will fail if value1 is '1.1'
+                self.data[index] = int(value) 
 
             elif self.dtype == 'dec':
                 self.data[index] = float(value)
@@ -233,7 +221,6 @@ class DynamicArray:
     indent = 0
     linelevel = 0
     exec_code = []
-    #locals_dict = {'console': console}
     symbol_table = {}
 
     output_val = ""
@@ -253,12 +240,10 @@ class DynamicArray:
     current_function_scope = None
     isDoWhile = False
     def current_scope():
-        print(f"Current Scope: {scope_stack[-1] if scope_stack else "global"}")
         return scope_stack[-1] if scope_stack else "global"
     
     def enter_scope(scope_type):
         nonlocal current_function_scope, declared_globals_in_functions
-        print(f"Enter Scope: {scope_type}:{len(scope_stack)}")
         scope_stack.append(f"{scope_type}:{len(scope_stack)}")
         if scope_type:
             current_function_scope = scope_stack[-1]
@@ -266,7 +251,6 @@ class DynamicArray:
     
     def exit_scope():
         nonlocal current_function_scope
-        print(f"Exit Scope: {current_function_scope}/{scope_stack[-1]}/{len(scope_stack)}")
         if len(scope_stack) > 1:  
             popped_scope = scope_stack.pop()
             if popped_scope:
@@ -300,12 +284,10 @@ class DynamicArray:
     switch_statement = False
     function_name = ""
     isSwitchStatement = False
-    print("running")
     while current_token_index < len(token):
         if errorflag[0] == True:  
             return
         curr = token[current_token_index]
-        print(f"-current {curr}")
         prev = ""
         if current_token_index <len(token)-1:
             prev = token[current_token_index-1]
@@ -363,7 +345,6 @@ class DynamicArray:
                 current_token_index += 2
                 curr = token[current_token_index]
                 while curr != ")":
-                    print(f"---{curr}")
                     if curr == "&":
                         pass
                     elif curr == "str_lit":
@@ -444,7 +425,6 @@ class DynamicArray:
                 curr = token[current_token_index]
 
                 while curr != ")":
-                    print(f"---{curr}")
                     if curr == "&":
                         pass
                     elif curr == "str_lit":
@@ -569,11 +549,9 @@ class DynamicArray:
                             var_name = f"_{var_name}"
                         op = token[current_token_index + 1]
                         if op == "++":
-                            #temp += f"{var_name}\n" + indent_level(indent)
                             unary += f"{var_name} += 1\n" + indent_level(indent)
                         else:
                             exec_code.append(f"{var_name} -= 1")
-                            #temp += f"{var_name}\n" + indent_level(indent)
                             unary += f"{var_name} -= 1\n" + indent_level(indent)
                         current_token_index += 1  
 
@@ -605,7 +583,6 @@ class DynamicArray:
                     
                 current_token_index += 1
                 curr = token[current_token_index]
-            print(f"{curr} {indent}")
             trans_code += f"{temp} \n" + indent_level(indent)
             current_token_index += 1
             curr = token[current_token_index]
@@ -643,7 +620,6 @@ class DynamicArray:
             current_token_index += 2
             curr = token[current_token_index]
             while not (curr == ")" and getNextToken(current_token_index) == "{"):
-                print(f"CONDITION IF {lexeme[current_token_index]}")
                 if curr in ["true", "false", "none"]:
                     trans_code += lexeme[current_token_index].capitalize()
                 elif curr in ["&&", "||", "!"]:
@@ -754,7 +730,6 @@ class DynamicArray:
             tempdata = ""
             while True:
                 curr = token[current_token_index]
-                print(curr)
                 if curr.startswith("id") and token[current_token_index+1] == "(":
                     iden = lexeme[current_token_index]
                     if iden in dir(builtins) and iden not in ["True", "False", "true", "false", "none"]:
@@ -786,8 +761,6 @@ class DynamicArray:
             exp_parts = []
             if curr in ["str", "chr"]:
                 isString = True
-                #exp = 'f"'
-                #exp_parts.append("")
             elif curr == "int":
                 isInt = True
             elif curr == "dec":
@@ -801,10 +774,8 @@ class DynamicArray:
                 dims = 1
                 var_type = curr
                 while True:
-                    print(f"ARRAY TOKEN {token[current_token_index]}")
                     
                     while curr != ",":
-                        print(f"curr {curr}")
                         if curr.startswith("id"):
                             break
                         if token[current_token_index] == "[":
@@ -812,9 +783,9 @@ class DynamicArray:
                             curr = token[current_token_index]
                             if current_token_index < len(token) and curr == ",":
                                 dims = 2
-                                current_token_index += 1 # Skip past ,]
+                                current_token_index += 1 
                             elif curr == "]":
-                                pass  # Skip past ]
+                                pass  
                         current_token_index += 1
                         curr = token[current_token_index]
                     array_iden = lexeme[current_token_index]
@@ -824,7 +795,6 @@ class DynamicArray:
                     current_token_index = result[0]
                     curr = token[current_token_index]
                     array_decl = result[1]
-                    print(f"DONE {curr}")
                     # Add to symbol table
                     array_name = array_decl.split('=')[0].strip()
                     symbol_table[array_name] = {
@@ -835,11 +805,9 @@ class DynamicArray:
                         "dims": 2 if "[,]" in token[current_token_index-5:current_token_index] else 1
                     }
                     
-                    # Add to generated code
                     exec_code.append(array_decl)
                     trans_code += array_decl
                     
-                    # Check for multiple declarations (comma separated)
                     if curr == ",":
                         trans_code += "\n" + indent_level(indent)
                         current_token_index += 1
@@ -852,13 +820,11 @@ class DynamicArray:
                 iden = lexeme[current_token_index + 1]
                 if iden in dir(builtins) and iden not in ["True", "False", "true", "false", "none"]:
                     iden = f"_{iden}"
-                print(f"DECLARATION OF {iden}")
                 symbol_table[iden] = {
                     "type": var_type,
                     "scope": current_scope(),
                     "line": current_token_index  
                 }
-                print(f"curr1 {current_token_index} {lexeme[current_token_index]}")
                 current_token_index += 2 
                 
                 if token[current_token_index] == "=":
@@ -866,7 +832,6 @@ class DynamicArray:
                     curr = token[current_token_index]
                         
                     while token[current_token_index] not in [",", ";"]:
-                        print(f"Declaration {lexeme[current_token_index]}")
                         if curr == "&":
                             pass
                         elif curr == "str_lit":
@@ -988,12 +953,9 @@ class DynamicArray:
                             if isChar:
                                 conversion_store += f"[0]"
                                 isChar = False
-                            #if con_type in ["str", "chr"]:
-                            #    conversion_store += "+\""
                             current_token_index += 1
                             curr = token[current_token_index]
                             exp_parts.append(conversion_store)
-                            print("conversion")
                         elif curr in ["&&", "||", "!"]:
                             trans_logic = {"&&": " and ", "||": " or ", "!": " not "}.get(curr, "")
                             exp_parts.append(trans_logic)
@@ -1014,9 +976,6 @@ class DynamicArray:
                     
                     exp = "".join(exp_parts)
                     exp_parts = []
-                    #if isString:
-                    #    exp += '"'
-                    # type conversion based on requirements
                     if var_type == "int":
                         if exp.strip().isdigit():
                             trans_code += f"{iden} = int({exp.strip()})\n{indent_level(indent)}{iden} = int({iden})\n{indent_level(indent)}"
@@ -1031,7 +990,6 @@ class DynamicArray:
                         trans_code += f"{iden} = {exp.strip()}\n{indent_level(indent)}"
                     
                     exec_code.append(f"{iden} = {exp.strip()}")
-                    print(f"dec {iden} = {exp.strip()}")
 
                 elif token[current_token_index] in [",", ";"]:
                     curr = token[current_token_index]
@@ -1069,19 +1027,12 @@ class DynamicArray:
                     exec_code.append(f"{iden} = {default_values[var_type]}")
                     
                     exec_code.append(f"{iden} = {exp}")
-                    print(exec_code)
                 
-                #if isString:
-                #    exp = 'f"'
-                #else: 
-                #    exp = ""
                 if curr == ";":
                     trans_code += "\n"+indent_level(indent)
                     break 
         #Assignment Statement
         elif curr.startswith("id"):
-            print("pass id")
-            print(f"next {token[current_token_index + 1]}")
             exp = ""
             output_val = ""
             var_name = lexeme[current_token_index] 
@@ -1092,7 +1043,6 @@ class DynamicArray:
                 trans_code += global_decl
                 
             if token[current_token_index+1] == "(":
-                print("function call ID")
                 iden_temp = lexeme[current_token_index]
                 if iden_temp in dir(builtins) and iden_temp not in ["True", "False", "true", "false", "none"]:
                     iden_temp = f"_{iden_temp}"
@@ -1100,7 +1050,6 @@ class DynamicArray:
                 current_token_index += 2
                 curr = token[current_token_index]
                 while curr != ")":
-                    print(curr)
                     if curr == "&":
                         pass
                     elif curr == "str_lit":
@@ -1146,12 +1095,10 @@ class DynamicArray:
                                         break  
                                     if next_token == "&":
                                         break  
-                                print(f"a {curr}")
                                 current_token_index += 1
                                 curr = token[current_token_index]
                             
                             exp = f"{exp}"
-                            print(f"asdad {exp}")
                             output_val += f"{exp.strip()}"  
                     current_token_index += 1
                     curr = token[current_token_index]
@@ -1159,7 +1106,6 @@ class DynamicArray:
                 exec_code.append(output_val)
                 trans_code += output_val
             if token[current_token_index + 1] in assignment_operator or token[current_token_index + 1] == "[":
-                print(f"pass id2 ")
                 iden_temp = lexeme[current_token_index]
                 if iden_temp in dir(builtins) and iden_temp not in ["True", "False", "true", "false", "none"]:
                     iden_temp = f"_{iden_temp}"
@@ -1221,7 +1167,7 @@ class DynamicArray:
                         # Generate assignment code
                         if assign_op == "=":
                             assignment_code = f"{array_access} = {rhs}"
-                        else:  # Handle +=, -=, etc.
+                        else: 
                             op = assign_op[0]  
                             assignment_code = f"{array_access} = {array_access} {op} {rhs}"
                         
@@ -1249,8 +1195,8 @@ class DynamicArray:
                         # Generate assignment code
                         if assign_op == "=":
                             assignment_code = f"{array_access} = {rhs}"
-                        else:  # Handle +=, -=, etc.
-                            op = assign_op[0]  # Get the operator
+                        else:  
+                            op = assign_op[0]  
                             assignment_code = f"{array_access} = {array_access} {op} {rhs}"
                         
                         exec_code.append(assignment_code)
@@ -1258,7 +1204,6 @@ class DynamicArray:
                     continue
                 
                 while curr not in assignment_operator:
-                    print("pass id3")
                     assign += lexeme[current_token_index]
                     current_token_index += 1
                     curr = lexeme[current_token_index]
@@ -1272,20 +1217,16 @@ class DynamicArray:
                 current_token_index += 1
                 curr = token[current_token_index]
                 while curr != ";":
-                    print(f"pass id4 {curr}")
                     if curr == "&":
                         exp_parts.append("+")
                     elif curr == "str_lit":
                         exp_parts.append(lexeme[current_token_index])
                     elif curr == "chr_lit":
                         exp_parts.append(lexeme[current_token_index])
-                    #elif curr.startswith("id"):
-                    #    exp += f"{{{lexeme[current_token_index]}}}"
                     elif curr in ["true", "false", "none"]:
                         exp_parts.append(lexeme[current_token_index].capitalize())
-                    elif curr.startswith("id"):#here
+                    elif curr.startswith("id"):
                         #Translation Type Conversion
-                        print(f"-------------------------{lexeme[current_token_index]}")
                         curr_identifier = lexeme[current_token_index]
                         if curr_identifier in dir(builtins) and curr_identifier not in ["True", "False", "true", "false", "none"]:
                             curr_identifier = f"_{curr_identifier}"
@@ -1343,11 +1284,6 @@ class DynamicArray:
                         elif con_type == "int":
                             if curr == "str_lit":
                                 convert_value = convert_value.strip('"')
-                                    #convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
-                                #convert_value = ', '.join(str(ord(char)) for char in convert_value)
-                                #conversion_store = f"eval(("
-                                #convert_value = f"eval(\'\\\',\\\'.join([str(ord(char)) for char in \"{convert_value}\"])\')"
-                                #convert_value = f"eval(str(ord(char) for char in \"{convert_value}\"))"
                             elif curr == "chr_lit":
                                 convert_value = convert_value.strip("'")
                                 convert_value = f"eval(str(ord(\\\\'{convert_value}\\\\')))"
@@ -1372,12 +1308,9 @@ class DynamicArray:
                         if isChar:
                             conversion_store += f"[0]"
                             isChar = False
-                        #if con_type in ["str", "chr"]:
-                        #    conversion_store += "+\""
                         current_token_index += 1
                         curr = token[current_token_index]
                         exp_parts.append(conversion_store)
-                        print("conversion")
                     else:
                         if curr in ["int_lit", "dec_lit"]:
                             if curr == "dec_lit":
@@ -1385,7 +1318,6 @@ class DynamicArray:
                             exp_parts.append(checkNumLit(current_token_index))
                         elif curr in arithmetic_operator:
                             exp_parts.append(lexeme[current_token_index])
-                            print(f"==========={exp_parts}")
                         elif getPrevToken(current_token_index) in ["str_lit", "chr_lit"] or getPrevToken(current_token_index).startswith('id'):
                             prevToken = getPrevToken(current_token_index)
                             if prevToken.startswith('id'):
@@ -1398,16 +1330,12 @@ class DynamicArray:
                                 exp_parts.append(" ")
                         else:
                             exp_parts.append(lexeme[current_token_index])
-                            print(f"==========={exp_parts}")
 
                     current_token_index += 1
                     curr = token[current_token_index]
                 exp = "".join(exp_parts)
                 exp_parts = []
-                #exp = f"f'{exp}'" 
-                # Get variable type from symbol table
                 var_type = symbol_table.get(var_name, {}).get("type", None)
-                # Generate the assignment with type enforcement if type is known
                 if var_type == "int":
                     trans_code += f"{var_name} {assign_op} int(eval(\"{exp.strip()}\"))\n{indent_level(indent)}{var_name} = int({var_name})\n{indent_level(indent)}"
                 elif var_type == "dec":
@@ -1416,11 +1344,6 @@ class DynamicArray:
                     trans_code += f"{var_name} {assign_op} {exp.strip()}\n{indent_level(indent)}"
                 
                 exec_code.append(f"{assign}{exp.strip()}")
-                print(f"assign {assign}{exp.strip()}")
-                #if assign not in exec_code
-                #exec_code.append(f"{assign}{exp.strip()}")
-                #trans_code += f"{assign}{exp.strip()}" + "\n" + indent_level(indent)
-                #print(f"assign {assign}{exp.strip()}")
         #Output Statement
         elif curr == "disp":
             exp = ""
@@ -1597,55 +1520,37 @@ class DynamicArray:
         elif curr == "none":
             trans_code += "None"
         current_token_index += 1
-    print(f"exp {exp}")
-    print(f"exec_code {exec_code}") 
 
-    print(f"---trans code---")
-    print(trans_code)
     trans_code += "\n__main__()"
-    print(f"run")
-    print("\n=== Symbol Table with Scope ===")
-    for var, info in symbol_table.items():
-        print(f"{var}: type={info['type']}, scope={info['scope']}, line={info['line']}")
-    print("===============================")
+
     
     try:
         def handle_input(prompt=""):
             console.insert(tk.END, prompt)
-            console.mark_set("input_start", tk.END)  # where user input begins
+            console.mark_set("input_start", tk.END) 
             console.mark_gravity("input_start", tk.RIGHT)
             console.focus_set()
             console.config(insertbackground="white")
 
             input_index = console.index("input_start")
             line_number = int(input_index.split('.')[0])
-            print(f"d02 ")
             input_done = threading.Event()
             adjusted_line = line_number-1
-            print(f"d3 {adjusted_line}")
             try:
                 count_result = console.count(f"{adjusted_line}.0", f"{adjusted_line}.end", "chars")
                 char_count = int(count_result[0]) if count_result else 0
             except Exception as e:
-                print("Error getting char_count:", e)
                 char_count = 0
-            print(f"A = {char_count}")
             def on_key(event):
-                print(event.keysym, "a")
                 if event.keysym == "Return":
-                    print("done")
                     input_done.set()
                     return "break"
 
-                # Handle Backspace: block if before input_start
                 elif event.keysym == "BackSpace":
                     current_index = console.index(tk.INSERT)
                     input_start_index = console.index("input_start")
                     line_str, col_str = input_start_index.split(".")
                     line = int(line_str) - 1
-
-                    # If final_col < 0, you might want to adjust line accordingly,
-                    # but usually col won't go negative here.
 
                     final_index = f"{line}.{char_count}"
                     if current_index <= final_index:
@@ -1686,7 +1591,6 @@ class DynamicArray:
 
             
         def console_disp(val):
-            #val = str(val).lstrip()
             def replace_negative(match):
                 number = match.group(0)
                 return "~" + number[1:] 
@@ -1701,7 +1605,6 @@ class DynamicArray:
             variable_insp = re.sub(r'\[.*?\]', '', variable_insp)
             val = val.replace("~", "-")
             dataType = symbol_table.get(variable_insp, {}).get("type", None)
-            print(f"HANDLE {val}/{variable_insp}/{dataType}")
             if dataType == "str":
                 val = str(val)
                 
@@ -1751,8 +1654,6 @@ class DynamicArray:
                 else:
                     raise ValueError(f"Illegal Input. Expected a boolean value (True/False) for identifier '{variable_insp}'")
                     return None
-            #console.insert(tk.END, f"DEBUG {dataType}/{variable_insp}/{symbol_table}")
-            #console.insert(tk.END, f"[DEBUG INSP] returning: {repr(val)}\n")
             return val
 
         exec_env = {
@@ -1789,7 +1690,3 @@ class DynamicArray:
     finally:
         pass
 
-    # Show generated code
-    #console.insert(tk.END, "\n=== Generated Code ===\n")
-    #console.insert(tk.END, trans_code)
-    #console.insert(tk.END, "\n=== End of Code ===\n")

@@ -37,23 +37,23 @@ key1_delims = {
     'state_delim' : whitespace + ['('], 
     'block_delim' : whitespace + ['{'],    
     'def_delim' : whitespace + [':'],
-    'comma_delim' : whitespace + [']', '(', '{', '"', '\'', '+', '-', '.', '~'] + alphanumeric,
+    'comma_delim' : whitespace + [']', '(', '{', '"', '\'', '+', '-',  '~'] + alphanumeric,
     'iden_delim' : whitespace + all_operators + ['<', '>', '=', ';', '&', '>', '(', ')', '[', ']', ','],
     'lit_delim' : whitespace + [';', ',', '&', ')', '}', '!', '=', '|', ':'],
-    'op_delim' : whitespace + alphanumeric + ['(', '~', '.', '+', '-'],
+    'op_delim' : whitespace + alphanumeric + ['(', '~', '+', '-'],
     'unary_delim' : whitespace + alphanumeric + number_operator + ['(', ')', ';', ',', '~'],
-    'paren_delim' : whitespace + alphanumeric + [';', '!', '#', "'", '"', '(', ')', '+', '-', '.', '~'],
+    'paren_delim' : whitespace + alphanumeric + [';', '!', '#', "'", '"', '(', ')', '+', '-', '~'],
     'paren1_delim' : whitespace + arithmetic_operator + relational_operator + ['&', '|', '{', ')', ';', ',', '=', '!'],
-    'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-', '.', '~'],
+    'brace_delim' : whitespace + alphanumeric + [';', '(', "'", '"', '{', '}', '+', '-',  '~'],
     'semicolon_delim' : whitespace + alphanumeric + ['~', '(', '}', '+', '-', None],
-    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '.', '('],
-    'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', '.', ','],
+    'bracket_delim' : whitespace + alphanumeric + [']', ',', '+', '-', '('],
+    'bracket1_delim' : whitespace + number_operator + [')', '=', ';', '&', ','],
     'concat_delim' : whitespace + alphanumeric + ['(', '"', "'", '#', '~'],
     'data_delim' : whitespace + ['[', '('],
     'val_delim' : whitespace + [';', ',', ')', '}', '!', '&', '=', '|'],
     'colon_delim' : whitespace + alphanumeric + ['(', '+', '-'],
     'jmp_delim' : whitespace + [';'],
-    'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '(', '.'],
+    'key_delim' : whitespace + alphanumeric + ["'", '"', '~', '('],
     'num_delim' : whitespace + all_operators + [':', ';', ')', '}', ']', ','],
     'not_delim' : whitespace + alpha + ['(']
 }
@@ -102,17 +102,6 @@ parsing_table = {
     "<two_more_lit>": {"}": ["null"], ",": [",", "{", "<array_elements>", "<more_lit>", "}", "<two_more_lit>"]},
     "<more_two_array_init>": {";": ["null"], ",": [",", "id", "<two_array_init>", "<more_two_array_init>"]},
     "<array_elements>": {"(":["(","<array_elements>",")"],"none": ["none"]},
-    #"<struct_declaration>": {"strc": ["strc", "id", "<struct_declaration_tail>"]},
-    #"<struct_declaration_tail>": {"{": ["<struct_define>"]},
-    #"<struct_define>": {"{": ["{", "<members_declaration>", "<more_members>", "}", "<instance>", "<more_instance>", ";"]},
-    #"<members_declaration>": {},
-    #"<more_members>": {"}": ["null"]},
-    #"<instance>": {},
-    #"<more_instance>": {";": ["null"], ",": [",", "<struct_id>", "<more_instance>"]},
-    #"<instance_declaration>": {},
-    #"<more_instance_declaration>": {";": ["null"], ",": [",", "<struct_id>", "<more_instance_declaration>"]},
-    #"<struct_id>": {},
-    #"<struct_id_tail>": {"[": ["[", "]"]}, 
     "<statements>": {"id": ["<assignment_statements>", "<statements>"], "disp": ["<output_statement>", "<statements>"],
         "insp": ["<input_statement>", "<statements>"], "ret": ["<return_statement>", "<statements>"], "exit": ["exit", ";", "<statements>"], "segm": ["<segm_statements>","<statements>"]},
     "<segm_statements>": {"segm": ["segm", "id", "(", "<parameter>", ")", "{", "<statements>", "}"]},
@@ -124,12 +113,10 @@ parsing_table = {
     "<value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
     "<bln_value>": {"id": ["id", "<id_tail>", "<expression_iden>", "<concat_string>"]},
     "<init_value>": {"(": ["(","<value>",")", "<expression>"], "none": ["none"]},
-    #"<more_value>": {"&": ["&", "<value>"]},
     "<input_statement>": {"insp": ["insp", "(", "<id_holder>", ")", ";"]},
     "<id_holder>": {"id": ["id", "<hold_id_tail>"]},
     "<hold_id_tail>": {"[": ["[", "<index>", "]"]},
     "<hold_id_tail_next>": {"[": ["[", "<index>", "]"]},
-    #"<more_hold_id_tail>": {".": [".","id","<hold_id_tail_next>"]},
     "<pre_unary_statement>": {},
     "<pre_unary_paren>": {},
     "<unary_statement>": {"id": ["<post_unary>", "<more_unary>"]},
@@ -239,7 +226,6 @@ parsing_table = {
     "<index_operand>": {"int_lit": ["int_lit"], "id": ["id"]},
     "<id_tail>": {"[": ["[", "<index>", "]"], "(": ["(", "<args>", ")"]},
     "<id_array_tail>": {"[": ["[", "<index>", "]"]},
-    #"<more_id_tail>": {".": [".","id","<id_array_tail>"]},
     "<args>": {},
     "<args_operand>": {"(": ["(","<args_operand>",")"], "id": ["id", "<id_tail>"]},
     "<more_args>": {")": ["null"], ",": [",", "<args>"]},
@@ -274,14 +260,6 @@ def add_all_set():
     add_set([";", ","], "<array_init>", ["null"])
     add_set([";", ","], "<two_array_init>", ["null"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<array_elements>", ["<literals>"])
-    #add_set(["id", "("], "<struct_declaration_tail>", ["<instance_declaration>"])
-    #add_set(["str", "bln", "chr", "dec", "int", "var"], "<members_declaration>", ["<vartype>", "<id_declare>", ";"])
-    #add_set(["int", "dec", "chr", "str", "bln", "var"], "<more_members>", ["<members_declaration>", "<more_members>"])
-    #add_set([";", ","], "<instance>", ["null"])
-    #add_set(["id", "("], "<instance>", ["<struct_id>"])
-    #add_set(["id", "("], "<instance_declaration>", ["<struct_id>", ";"])
-    #add_set(["id", "("], "<struct_id>", ["<id_declare>","<struct_id_tail>"])
-    #add_set([",", ";"], "<struct_id_tail>", ["null"])
     add_set(["brk", "rsm", "key", "def","}"], "<statements>", ["null"])
     add_set(["const", "var", "int", "dec", "chr", "str", "bln"], "<statements>", ["<declaration_statement>", "<statements>"])
     add_set(["++", "--"], "<statements>", ["<pre_unary_statement>", "<statements>"])
@@ -292,23 +270,18 @@ def add_all_set():
     add_set(["=", "+=", "-=", "*=", "/=", "%="], "<assignment_id_tail>", ["null"])
     add_set(["str_lit", "chr_lit"], "<value>", ["<text_format>", "<expression_text>"])
     add_set(["true", "false", "id", "!"], "<value>", ["<not_op>","<bln_value>"])
-    #add_set(["str_lit", "chr_lit"], "<value>", ["<text_operand>", "<expression_not_num>"])
     add_set(["int_lit", "dec_lit"], "<value>", ["<integer_operand>", "<expression_integer>"])
     add_set(["int", "dec", "chr", "str", "bln", "++", "--"], "<value>", ["<spec_operand>", "<expression_iden>"])
     add_set(["true", "false"], "<bln_value>", ["<bln>", "<expression_bln>"])
-    #add_set([")", ";", ","], "<more_value>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=", "++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";",","], "<hold_id_tail>", ["null"])
     add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<hold_id_tail_next>", ["null"])
-    #add_set(["=", "+=", "-=", "/=", "*=", "%=","++", "--", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_hold_id_tail>", ["null"])
     add_set(["++", "--"], "<pre_unary_statement>", ["<pre_unary_paren>", "<more_unary>", ";"])
     add_set(["++", "--"], "<pre_unary_paren>", ["<pre_unary>"])
     add_set(["++", "--"], "<unary_statement>", ["<pre_unary>", "<more_unary>"])
     add_set([")", ";" ], "<more_unary>", ["null"])
     add_set(["++", "--"], "<pre_unary>", ["<unary_op>", "<unary_id>"])
-    #add_set(["int_lit", "dec_lit", "true", "false"], "<return_value>", ["<expression_literals>","<ret_expression>"])
     add_set(["int_lit", "dec_lit"], "<return_value>", ["<integer_operand>", "<expression_integer>"])
     add_set(["true", "false"], "<return_value>", ["<bln>", "<expression_bln>"])
-    #add_set(["str", "bln", "chr", "dec", "int"], "<return_value>", ["<type_conversion>", "<ret_expression>"])
     add_set(["str_lit", "chr_lit"], "<return_value>", ["<text_type>", "<expression_text>"])
     add_set(["++", "--"], "<return_value>", ["<pre_unary>"])
     add_set([";", ")"], "<ret_expression>", ["null"])
@@ -367,13 +340,12 @@ def add_all_set():
     add_set(["+", "-", "*", "/", "%" ], "<expression_num>", ["<arithmetic_op>", "<number_tail_operand>"])
     add_set([";", ")", ","], "<expression_not_num>", ["null"])
     add_set(["<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<expression_not_num>", ["<non_number_operator>", "<tail_operand>"])
-    
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_iden>", ["null"])
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||"], "<expression_iden>", ["<operator>", "<not_op>", "<iden_tail_operand>"])
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_integer>", ["null"])
     add_set(["&&", "||"], "<expression_integer>", ["<logical_op>", "<integer_log_tail_operand>"])
     add_set(["+", "-", "*", "/", "%"], "<expression_integer>", ["<arithmetic_op>", "<integer_ar_rel_tail_operand>"])
-    add_set(["<", "<=", ">", ">="], "<expression_integer>", ["<inequality_operator>", "<integer_ar_rel_tail_operand>"]) #here
+    add_set(["<", "<=", ">", ">="], "<expression_integer>", ["<inequality_operator>", "<integer_ar_rel_tail_operand>"])
     add_set(["==", "!="], "<expression_integer>", ["<equality_operator>", "<integer_equal_tail_operand>"])
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_text>", ["null"])
     add_set(["&&", "||"], "<expression_text>", ["<logical_op>", "<text_log_tail_operand>"])
@@ -381,7 +353,6 @@ def add_all_set():
     add_set(["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", "&", ";", ","], "<expression_bln>", ["null"])
     add_set(["&&", "||"], "<expression_bln>", ["<logical_op>", "<bln_log_tail_operand>"])
     add_set(["==", "!="], "<expression_bln>", ["<equality_operator>", "<bln_equal_tail_operand>"])
-    
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--"], "<tail_operand>", ["<operand>", "<expression>"])
     add_set(["int_lit", "dec_lit", "id", "++", "--"], "<number_tail_operand>", ["<number_operand>", "<expression_num>"])
     add_set(["id", "dec_lit", "int_lit", "chr_lit", "str_lit", "chr", "str", "true", "false", "int", "dec", "bln", "++", "--"], "<iden_tail_operand>", ["<iden_operand>", "<expression_iden>"])
@@ -395,14 +366,11 @@ def add_all_set():
     add_set(["int_lit", "dec_lit", "true", "false"], "<bln_equal_tail_operand>", ["<expression_literals>", "<expression_bln>"])
     add_set(["++", "--"], "<bln_equal_tail_operand>", ["<pre_unary>", "<expression_bln>"])
     add_set(["str_lit", "chr_lit", "str", "chr"], "<bln_equal_tail_operand>", ["<text_type>", "<expression_bln>"])
-
-    #add_set(["int_lit", "dec_lit", "true", "false"], "<operand>", ["<expression_literals>"])
     add_set(["true", "false"], "<operand>", ["<bln>", "<expression_bln>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<operand>", ["<type_conversion>"])
     add_set(["++", "--"], "<operand>", ["<pre_unary>"])
     add_set(["str", "bln", "chr", "dec", "int"], "<spec_operand>", ["<type_conversion>"])
     add_set(["++", "--"], "<spec_operand>", ["<pre_unary>"])
-    
     add_set(["int_lit", "dec_lit"], "<iden_operand>", ["<integer_operand>", "<expression_integer>"])
     add_set(["str_lit", "chr_lit", "str", "chr"], "<iden_operand>", ["<text_type>", "<expression_text>"])
     add_set(["true", "false"], "<iden_operand>", ["<bln>", "<expression_bln>"])
@@ -414,8 +382,6 @@ def add_all_set():
     add_set(["false", "true"], "<equal_text_operand>", ["<bln>"])
     add_set(["int_lit", "dec_lit", "id", "++", "--"], "<log_bln_operand>", ["<number_operand>"])
     add_set(["false", "true"], "<log_bln_operand>", ["<bln>"])
-
-
     add_set(["int_lit", "dec_lit"], "<number_operand>", ["<integer_operand>"])
     add_set(["++", "--"], "<number_operand>", ["<pre_unary>"])
     add_set(["true", "false"], "<bln_id_operand>", ["<bln>"])
@@ -444,7 +410,6 @@ def add_all_set():
     add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<id_tail>", ["null"])
     add_set(["++", "--"], "<id_tail>", ["<unary_op>"])
     add_set(["=", "+=", "-=", "*=", "/=", "%=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<id_array_tail>", ["null"])
-    #add_set(["=", "+", "-", "*", "/", "%", "&", "<", "<=", ">", ">=", "==", "!=", "&&", "||", ")", ";", ","], "<more_id_tail>", ["null"])
     add_set([")", ","], "<args>", ["null"])
     add_set(["int_lit", "dec_lit", "true", "false", "id", "int", "dec", "chr", "str", "bln", "++", "--", "none", "str_lit", "chr_lit", "(", "!"], "<args>", ["<value>","<expression>","<more_args>"])
     add_set(["str_lit", "chr_lit", "int_lit", "dec_lit", "true", "false"], "<args_operand>", ["<literals>"])
