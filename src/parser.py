@@ -1,12 +1,9 @@
 from definitions import *
 import tkinter as tk
 
-# Parsing table based on the provided grammar
 def parse(console):  
     if errorflag[0] == True:  
         return
-    print(f"token: {token}")
-    print(f"lexeme: {lexeme}")
     current_token_index = 0
     prevlookahead = "Start"
     
@@ -19,17 +16,15 @@ def parse(console):
         errorflag[0] = True
         return
     add_all_set()
-    if not token:  # If token list is empty
+    if not token:
         error_message("No tokens to parse")
         return
-    stack = ["<program>"]  # Initialize stack with start symbol and end marker
+    stack = ["<program>"] 
     def get_lookahead():
-        #0 > 8 FALSE
-        if current_token_index >= len(token):  # Prevent index out of range
+        if current_token_index >= len(token):
             return None
         curr_token = token[current_token_index]
-        #curr_token = main
-        # 0 < 8 TRUE
+
         if current_token_index < len(token):
             if curr_token.startswith("id"):
                 curr_token = "id"
@@ -43,10 +38,8 @@ def parse(console):
         if errorflag[0] == True:
             console.insert(tk.END, "Parsing interrupted...", "error")
             return
-        #8 > 0
         if len(token) > current_token_index:
             lookahead = get_lookahead()
-        print(f"stack: {stack}")
         top = stack.pop()
         lookahead = get_lookahead()
         if lookahead is None:
@@ -54,15 +47,11 @@ def parse(console):
             return
         
         if top == lookahead:
-            # Terminal matches lookahead, consume the token
-            print(f"Match: {lookahead}")
             prevlookahead = lookahead
             current_token_index += 1
         elif top in parsing_table:
             rule = parsing_table[top].get(lookahead)
-            print(f"rule: {rule}/{lookahead}/{top}")
             if rule:
-                print(f"Apply rule: {top} -> {' '.join(rule)}")
                 if rule != ["null"]:  # Push right-hand side of rule onto stack (in reverse)
                     stack.extend(reversed(rule))
             else:
